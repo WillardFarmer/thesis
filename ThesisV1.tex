@@ -1,0 +1,65 @@
+% Equal margins for pdf, if printing may want a larger left margin 
+% for single sided or alternating margins for double
+\documentclass[equalmargins,oneside,openany]{ut-thesis}
+%equalmargins,oneside,openany
+
+% Preamble contains the various packages used
+\usepackage{import}
+\usepackage{preamble}
+%\usepackage[utf8]{inputenc}
+%\usepackage{amsmath,amssymb}
+\addbibresource{biblio.bib} % This is my bibliography file
+
+% *******************Title Parameters*******************
+\author{Willard Farmer}
+\title{The Creation of a New Payload Operations Planning Software} 
+\graddegree{Master of Applied Science}
+\department{Institute for Aerospace Studies}
+\gradyear{2023}
+
+% Load acronymns from seperate tex file
+\makenoidxglossaries{}
+\loadglsentries{Front Matter/acronym}
+
+% ******************Front Matter*******************
+\begin{document}
+\frontmatter % 10 pgs
+
+    \maketitle
+    \begin{abstract}
+    %\doublespacing
+	\input{Front Matter/abstract}
+    \end{abstract}
+    
+    \begin{acknowledgements}
+	\input{Front Matter/ack}
+    \end{acknowledgements}
+    
+    \tableofcontents
+    \listoffigures
+    \listoftables
+   % \listofequations
+    \printnoidxglossary[type =\acronymtype, title=List of Acronyms]
+    \cleardoublepage{}
+	
+% ******************Main Body*******************
+\mainmatter{}
+\include{Chapters/1_Intro}
+\include{Chapters/2_Comms_Testing}
+\include{Chapters/3_Antenna_Investigation}     
+\include{Chapters/4_Link_Budget_Verification}
+\include{Chapters/5_Vibration_Testing}         
+\include{Chapters/6_Conclusions}           
+
+	
+% ******************Appendix*******************
+%\appendix
+\begin{appendices}
+    %\include{Chapters/7_Appendix}
+\end{appendices}
+    	
+% ******************Back Matter*******************
+\backmatter{}
+%\input{Front Matter/NotCited}
+\printbibliography[heading=bibintoc, title= {References}]
+\end{document}

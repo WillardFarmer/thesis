@@ -1,0 +1,55 @@
+\ProvidesPackage{preamble}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[backend=biber,style=ieee,citestyle=ieee,dashed=false]{biblatex}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{subfig}
+\graphicspath{ {./Figures/Kepler/}{./Figures/Hawkeye/}{./Figures/NS4/}{./Figures/Introduction/} }
+\usepackage{array}
+%\usepackage{subcaption} %subcaption cannot be used in tandem with subfig
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{multirow}
+\usepackage{blindtext}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=gray,      
+    urlcolor=black,
+    linkbordercolor=gray,
+    %pdftitle={Ravin_Rahul_202207_MASc_Thesis},
+    citecolor=black,
+    pdfpagemode=FullScreen,
+    }
+
+\urlstyle{same}
+
+\addto\extrasenglish{%
+  \renewcommand{\subsectionautorefname}{Section}%
+}
+
+\usepackage{comment}
+\usepackage{textcomp}
+\usepackage{gensymb}
+\usepackage{csquotes}
+\pdfminorversion=7 % this must be before the next two
+\usepackage[T2A]{fontenc} % this is to make sure the pdf is ctrl-fable
+\usepackage[acronym,nopostdot,nonumberlist,nogroupskip]{glossaries}
+\usepackage{makecell}
+\usepackage{threeparttable}
+\usepackage[titletoc]{appendix}
+%\usepackage{url}
+%\usepackage{siunitx}
+
+%% *** Acronyms page (gls) setup. ***
+\setacronymstyle{long-short}
+\setglossarystyle{alttree} % Lines up the definitions
+\glssetwidest{LONGLONG} % Sets the spacing between the acronym and definition
+% \makeglossaries
+
+
