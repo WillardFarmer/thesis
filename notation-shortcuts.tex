@@ -1,0 +1,88 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Basic shortcuts
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Matrices and vectors
+\NewDocumentCommand\bbm{}{ \begin{bmatrix} }
+\NewDocumentCommand\ebm{}{ \end{bmatrix} }
+\NewDocumentCommand\Vector{m}{ \boldsymbol{\mathbf{#1}} }
+\NewDocumentCommand\Matrix{m}{ \boldsymbol{\mathbf{#1}} }
+\NewDocumentCommand\Transpose{m}{ \left.{#1}\right.^T }
+\NewDocumentCommand\ConjugateTranspose{m}{ \left.{#1}\right.^H }
+\NewDocumentCommand\Trace{m}{ \mathrm{tr}\left(#1\right) }
+\NewDocumentCommand\Determinant{m}{ \mathrm{det}\left(#1\right) }
+\NewDocumentCommand\Norm{m}{\left\Vert#1\right\Vert }
+\NewDocumentCommand\Diag{m}{ \mathrm{diag} \left\{ #1 \right\} }
+
+%% Calculus
+\NewDocumentCommand\dd{}{ \mathop{}\!\mathrm{d} }
+\NewDocumentCommand\PartialDerivative{mm}{ \frac{\partial #1}{\partial #2} }
+\NewDocumentCommand\OrdinaryDerivative{mm}{ \frac{\dd #1}{\dd #2} }
+%% Optimization
+\NewDocumentCommand\ArgMax{m}{ \operatorname*{argmax}_{#1} }
+\NewDocumentCommand\ArgMin{m}{ \operatorname*{argmin}_{#1} }
+
+%% Sets
+\NewDocumentCommand\Set{m}{ \left\{#1\right\} }
+\NewDocumentCommand\Real{}{ \mathbb{R} }
+\NewDocumentCommand\Complex{}{ \mathbb{C} }
+
+%% Lie groups and Lie algebras
+\NewDocumentCommand\LieGroupSO{m}{ \mathrm{SO}(#1) }
+\NewDocumentCommand\LieAlgebraSO{m}{ \mathfrak{so}(#1) }
+\NewDocumentCommand\LieGroupSE{m}{ \mathrm{SE}(#1) }
+\NewDocumentCommand\LieAlgebraSE{m}{ \mathfrak{se}(#1) }
+\NewDocumentCommand\LieGroupSim{m}{ \mathrm{Sim}(#1) }
+\NewDocumentCommand\LieAlgebraSim{m}{ \mathfrak{sim}(#1) }
+\NewDocumentCommand\LieGroupAdjoint{m}{ \mathrm{Ad}\left(#1\right) }
+\NewDocumentCommand\LieAlgebraAdjoint{m}{ \mathrm{ad}\left(#1\right) }
+
+%% Statistics and stochastic processes
+\NewDocumentCommand\Expectation{m}{ \mathbb{E}\left[#1\right] }
+\NewDocumentCommand\NormalDistribution{mm}{ \mathcal{N}\left(#1,#2\right) }
+\NewDocumentCommand\GaussianProcess{mm}{ \mathcal{GP}\left(#1,#2\right) }
+
+%% Miscellaneous
+\NewDocumentCommand\AbsoluteValue{m}{ \left\vert#1\right\vert }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% UTIAS Notation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Zero and Identity matrices
+\NewDocumentCommand\ZeroMatrix{}{ \Matrix{0} }
+\NewDocumentCommand\IdentityMatrix{}{ \Matrix{1} }
+
+%% Coordinate frames and transformations
+\NewDocumentCommand\CoordinateFrame{m}{ \underrightarrow{\Matrix{\mathcal{F}}}_{#1} }
+\NewDocumentCommand\Rotation{}{ \Matrix{C} }
+\NewDocumentCommand\RotationVector{}{ \Vector{\phi} }
+\NewDocumentCommand\Transform{}{ \Matrix{T} }
+\NewDocumentCommand\TransformVector{}{ \Vector{\xi} }
+
+%% Variable decorations
+\NewDocumentCommand\Estimate{m}{\hat{#1}}
+\NewDocumentCommand\Prior{m}{\check{#1}}
+\NewDocumentCommand\Mean{m}{\overline{#1}}
+\NewDocumentCommand\Optimal{m}{{#1}^*}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Additional definitions for your document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\NewDocumentCommand\se{m}{ \bm{\mathrm{#1}} }
+\NewDocumentCommand\sev{m}{ \vec{\bm{\mathrm{#1}}} }
+\NewDocumentCommand\ses{mm}{ \bm{\mathrm{#1}}_{#2} }
+\NewDocumentCommand\sesh{mm}{ \hat{\bm{\mathrm{#1}}}_{#2} }
+\NewDocumentCommand\sesc{mm}{ \check{\bm{\mathrm{#1}}}_{#2} }
+\NewDocumentCommand\sesb{mm}{ \bar{\bm{\mathrm{#1}}}_{#2} }
+\NewDocumentCommand\sel{mm}{ \bm{\mathrm{#1}}_{#2}^l }
+\NewDocumentCommand\sen{mmm}{ \bm{\mathrm{#1}}_{#2}^{#3} }
+\NewDocumentCommand\xtan{m}{ x_l-\check{x}_k-d\cos\check{\theta}_k }
+\NewDocumentCommand\ytan{m}{ y_l-\check{y}_k-d\sin\check{\theta}_k }
+\NewDocumentCommand\pder{mmm}{ \frac{\partial #1}{\partial #2}\Bigr|_{#3} }
+\NewDocumentCommand\pdern{mm}{ \frac{\partial #1}{\partial #2} }
+\NewDocumentCommand\siv{m}{ \sigma_v^2 }
+\NewDocumentCommand\sio{m}{ \sigma_\omega^2 }
+\NewDocumentCommand\sir{m}{ \sigma_r^2 }
+\NewDocumentCommand\sip{m}{ \sigma_\phi^2 }

@@ -5,11 +5,15 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
-\usepackage{graphicx}
-\usepackage{subfig}
-\graphicspath{ {./Figures/Kepler/}{./Figures/Hawkeye/}{./Figures/NS4/}{./Figures/Introduction/} }
+\usepackage{wasysym}
+\usepackage{bm}
+\usepackage{graphicx}	    % Use for figures
+%\usepackage{subfig}	    % Use for Sub Figures
+\graphicspath{{./Figures/}}
 \usepackage{array}
-%\usepackage{subcaption} %subcaption cannot be used in tandem with subfig
+\usepackage{caption}
+\usepackage{subcaption} %subcaption cannot be used in tandem with subfig
+
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage[table,xcdraw]{xcolor}
@@ -22,7 +26,7 @@
     filecolor=gray,      
     urlcolor=black,
     linkbordercolor=gray,
-    %pdftitle={Ravin_Rahul_202207_MASc_Thesis},
+    pdftitle={Willard_Farmer_202307_MASc_Thesis},
     citecolor=black,
     pdfpagemode=FullScreen,
     }
@@ -45,11 +49,12 @@
 \usepackage[titletoc]{appendix}
 %\usepackage{url}
 %\usepackage{siunitx}
+\usepackage{xparse}	    % For the notation-shortcuts 
+\usepackage{algorithm}	    % For algorithm pseudo-code
+\usepackage{algpseudocode}  % For algorithm pseudo-code
 
 %% *** Acronyms page (gls) setup. ***
 \setacronymstyle{long-short}
 \setglossarystyle{alttree} % Lines up the definitions
 \glssetwidest{LONGLONG} % Sets the spacing between the acronym and definition
 % \makeglossaries
-
-
