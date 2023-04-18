@@ -1,0 +1,309 @@
+\glsresetall{} \chapter{Software Workflow}
+
+
+To illustrate how \gls{pops} may be used, let us walk through an example
+scenario.  \gls{pops} is being developed to perform operations for missions at
+\gls{sfl} but to maintain the privacy of our customers’ operations strategies we
+shall examine an imaginary scenario that is realistic but hypothetical.
+
+A common technique of remote sensing is Tip and Cue14. In this observation
+mode, multiple sensor systems are used to track both stationary and moving
+targets over a wide area with high accuracy. First, a sensor with a wide
+\gls{fov} is used to detect potential targets and these targets are passed to
+another more accurate sensing system as ‘tips.’ The more accurate system is
+then ‘cued’ to sense these potential targets. This is especially useful for
+situations where the more accurate sensing system has a limited \gls{fov}. 
+
+Let us say, as part of the “EG-SAT” mission, which is an imaginary mission, we
+have a two-satellite constellation in formation where Sat-A leads Sat-B. Sat-A
+has a course imager with a wide 60° off-nadir \gls{fov} but low ground
+resolution.  Sat-B has a fine imager with high ground resolution but narrow
+\gls{fov}. For the best coverage, Sat-A is always pointed at the nadir. Sat-B has
+some freedom and can be pointed 20° off-nadir by changing the spacecraft’s
+attitude. It should be noted that since Sat-A’s sensor is never pointed away
+from the nadir, its \gls{fov} is equivalent to its \gls{for}. This makes our
+definition for access swath valid for this case. This constellation uses the
+Tip and Cue method of remote sensing. When a target of interest is identified,
+Sat-A stores that information and downlinks it on the next available ground
+contact. The ground station processes the data, then commands Sat-B to image
+the geolocation of the target on the next pass. It is assumed that, in this
+scenario, the ground systems are already capable of processing the Sat-A data
+and creating new commands to be sent to Sat-B. 
+
+Now, let us say the customer defines a polygon AOI in the Norwegian Sea where
+they wish Tip and Cue to be performed. It is the operator’s responsibility to
+construct an operations plan for the next week. To do this, they may use
+\gls{pops} to aid them in laying out the deterministic aspects of an operations
+plan. That being, determining remote-sensing opportunities, creating a schedule
+of observations, validating that schedule, and creating \glspl{ttc} to be
+uploaded to the spacecraft. It should be noted that the real-time ground
+processing of the data and the generation of new \glspl{ttc} for the next pass
+are beyond the capabilities of \gls{pops} and this is handled by separate,
+mission-specific automatic ground processing. 
+
+
+\subsection{Plan Configuration}
+
+First, \gls{pops} must be configured for a particular mission. The operator
+must specify the mission, its satellites, satellite sensor parameters, and its
+available ground stations. This will only need to be set once per mission. For
+our example scenario, the mission is EG-SAT, the satellites are Sat-A and
+Sat-B, and the ground station is the Space Flight Laboratory in Toronto. After
+this is done, the operator will then start creating a plan. The first part of a
+plan is specifying the \glspl{tle} for each satellite. These can be previous
+\glspl{tle} stored in the \gls{pops} database, new \glspl{tle} taken from
+CelesTrak, or custom-made \glspl{tle} that may be used for simulation or may be
+more accurate \glspl{tle} derived from a spacecraft’s onboard \gls{gps}
+ephemeris.  Once the TLEs are selected, Ephemerides are generated for each
+satellite and stored in the database. For the EG-SAT scenario, \glspl{tle} were
+generated with the \gls{stk}. A current limitation of \gls{pops} is that once
+\glspl{tle} are selected for a plan, they cannot be changed. This will be
+addressed in future revisions. 
+
+\subsection{Observation Configuration}
+
+
+The next stage of the workflow is, on the surface, quite simple. \gls{pops}
+must display potential observation opportunities to the user and must enable
+the user to create observations based on these potential opportunities.
+Opportunity filtering is the process of taking a large set of potential
+observations and constraining them to an \gls{aoi}. Observations can be
+performed anywhere on Earth, but we only care about those that provide useful
+data for our operations strategy.  The basic process for displaying
+opportunities to the user can be seen in Figure \ref{fig:obs_fil}. An operator
+first creates a search scenario through the \gls{gui}.  For a given mission,
+there may be multiple observation types, multiple possible \glspl{aoi}, and a
+combination of one or more satellites that are part of the observation. All of
+this is specified by the user in the form of a search scenario. These
+parameters are fed to the Opportunity Filter which generates search data.
+Rather than having the search data displayed immediately, all of the generated
+search data is stored in the database. From here, it can be retrieved at any
+time, without needing to re-compute a search scenario. Some raw search data may
+be retrieved and displayed directly. Mostly, these are just access times.
+Alternatively, the raw data may undergo further processing to be displayed in
+the 3D Earth visualization. Currently, satellites, satellite trajectories,
+ground stations, ground access times, \glspl{aoi}, and swaths can be displayed.
+
+
+\begin{figure} 
+    \centering
+    \includegraphics[width=0.7\textwidth]{opp_search_flow.png} 
+    \caption{Observation Filtering Summary}
+    \label{fig:obs_fil} 
+\end{figure}
+
+
+\gls{pops} is intended to be a general and easily expandable tool but the process of
+filtering for observation opportunities is inherently specific to a mission’s
+operation’s strategy. To address this, an ‘opportunity filter’ class has been
+created as well as several data handler classes. The opportunity filter class
+contains all of the logic necessary for opportunity filtering. Ideally, if a
+future developer wishes to add a new search scenario for an observation mode,
+they would simply need to create a new method in the opportunity filter class.
+Specifics, like data formats, coordinate systems, and communication with other
+services have been abstracted away through the data handler classes. At a high
+level, the opportunity filter class takes ephemerides and outputs access times,
+swaths, and intersection polygons.
+
+An observation opportunity is easy to conceptualize but difficult to define
+programmatically. For our purposes, we have broken an opportunity into two
+components: where on Earth an observation can take place and when that
+observation can take place. Where can be described in a number of ways. We use
+an intersection polygon that shows where the swath intersects with the
+\gls{aoi}.  When can be described simply with an access time which can also be
+used to constrain the swath. The \glspl{atu} serve as the primitive operations
+that allow us to articulate how observations may be filtered.
+
+
+\algnewcommand\algorithmicforeach{\textbf{foreach}}
+\algdef{S}[FOR]{ForEach}[1]{\algorithmicforeach\ #1\ \algorithmicdo}
+
+\begin{algorithm*}[h] 
+    \caption{Simple Tip-and-Cue Opportunity Filtering}
+    \label{alg:tnc-filter} 
+    \begin{algorithmic}[1] 
+	\Require{$E_A$ and $E_B$ must be for the same time range} 
+
+	\Function{FindOpportunityTNC}{$E_A$, $E_B$, $P_{AOI}$}
+	    \Let{$S_{A}$}{\Call{Swath}{$E_A$, $60^\circ$}}
+	    \Let{$S_{B}$}{\Call{Swath}{$E_B$, $20^\circ$}}
+
+	    \ForEach{pass $n$ in $E_A$}
+		\Let{$A_{A}[n]$, $P_{A}[n]$}{\Call{PolygonIntersect}{$S_{A}[n]$, $P_{AOI}$}}
+		\Let{$A_{B}[n+1]$, $P_{A \wedge B}[n+1]$}{\Call{PolygonIntersect}{$S_{B}[n+1]$, $P_{A}[n]$}}
+	    \EndFor
+	    \State \Return $S_{A}$, $S_{B}$, $A_{A}$, $A_{B}$, $P_{A \wedge B}$,  
+	\EndFunction
+
+    \end{algorithmic} 
+\end{algorithm*}
+
+
+Let us walk through opportunity filtering for the Tip-and-Cue mode for the
+imaginary EG-SAT mission. The basic procedure can be seen in Algorithm
+\ref{alg:tnc-filter}. From the Plan Configuration stage, we begin with the
+ephemerides generated for each satellite. The ATUs we use are the Swath
+Generation and Polygon Intersection utilities. From the Ephemerides of Sat-A
+and Sat-B ($E_A$, $E_B$), we generate their swaths ($S_A$, $S_B$). Then, for
+each pass ($n$) around the Earth – the period between consecutive southern to
+northern hemisphere crossings – we first find the intersection between the
+Sat-A’s Swath and the Area of Interest ($P_{AOI}$).  This gives an access time
+($A_A$) and a Swath/\gls{aoi} intersection polygon ($P_A$). This intersection
+polygon is then intersected again with Sat-B’s Swath from the next pass, which
+finally gives us the intersection polygon which is the intersection of the
+\gls{aoi}, Sat-A’s swath, and Sat-B’s next pass swath ($P_{A \wedge B}$). Once
+this process is completed, all of this data is returned and stored in the
+database. It should be noted that it is not up to the opportunity filter to
+determine the quality of potential opportunities. Rather, that judgement is up
+to the operator using \gls{pops}.
+
+Once an operator has been presented with potential observation opportunities,
+they may now add an observation to the plan via a form. Some metadata is
+consistent across all possible observations, such as: observation type,
+observation ID, the satellites involved, and timing information. There are also
+parameters specific to an observation. These vary based on the high-level
+configuration necessary for a specific observation. 
+
+
+\subsection{Scheduling}
+
+
+Once observations are added to a plan, they must be added to the schedule and
+validated. The schedule is universal to any observation, plan, or mission and
+is used to describe what actions a satellite may perform. For this reason, it
+is a separate part of the software. The schedule is contained and interacted
+with via the scheduler class. With it, events may be added, removed, edited, or
+queried for. An event describes an action or a series of actions that a
+spacecraft might make within some time range. It is a general object that can
+be used to describe any arbitrary item in the schedule. Observations, attitude
+maneuvers, ground station contacts, or propulsive maneuvers are examples of
+potential events. Even though \gls{pops} is intended to only handle payload
+operations and not other types of orbit operations, it is still important for
+an operator to be aware of what other events are planned for a particular
+satellite in case there is a conflict. Another aspect of events to note is that
+they may be linked together. This is necessary for situations where there are
+multiple events associated with a single observation. This is the case when
+multiple satellites are used for an observation or there is some time between
+actions.  
+
+Events may be added through the observation configuration page or an interface
+with \gls{sfl}’s other ground support software. If \glspl{ttc} have been
+uploaded to the satellite, they are visible in the schedule. Once added, events
+are immediately stored in the database. Events can be visualized either in
+tabular form or displayed graphically with an interactable timeline. The
+timeline allows for scrolling and zooming and also allows the user to edit or
+delete events. Not all events may be relevant to a user when they are
+constructing a plan, so events are filtered based on relevance. For example,
+only observations within the plan’s time range are displayed.
+
+Finally, once events are added to the schedule, the schedule is then validated.
+Validation is based off of a library of validation rules. All events are
+evaluated with each rule and any conflicts are logged. Currently, only one rule
+has been implemented; that being: no two events may happen simultaneously on
+the same satellite. More rules will be added such as: observation specific
+rules (a plan must conform with a satellite’s data budget), attitude control
+considerations, as well as the weather forecast. Again, \gls{pops} is meant to
+be an easily generalizable tool, so rules may be added as necessary.
+
+A screenshot of the observation configuration page can be seen in Figure
+\ref{fig:screen-1}. The 3D Earth visualization tool is located on the top left
+of the page.  There, an operator can see: the Earth, the satellites, their
+trajectories, possible ground access times, an Area of Interest, and potential
+observation opportunities. In the top right, there is a basic form to add
+observations to the plan. At the bottom of the page, there is an interactable
+timeline showing every event, grouped by satellite, that is currently part of
+the plan. In the schedule, there are some demonstration events to match our
+example scenario.  Notice how station-keeping event 21 conflicts with the
+proposed Tip and Cue ‘Cue’ Event 6. These events are marked in red and flagged
+to the operator that they conflict and the schedule is not valid.
+
+\begin{figure}[h] 
+    \centering
+    \includegraphics[width=\textwidth]{2023-04-05-POPS-1.PNG} 
+    \caption{Screenshot of Observation Configuration Page}
+    \label{fig:screen-1} 
+
+    \includegraphics[width=\textwidth]{2023-04-05-POPS-LABELS.PNG} 
+    \caption{Labeled Screenshot of Single Opportunity}
+    \label{fig:screen-2} 
+\end{figure}
+
+\begin{figure}[h] 
+    \centering
+    \includegraphics[width=\textwidth]{2023-04-05-POPS-4.PNG} 
+    \caption{Good Quality Observation Opportunities}
+    \label{fig:screen-3} 
+
+    \includegraphics[width=\textwidth]{2023-04-05-POPS-5.PNG} 
+    \caption{Poor Quality Observation Opportunities}
+    \label{fig:screen-4} 
+\end{figure}
+
+
+Figure \ref{fig:screen-2}, shows a close-up labeled screenshot of the 3D Earth
+viewer.  Here, the \gls{aoi} is represented as a dark polygon with a red
+outline, Sat-A and Sat-B’s swaths are visualized in green, and finally, the
+intersection polygon is displayed in magenta. For this labeled diagram, the
+first-pass ‘Tip’ swath of Sat-A is visualized. This is not done for the
+following figures to avoid visual clutter. Also, notice how the intersection
+polygon is the intersection area of Sat-A’s swath, Sat-B’s swath, and the
+intersection polygon. Part of the purpose of POPS is to enable an operator to
+judge the quality of a potential observation. It is clear that the
+opportunities in Figure \ref{fig:screen-3} are good quality because they
+observe large portions of the \gls{aoi}. The opportunities in Figure
+\ref{fig:screen-4} are less desirable because they barely clip the AOI and have
+very short access times.
+
+
+\subsection{Time-Tag Command Generation}
+
+The last stage of the \gls{pops} workflow is \gls{ttc} generation.  At this
+point, the operator has created a plan that suits their own needs as well as
+their customer’s needs, the plan has been validated, and all that remains is
+generating \glspl{ttc} to be uploaded to their specific spacecraft.  Depending
+on the observation mode, not all events have commands to be generated. In our
+‘EG-SAT’ example case, on the first pass, we may command the satellite to begin
+capturing wide-view images. But, on the next pass, we cannot command the
+satellite to image potential targets as we cannot know where they will be a
+priori. It is known that new commands will be generated between the first and
+second pass and, from a planning perspective, this is handled with the
+scheduler. The time when these inter-pass commands will be executed will lie
+within the second-pass event. In this way, no other \glspl{ttc} should conflict
+with the automatically generated commands because if they were scheduled for
+that time, they would conflict. 
+
+To generate \glspl{ttc}, templates are combined and populated based on the
+observation and the configuration parameters specified when creating the
+observation. For example, one parameter may be the duration for which Sat-A
+captures images. This value would then be set to an offset parameter in the
+templates. 
+
+\begin{figure}[h] 
+    \centering
+    \includegraphics[width=0.7\textwidth]{timing_diagram.png} 
+    \caption{Timing Diagram}
+    \label{fig:timing} 
+\end{figure}
+
+The generation process is fairly straightforward and specific to each
+observation mode on each satellite. But, there are some intricacies worth
+noting. Firstly, from the previous example, when creating an observation, the
+operator only specifies a duration because that is all they are concerned with.
+Generally, for any observation, there are some preliminary and closing
+commands. These commands cannot happen instantaneously and may require some
+non-negligible margin. It is for this reason that each event is subdivided into
+separate timing components. This can be seen in Figure \ref{fig:timing}. The
+start and stop times are the same as the event’s start and stop but they
+specify when the first \gls{ttc} is executed and when the final \gls{ttc} has
+concluded its execution respectively. The epoch is the time when the
+observation begins sensing and the duration is the period after which the
+sensing is performed. As part of the \gls{ttc} generation capabilities, these
+timings can be determined programmatically by evaluating the templates for each
+observation. As such, when an observation is created by the operator in the
+observation configuration stage, they specify the epoch and the duration, and
+the \gls{ttc} generator determines the start and stop times.
+
+
+
+
+

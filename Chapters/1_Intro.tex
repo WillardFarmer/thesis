@@ -6,23 +6,49 @@
 \section{Thesis Overview}
 
 
-\lettrine[lines=2, findent=0pt, nindent=5pt]{A}{} thing I care about a great deal is 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel dapibus ex, non lobortis sem. Quisque 
-in nunc id justo ultricies tempor vitae nec ante. Pellentesque volutpat,
-dui sit amet euismod dictum, turpis velit ultrices nisi, vitae porta 
-tortor lacus ut turpis. Vestibulum venenatis libero in turpis viverra 
-ultricies. Nam consequat efficitur risus vel consectetur. Quisque volutpat 
-neque sit amet nisi dictum cursus. Integer fringilla nisi ac risus luctus,
-vitae malesuada ligula fermentum. Aliquam ac erat eget nulla gravida 
-varius. In eu gravida nisi. Praesent dui urna, pulvinar a lacus luctus,
-lacinia pharetra leo. 
-\\
+\lettrine[lines=2, findent=0pt, nindent=5pt]{O}{} ver the past decade, there
+has been a sharp rise in the development of small spacecraft. With 112
+nanosatellites launched in 2012 and 1800 launched in 20221, it is clear that
+the industry is growing. As technology improves, so too do the capabilities of
+small spacecraft. For missions with relatively ‘simple’ operations, it is
+economical to use competent engineers to handle orbit operations. But, as
+missions become more complex, more of the operator’s time is spent on repeated
+calculations using purpose-built scripts that offer little in terms of
+reusability. For suitably complicated operations, the economy of human
+computation is lost. In this scenario, the benefits of software automation
+become appealing. Commercial-off-the-shelf tools do exist to address this
+issue. A ready example would be Orbit Logic’s \gls{cpaw}2 or their Scheduler
+extension for the Ansys \gls{stk}3. These solutions are well-developed and have
+a proven mission heritage. They are also quite expensive and still require
+adapting to a specific mission scenario.  \\ 
 
-beg
-here is some tex I
-would like to display to the user.
 
-$ \alpha \beta \gamma $  dkjfjal $this is some more math$
+At the \gls{sfl}, the \gls{pops} is being developed to streamline operations
+planning for remote sensing missions. \gls{pops} is a general offline software
+meant to handle the deterministic aspects of mission planning.  Given an
+\gls{aoi} and a method of remote sensing, \gls{pops} presents possible
+observation opportunities to the operator and creates sets of commands to be
+uploaded to a spacecraft in orbit.  Ideally, \gls{pops} should prevent an
+operator from having to do any calculations themselves manually. Not only is
+\gls{pops} meant to be a tool used by \gls{sfl} operators but one of the goals
+of this project is to reduce the barrier to development as much as possible.
+The easier the underlying code is to work with, the more likely it is that
+future developers work on it and the tool grows. For this reason, most of the
+underlying code for \gls{pops} has been written in Python and leverages several
+open-source libraries.  Extending this principle, \gls{pops} uses a
+browser-based \gls{gui} rather than as an executable desktop application. As a
+browser-based application, \gls{pops} can leverage an extensive set of existing
+libraries for building functionality.  For example, CesiumJS4 may be used for
+graphical Earth visualizations.  \gls{pops}’s architecture is containerized for
+easy deployment, using Docker5.  Each service handles separate aspects of the
+software’s functionality.  In this way, they can be developed separately and
+switched out as needed. With services, functionality may also be integrated
+into other applications. For persistent storage of planning information, an SQL
+database has been implemented as its own service.  To facilitate searching for
+observation opportunities, a suite of software tools has been developed, known
+as the \gls{atu}.  \gls{pops} also handles its orbital propagation by making use of
+open-source Python implementations of the SGP4 algorithm. 
+
 
 
 \subsection*{Thesis Outline} 

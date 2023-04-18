@@ -2,81 +2,79 @@
 \chapter{Operations Concepts}
 
 \lettrine[lines=2, findent=0pt, nindent=5pt]{B}{} efore discussing the
-\gls{pops} it is necessary to go over basic terminology.  Without doing so, it
-may become very easy for descriptions to become unclear or imprecise
+\gls{pops} it is necessary to go over basic terminology. Without doing so, it
+may become very easy for descriptions to become unclear or imprecise. Some of
+these terms have been illustrated in Figure \ref{fig:terminology}
 
 \section{General Definitions}
 
 \begin{description} 
 
-    \item[Ephemeris] is a set of data that describes the position and velocity
-	of a celestial object at specific times. They are used, in this
-	context, to describe the positions and velocities of satellites.
-	Typically, this information is stored as orbital state vectors. These
-	state vectors have a position component, $\sev{r}$, a velocity
-	component, $\sev{v}$, and an epoch for those vector, $e$. See section
-	\ref{sgp4_section} for a more detailed discussion on ephemerides.
+    \item[Ephemeris] is a time series of orbital state vectors in a given
+	coordinate system. These state vectors have a position component,
+	$\sev{r}$, a velocity component, $\sev{v}$, and an epoch for each
+	vector, $e$. See section \ref{sgp4_section} for a more detailed
+	discussion on ephemerides.
 
-    \item[Area of Interest] An \gls{aoi} is a general concept for a region on
-	the Earth that is of some particular importance to an operator. It is
-	the region in which one or more spacecraft should observe through some
-	means.  \glspl{aoi} can be specified as a point target, a polygon, or a
-	latitude range. See section \ref{aoi_def} for an exhaustive definition
-	in this context. 
+    \item[Area of Interest] An \gls{aoi} is a region on the Earth that is of
+	some particular importance to an operator. It is the region in which
+	one or more spacecraft should observe through some means. \glspl{aoi}
+	can be specified as a point location, an area target, or a latitude
+	range. Some examples of \glspl{AOIs} are illustrated in \ref{fig:AOIs}.
 
     \item[Field of View] The \gls{fov} is the extent to which a sensor or
 	instrument may observe the outside world at a given time. The size and
 	shape of an \gls{fov} varies based on the design of the sensor or
-	instrument in question. Unless otherwise specified, for the purposes of
-	this thesis, it may be assumed that \glspl{fov} are conical.
-	Specifically, the \gls{fov} is defined by a single half-angle,
+	instrument. \glspl{FOV} can theoretically describe any volume of space
+	but, for the purposes of this thesis, it may be assumed that they are
+	conical. Specifically, the \gls{fov} is defined by a single half-angle,
 	$\theta$. Suppose an instrument is pointing along some vector,
 	$\sev{u}$. Let us define another vector, $\sev{v}$ such that the angle
 	between it and $\sev{u}$ is $\theta$. The \gls{fov} is the volume
 	described by rotating $\sev{u}$ around $\sev{v}$.
 
 
-    \item[Field of Regard] The \gls{for} is similar to the \gls{fov}. Instead
-	of being the area a sensor can observe in a singular time instant, the
-	\gls{for} is the area a sensor can possibly observe by changing its
-	orientation given some external constraint. It is not possible to
-	observe the entire \gls{for}; Rather, only a subset of the \gls{for}
-	can be observed. This subset is the instrument's \gls{fov}.  For
-	example, let us consider an optical sensor fixed to a spacecraft
-	orbiting the earth. The position of the sensor at particular time
-	instant is given by the spacecraft's orbit and cannot be changed unless
-	a propulsive manoeuvre is performed. Of course, the position of sensor
-	can be changed slightly by changing the attitude of the spacecraft,
-	since the instrument is most likely not located at the spacecraft's
-	centre of mass. But, this can be ignored since the distance the
-	instrument can translate is negligible compared to its orbit.
-	Conversely, The orientation of the instrument can be changed, and this
-	has a meaningful effect on the \gls{for}. If no constraints are put on
-	the attitude of the spacecraft, the \gls{for} is everywhere, since the
-	instrument can be pointed in any direction. This is not always true
-	though so let us say the spacecraft can only point an angle, $\alpha$,
-	off nadir.  The \gls{for} would then be the cone described by the
-	half-angle $\alpha + \theta$, where $\theta$ is again the half-angle of
-	the conical sensor.  See Figure \ref{fig:fovfor} for an illustration of
-	this example.  The larger blue cone is the \gls{for}. The red cone is
-	the sensor's actual \gls{fov}. Its boresight is offset from the blue
-	cone's.
+    \item[Field of Regard] The \gls{for} is similar to the \gls{fov} but
+	instead of being the area a sensor can observe in a single time
+	instant, the \gls{for} is the volume of space a sensor can possibly
+	observe by changing its orientation. Typically, it is constrained by
+	some physical or operational constraint. It is not possible to observe
+	the entire \gls{for}; Rather, only a subset of the \gls{for} can be
+	observed. This subset is the instrument's \gls{fov}.  For example, let
+	us consider an optical sensor fixed to a spacecraft orbiting the earth.
+	The position of the sensor at particular time instant is given by the
+	spacecraft's orbit and cannot be changed unless a propulsive manoeuvre
+	is performed.  Of course, the position of sensor can be changed
+	slightly by changing the attitude of the spacecraft, since the
+	instrument is most likely not located at the spacecraft's centre of
+	mass. But, this can be ignored since the distance the instrument can
+	translate is negligible compared to its orbit.  Conversely, The
+	orientation of the instrument can be changed, and this has a meaningful
+	effect on the \gls{for}. If no constraints are put on the attitude of
+	the spacecraft, the \gls{for} is everywhere, since the instrument can
+	be pointed in any direction. This is not always true though so let us
+	say the spacecraft can only point an angle, $\alpha$, off nadir.  The
+	\gls{for} would then be the cone described by the half-angle $\alpha +
+	\theta$, where $\theta$ is again the half-angle of the conical sensor.
+	Figure \ref{fig:fovfor} for an illustration of this example.  The
+	larger blue cone is the \gls{for}. The red cone is the sensor's actual
+	\gls{fov}. Its boresight is offset from the blue cone's.
 
 
 \begin{figure} 
     \centering
     \begin{minipage}[c]{0.45\textwidth}
 	\centering
-	\includegraphics[width=\textwidth]{FOV_FOR.png} \caption{Illustration of conical 
-	FOV(red) and FOR(blue)}
-	\label{fig:fovfor} 
+	\includegraphics[width=\textwidth]{terminology.png} 
+	\caption{General Illustration of Terminology}
+	\label{fig:terminology} 
     \end{minipage}
     \hfill
     \begin{minipage}[c]{0.45\textwidth}
 	\centering
-	\includegraphics[width=\textwidth]{FOV_FOR.png} \caption{FOV(red),
-	FOR(blue) Illustration}
-	\label{fig:fovfor2} 
+	\includegraphics[width=\textwidth]{AOIs.png} 
+	\caption{Different Types of Areas of Interest}
+	\label{fig:AOIs} 
     \end{minipage} 
 \end{figure}
 
@@ -106,6 +104,24 @@ may become very easy for descriptions to become unclear or imprecise
 
 \section{Time Tag Commands}
 
+At the Space Flight Laboratory (SFL), satellites are commanded through the use
+of the Nanosatellite Protocol (NSP). NSP commands are a custom standard
+developed by SFL to facilitate ground and intra-satellite communication. They
+are designed to minimize the effects of low-bandwidth radio communication links
+that are prone to error. These commands handle all aspects of nominal
+operation, from turning individual units on or off, to specifying attitude
+modes or initiating data transfers. Once a command is sent, it is executed
+immediately upon being received. This raises the concern of how can a
+spacecraft be commanded when it does not have a direct communication link with
+a ground station. To address this, there exist Time Tag Commands (TTCs). TTCs
+are NSP commands that have been prepended with a timestamp and a group ID. When
+the spacecraft’s system clock reaches the time specified in the timestamp, that
+command is executed. The group ID allows operators to group TTCs such that they
+may be considered as a collection rather than as separate commands, allowing
+for reference or removal as a single unit. TTCs are prepared in advance by an
+operator and uploaded in bulk to the spacecraft. This allows operators to
+control the spacecraft when direct communication cannot be established.
+
 At the \gls{sfl}, satellites are commanded through the use of the \gls{nsp}.
 \gls{nsp} commands are a custom standard developed by \gls{sfl} to facilitate
 ground and intra-satellite communication. They are designed to minimize the
@@ -132,6 +148,8 @@ That is, for each ephemeris point, an index should be assigned to it which
 indicates how many times the spacecraft has orbited the Earth. In this way, if
 we have some time range and we wish to see the next `pass,' we would simply
 take that time range's pass index and add 1.
+
+\subsection{Problem}
 
 There are many ways a pass may be defined. For example we could specify a
 latitude and longitude range and whenever the spacecraft is in this range, that
@@ -164,25 +182,69 @@ There is a complicating factor that should be accounted for, though. In time,
 the spacecraft's position is periodic, but when considering only the
 spacecraft's $z$-position in an ephemeris, there is no guarantee that there is
 a contant timestep between position values. Additional data-points may be
-injected for periods where greater accuracy is desired and vice-versa.  
+injected for periods where greater accuracy is desired and vice-versa.  We may
+now articulate the problem to be addressed.
 
 % TODO: Add two figures, one showing a sinusoidal z-comp in time, and one
 % showing one with additional data points added, making it oblong.
 
-Now the problem becomes: for an array of z-p 
+\begin{center}
+\fbox{\begin{minipage}{35em}
+    \textbf{Problem:} Given, an array of $z$-positions, $\se{z}$, generate
+    that each element of $\se{p}$ is the index of an element in $\se{z}$ after a
+    crossover occurs (ie.  the positive value in the negative-to-positive
+    crossing).
+\end{minipage}}
+\end{center}
+
+\subsection{Solution}
+
+To determine if elements, $n$ and $m$, of an array, $\se{z}$, form a crossover,
+they must satisfy three simple conditions:
+
+\begin{center}
+\begin{varwidth}{\textwidth}
+\begin{enumerate}
+    \item $\se{z}[n] < 0$
+    \item $\se{z}[m] > 0$ 
+    \item $m = n+1$
+\end{enumerate}
+\end{varwidth}
+\end{center}
+
+\begin{enumerate}
+    \centering
+    \item  \parbox{0.5\linewidth}{$\se{z}[n] < 0$ }
+    \item  $\se{z}[m] > 0$ 
+    \item $m = n+1$
+\end{enumerate}
+
+A brute-force approach to finding $\se{p}$ would be to loop through all of the
+elements in $\se{z}$, and test them against the above conditions. This method
+is inelegant and may be computationally intensive, though.
+
+One approach to this problem is outlined in Algorithm \ref{alg:crossover}. In
+essence, it attempts to reduce the number of comparissons made to search for
+crossovers. 
+
 
 \newcommand*\Let[2]{\State #1 $\gets$ #2}
 
-\begin{algorithm} 
+\begin{algorithm}[h] 
     \caption{Negative-Positive Crossing Search Algorithm} 
+    \label{alg:crossover}
     \begin{algorithmic}[1] 
 	\Require{\se{z}is a $1\times N$ array } 
 
 	\Function{FindAllCrossovers}{$s, f, \se{z}$}
-	    \Let{$c$}{$0$}
-	    \Let{$\se{p}$}{$\{  \}$}
-	    \State $\se{p}.append( \mathrm{\Call}  )$
-	    \While{}
+	    \Let{$p$}{\Call{FindNextCrossover}{$0, s, f, \se{z}$}} \Comment{Start at beginning of array}
+	    \Let{$\se{p}$}{$\{ p \}$}
+
+	    \While{$p \neq -1$}
+		\Let{$p$}{\Call{FindNextCrossover}{$p, s, f, \se{z}$}}
+		\Comment{Start at beginning of array} \State
+		$\se{p}$.append($p$) \EndWhile 
+		\State \Return \se{p}
 	\EndFunction
 
 	\State
@@ -207,24 +269,20 @@ Now the problem becomes: for an array of z-p
     \end{algorithmic} 
 \end{algorithm}
 
-\begin{algorithm} 
-    \caption{Negative-Positive Crossing Search Algorithm} 
-    \begin{algorithmic}[1] 
-	\Require{$x$ and $y$ are packed strings of equal length $n$} 
-	\Statex
-	\Function{Distance}{$x, y$} 
-	    \Let{$z$}{$x \oplus y$} \Comment{$\oplus$: bitwise exclusive-or} 
-	    \Let{$\delta$}{$0$} 
-	    \For{$i \gets 1 \textrm{ to } n$}
-		\If{$z_i \neq 0$} 
-		    \Let{$\delta$}{$\delta + 1$} 
-		\EndIf 
-	    \EndFor 
-	    \State \Return{$\delta$} 
-	    \State \Return{\Call{Distance}{$x, y$}}
-	\EndFunction 
-    \end{algorithmic} 
-\end{algorithm}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
