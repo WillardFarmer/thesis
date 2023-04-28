@@ -21,26 +21,80 @@ documentation that can be accessed through a web browser. This documentation
 outlines possible API calls as well as their input and output data formats.
 This allows a user to quickly see the capabilities of a service without
 accessing the source code. Currently, \gls{pops} has 4 main services; they are
-the: Mission Model, Propagator, Database, and Access Time Utilities.  Mission
+the: Mission Model, Propagator, Database, and Access Time Utilities,  Mission
 Model.
 
+\section{General Service Architecture}
 
-\subsection{Mission Model}
+Every service contains the same basic components so it is worth discussing
+services generally and then going into specifics in subsequent sections. These
+components are: the dockerfile, a main Python script, a models file, service
+specific scripts.
 
-The Mission Model service is the service that contains the main logic for most
-of \gls{pops}’s functionality and front-end GUI. When a user interacts with
-\gls{pops}, they are interacting with the Mission Model service.   Part of the
-Mission Model service supports the 3D Earth visualization tool, CesiumJS4.
-CesiumJS can display time-dynamic, geospatial information on a webpage.  With a
-custom-made Cesium handler class, \gls{pops} can visualize: the Earth,
-spacecraft, their orbits, ground stations, and can draw polygons on the Earth.
-In addition to displaying information, the handler class also enables a user to
-make changes in the viewer which are then reflected in \gls{pops} itself. The
-mission model service has many other features including: database management,
-opportunity filtering, and scheduling. These features will be discussed in the
-WORKFLOW section.  
+To review, a docker container is a virtual environment, which is a simulated
+operating system. A container can be created from an image and an image canbe
+built from a Dockerfile. As such, the Dockerfile is the fundamental text
+document that is used to assemble an image. It specifies: the operating system
+that should be used, what files should be included in the container, and what
+commands should be run upon container creation. By specifying an operating
+system, we can tailor a service to any environment that best suits the service's
+needs. They can use windows, the latest version of Ubuntu, or a lightweight
+tailored linux distrubution that only contains the tools a service needs. In
+this way, one service can be running Ubuntu 20.04 for ease of development, and
+another service can be running Windows 10. In this way, \gls{pops} is not
+limited by the operating system it is developed in. Files may  be added to a
+container simply by pointing to their location in the host's file system upon
+image creation. Finally, when a container is first created from an image, a
+conatiner will need to install all of the necessary dependencies. In general,
+this will either be Ubuntu packages, a version of Python, and Python libraries.
+In this way, dependencies can easily be tracked. The last command that is
+executed is the command that starts a service's main script.
 
-\subsection{Propagator}
+Theoretically, all of the code for a service could live in the main Python file
+but, if this were the case, it would quickly balloon and become unwieldy to work
+with so functionality is split into multiple scripts. The main script serves a
+number of functions. Its purpose is to handle all of the web-server aspects of
+the service. Functions such as: creating the web-server, setting server
+parameters, setting up environment variables, and handling API calls. Setting up
+the webserver is fairly straightforward since open source libraries are used to
+handle all of the low-level functionality and implementation. What is most
+important is specifying potential HTTP requests. These requests are how a
+service may be interacted with by a user, their browser, or by other services.
+The parts that must be specified are the: 
+
+\begin{itemize}
+    \item Request type (GET, POST, PUT, etc.), 
+    \item Path to the request, 
+    \item Response type (JSON, Plain Text, HTML, etc.), 
+    \item Input variables if applicable, and the 
+    \item Function that is called when a request is received.
+\end{itemize}
+
+For GET requests, the input variables are generally straightforward since the
+only input variables that can be used must be explicitly stated in the request
+itself. But, for POST requests or other requests that contain information in
+the body of the request, the format of the input data must be defined or else
+the web server will fail the request as being unprocessable. These input
+definitions are stored in the models file. Python is a dynamically typed
+language so variables do not need to be assigned a type upon creation. To
+ensure input data conforms with what is expected by the api, the Python library
+\texttt{Pydantic} is used to enforce data types at runtime. These Pydantic
+input definitions are contained in the models file. The remainder of the files
+in a service are specific to the service itself.
+
+Having multiple Docker containers becomes cumbersome when a user or a developer
+wishes to build new images or run new containers from their images. To manage
+all of the different services, another tool is used called "Docker Compose".
+From a single configuration file, mutliple services may be started, stopped, or
+built from their source code. Services may also have their image name,
+container name, and port number set through the configuration file. This vastly
+simplies configuration for \gls{pops} as a whole. Another benefit of using
+Docker Compose is that it also creates a bridget network for the containers
+Docker Compose creates. Containers are intended to be standalone units but a
+bridge network allows containers to communicate with each other directly.
+
+
+\section{Propagator Service}
 
 The Propagator service handles ephemeris generation for \gls{pops}.
 Ephemerides are a crucial component for every subsequent step along the
@@ -64,6 +118,21 @@ available by the service.  Given a \gls{tle}, a time range, a step size, and a
 coordinate system, the Propagator service generates an Ephemeris for the
 provided time range in a variety of output formats.
 
+There are two scripts that handle all of the functionality for the Propagator
+service. The first is the main script which, as discussed previously, takes
+requests, organizes the input data, and formats the output data. The actual
+propagation and coordinate change logic is stored in the propagation script.
+Open source libraries are used to perform the SGP4 and coordinate change
+algorithm so the main focus of the script is to ensure the input data conforms
+with the expected format.  
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{STK_PY_residual-2.png} 
+    \caption{Residual Difference \gls{stk} vs. Python}
+    \label{fig:stk_py} 
+\end{figure}
+
 It is very easy to generate Ephemeris data. What is difficult is validating it.
 The benchmark for validation is \gls{stk} since it has its own SGP4 ephemeris
 generation capabilities. If operators did not use POPS, their best alternative
@@ -83,12 +152,14 @@ libraries are being used correctly and that their output data is acceptable.
 From this result, it is clear that the methods are identical and the difference
 was most likely due to slight implementation differences. 
 
-\begin{figure} 
-    \centering
-    \includegraphics[width=0.7\textwidth]{STK_PY_residual-2.png} 
-    \caption{Residual Difference \gls{stk} vs. Python}
-    \label{fig:stk_py} 
-\end{figure}
+Another responsibility of the Propagator service is to determine a list of
+passes for a given ephemeris. Having an entire ephemeris may be cumbersome for
+some calculations so it makes sense to split a whole ephemeris into multiple
+components. A `pass' is of course a completely general term so in this context
+it is defined as the period between south-to-north hemisphere crossings as this
+definition was chosen because it is easy to calculate an equator crossing. This
+is where the z-position of a spacecraft goes from negative to positive.
+\hl{See algorithm ?? for a discussion on how crossings are found}.
 
 Part of the benefit of having the Propagator as its own service is that if a
 more accurate algorithm is desired for orbital propagation, only the Propagator
@@ -104,6 +175,48 @@ access times, swath generation, horizon swath generation, and polygon
 intersection with a swath. These will be discussed in detail in their own
 section.  
 
+
+
+\section{Mission Model}
+ 
+The Mission Model service is the service that contains the main logic for most
+of \gls{pops}'s functionality and front-end \gls{gui}. When a user interacts
+wit h \gls{pops}, they are interacting with the Mission Model service. As such,
+it is quite large and has a number of responsibilities. Some of them are:
+
+\begin{outline} 
+    \1 Database management,
+    \1 Front-End User Interface,
+    \1 Earth Visualization,
+    \1 Plan Configuration, and
+    \1 Scheduling.
+\end{outline}
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Mission Model.png} 
+    \caption{High Level Structure of Mission Model Service}
+    \label{fig:mission_model} 
+\end{figure}
+
+The Database is its own service but the Mission Model service is currently the
+only service that interacts with it to store and retreive data. The Mission
+Model does so by using an \gls{orm}. The Database is constructed from a
+collection of tables and relationships between tables. The \gls{orm} describes
+how a database   
+
+
+Part of the
+Mission Model service supports the 3D Earth visualization tool, CesiumJS4.
+CesiumJS can display time-dynamic, geospatial information on a webpage.  With a
+custom-made Cesium handler class, \gls{pops} can visualize: the Earth,
+spacecraft, their orbits, ground stations, and can draw polygons on the Earth.
+In addition to displaying information, the handler class also enables a user to
+make changes in the viewer which are then reflected in \gls{pops} itself. The
+mission model service has many other features including: database management,
+opportunity filtering, and scheduling. These features will be discussed in the
+WORKFLOW section.  
 
 \subsection{Database}
 
