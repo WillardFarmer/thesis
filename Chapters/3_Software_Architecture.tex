@@ -181,12 +181,12 @@ section.
  
 The Mission Model service is the service that contains the main logic for most
 of \gls{pops}'s functionality and front-end \gls{gui}. When a user interacts
-wit h \gls{pops}, they are interacting with the Mission Model service. As such,
+with \gls{pops}, they are interacting with the Mission Model service. As such,
 it is quite large and has a number of responsibilities. Some of them are:
 
 \begin{outline} 
     \1 Database management,
-    \1 Front-End User Interface,
+    \1 Displaying an interactable front-End User Interface,
     \1 Earth Visualization,
     \1 Plan Configuration, and
     \1 Scheduling.
@@ -200,25 +200,138 @@ it is quite large and has a number of responsibilities. Some of them are:
     \label{fig:mission_model} 
 \end{figure}
 
-The Database is its own service but the Mission Model service is currently the
-only service that interacts with it to store and retreive data. The Mission
-Model does so by using an \gls{orm}. The Database is constructed from a
-collection of tables and relationships between tables. The \gls{orm} describes
-how a database   
+A high-level overview of the Mission Model service can be seen in Figure
+\ref{fig:mission_model}. There are many components but we will go through them
+one by one.
+
+\subsection{Main} 
+
+The main Python script acts as the base for the entire Mission Model service.
+Its purpose is to, among other things, set up the web server, load environment
+variables, instantiate the handler classes, and associate API calls with their
+callback functions. Setting up the web server is the same as with any other
+service. The environment variables range from server metadata to addresses of
+other containers. There are a number of utility classes that handle various
+aspects of \gls{pops}. These are the: scheduler, \gls{atu} handler, data
+handler, and opportunity filter classes. They will be discussed in the
+following sections. The most important part of the main service is defining API
+calls. If a user wishes to interact with \gls{pops}, they must enter a link on
+the their browser, that information is then sent to the web server, and a
+callback function in the Mission Model service is called. It is the Mission
+Models responsibility to consolidate information, whether that be from the
+database, through HTML templates, or new information that must be calculated.
+The Mission Model service does very few actual calcualtions, its only purpose
+is to organize information and call functions as necessary to serve a request.
+Currently, the main service is large and difficult to navigate because of its
+size. In the future, it will be refactored to a number of sub-scripts that
+handle specific functionality in the service.
+
+\subsection{Object Relationship Mapping}
+
+The Database is its own service but the Mission Model is currently the only
+service that interacts with it. It does so by using an \gls{orm}. An \gls{orm}
+is a method of modeling a relational database through an object-oriented
+language. For our purposes, the \gls{orm} serves two functions, it describes
+how the data is being stored in the database and it describes how we can
+interact with the database programmatically. For \gls{pops}, we are using an
+open-source \gls{orm} library. It handles the low-level functionality and
+allows us to focus on what is unique about \gls{pops} rather than databases in
+general. For example, there is no need to develop our own methods of
+formulating \gls{sql} queries or parsing the ouptut data once it is retrieved. 
+
+To set up the \gls{orm} for \gls{pops} we need at least two scrips, a models
+file and a \gls{crud} file. The models file defines explicitely how tables are
+layed out in the database through Python classes. Information such as: what
+tables there are, what columns are in each table, what keys are included with a
+table, and what relationships there are between tables. If a change is made to
+the database, it must be reflected manually in the models file and vice-versa.
+The \gls{crud} file, as its name suggests, allows us to interact the database.
+It is a library of functions that allows a developer to formulate \gls{sql}
+queries at a high level with Python syntax. The \gls{crud} file also relies on
+the classes from the models file to refer to tables. For example, if we wished
+to retrieve a satellite with a particular id from the \texttt{Satellites}
+table, we would create a new function in the crud file with a descriptive name
+such as \texttt{get\_satellite\_by\_id(sat\_id)}. Within this function we would
+construct a query that searches the \texttt{Satellites} table for a row whose
+id column, \texttt{Satellites.id}, matches the input id, \texttt{sat\_id}. The
+\gls{orm} gives a developer a great deal of flexibility when formulating
+queries or inputting data and makes interacting with the database easy to
+understand and easy to expand.
 
 
-Part of the
-Mission Model service supports the 3D Earth visualization tool, CesiumJS4.
-CesiumJS can display time-dynamic, geospatial information on a webpage.  With a
-custom-made Cesium handler class, \gls{pops} can visualize: the Earth,
-spacecraft, their orbits, ground stations, and can draw polygons on the Earth.
-In addition to displaying information, the handler class also enables a user to
-make changes in the viewer which are then reflected in \gls{pops} itself. The
-mission model service has many other features including: database management,
-opportunity filtering, and scheduling. These features will be discussed in the
-WORKFLOW section.  
+\subsection{Static Data}
 
-\subsection{Database}
+For the webserver to function there is a large amount of static data that must
+be stored on the server and that must be retrieved when necessary. This may be
+\gls{html} files, \gls{html} templates, JavaScript files, \gls{css}
+stylesheets, and images.
+
+Webpages are not generated completely programmatically. Either the \gls{html}
+for these pages are written in advance and loaded directly upon being requested
+or, they are assembled from HTML templates and configured depending on input
+parameters given by the user or by what data is available at that time. Writing
+out the HTML for a webpage in its entirety is acceptable for situations where
+nothing changes on the webpage and everything should be left as is. This is the
+case for high-level menus and settings pages. If anyhting else is required,
+\gls{html} templates should be used. HTML templates allow for a great deal of
+configurability when loading webpages. They can range from simple text
+replacement to loading other templates. Some template engines even allow for
+some programmatic features within the template itself such as looping, if/else
+statements, or even custom functions.
+
+Generally, as a design decision, as much of the underlying logic for \gls{pops}
+has been limited to Python. The main reason for this is to consolidate the
+logic to one language. Unfortunately for web development, Javascript and
+\gls{css} are unavoidable and must be used as necessary. When they are used
+they can be added directly to an HTML document or template but this is
+generally not the best way. Having different scripts or different styles placed
+haphazardly in the codebase gets messy quickly and may lead to code duplication
+or even conflicting functions. To combat this, JavaScript and \gls{css} files
+are stored separately and then statically referenced in the \gls{html} file
+they apply to. By consolidating these files, it is much easier to organize and
+reference them as necessary. 
+
+\subsection{Cesium}
+
+One of the required components of \gls{pops} is a graphical 3D Earth viewer.
+It goes without saying that having a spatial understanding of a mission is
+absolutely necessary when performing mission planning. Only so much information
+can be imparted through text.
+
+To support this funcitonality, \gls{pops} makes use of the open-source CesiumJS
+library. CesiumJS can display time-dynamic, geospatial information on a
+webpage. 
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Cesium_Example_Image.png} 
+    \caption{High Level Structure of Mission Model Service}
+    \label{fig:mission_model} 
+\end{figure}
+
+
+With a custom-made Cesium handler class, \gls{pops} can visualize:
+the Earth, spacecraft, their orbits, ground stations, and can draw polygons on
+the Earth.  In addition to displaying information, the handler class also
+enables a user to make changes in the viewer which are then reflected in
+\gls{pops} itself. The mission model service has many other features including:
+database management, opportunity filtering, and scheduling. These features will
+be discussed in the WORKFLOW section.  
+
+
+\subsection{Data Handler}
+
+\subsection{ATU Handler}
+
+\subsection{Opportunity Filter}
+
+\subsection{Scheduler}
+
+
+
+
+\section{Database}
 
 \gls{pops} must be able to retain information, even if it is
 shut down or moved somewhere else. It is also necessary that data be stored
