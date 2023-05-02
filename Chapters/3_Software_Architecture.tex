@@ -14,15 +14,14 @@ code. Containers make deploying and maintaining \gls{pops} much easier since
 installation does not require managing dependencies and tweaking environment
 variables. In this way, a \gls{pops} user does not need to be as familiar with
 the software as a developer to run it. Each service is its own Python web
-server.  In this way, they may be interacted with via a RESTful API. That
-being, HTTP requests can be made to retrieve information or perform
-calculations. Each service also provides its own automatically generated
-documentation that can be accessed through a web browser. This documentation
-outlines possible API calls as well as their input and output data formats.
-This allows a user to quickly see the capabilities of a service without
-accessing the source code. Currently, \gls{pops} has 4 main services; they are
-the: Mission Model, Propagator, Database, and Access Time Utilities,  Mission
-Model.
+server. In this way, they may be interacted with via a RESTful API. That being,
+HTTP requests can be made to retrieve information or perform calculations. Each
+service also provides its own automatically generated documentation that can be
+accessed through a web browser. This documentation outlines possible API calls
+as well as their input and output data formats.  This allows a user to quickly
+see the capabilities of a service without accessing the source code. Currently,
+\gls{pops} has 4 main services; they are the: Mission Model, Propagator,
+Database, and Access Time Utilities,  Mission Model.
 
 \section{General Service Architecture}
 
@@ -146,7 +145,7 @@ approximately identical10. The procedure for validating the Propagator service
 was first to select a \gls{tle}, a time range, a time step, and a coordinate
 system.  Next was to generate Ephemerides from \gls{stk} and the propagation
 service.  Finally, the results were compared. One such comparison can be seen
-in Figure \ref{fig:stk_py}. Here, the peak position residual was 0.37mm for the position along
+in Figure~\ref{fig:stk_py}. Here, the peak position residual was 0.37mm for the position along
 the x-axis. The main purpose of this exercise is to ensure that the Python
 libraries are being used correctly and that their output data is acceptable.
 From this result, it is clear that the methods are identical and the difference
@@ -200,9 +199,9 @@ it is quite large and has a number of responsibilities. Some of them are:
     \label{fig:mission_model} 
 \end{figure}
 
-A high-level overview of the Mission Model service can be seen in Figure
-\ref{fig:mission_model}. There are many components but we will go through them
-one by one.
+A high-level overview of the Mission Model service can be seen in
+Figure~\ref{fig:mission_model}. There are many components but we will go
+through them one by one.
 
 \subsection{Main} 
 
@@ -291,36 +290,169 @@ are stored separately and then statically referenced in the \gls{html} file
 they apply to. By consolidating these files, it is much easier to organize and
 reference them as necessary. 
 
-\subsection{Cesium}
+\subsection{3D Earth Visualization}
 
 One of the required components of \gls{pops} is a graphical 3D Earth viewer.
 It goes without saying that having a spatial understanding of a mission is
 absolutely necessary when performing mission planning. Only so much information
 can be imparted through text.
 
-To support this funcitonality, \gls{pops} makes use of the open-source CesiumJS
-library. CesiumJS can display time-dynamic, geospatial information on a
-webpage. 
-
-
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.7\textwidth]{Cesium_Example_Image.png} 
-    \caption{High Level Structure of Mission Model Service}
-    \label{fig:mission_model} 
+    \includegraphics[width=0.9\textwidth]{Cesium_Example_Image.png} 
+    \caption{Cesium Example Scenario with Example Entities}
+\label{fig:example_cesium}
 \end{figure}
 
+To support this functionality, \gls{pops} makes use of the open-source CesiumJS
+library. CesiumJS can display time-dynamic, geospatial information on a
+webpage. CesiumJS itself is free to use and provides all of the core
+functionality that is necessary for \gls{pops}. There also exists a proprietary
+library, CesiumION, which provides out-of-the-box 3D terrain data and
+proprietary Earth imagery. Thankfully this kind of information is superflous
+for orbit operations planning. At most, all that is needed is a rough
+understanding of the Earth's geography and that is sufficient. For this reason,
+\gls{pops} does not provide terrain information and uses a free tile map
+provider. Since \gls{pops} is only using the free version, we will refer to
+CesiumJS as just Cesium for brevity. 
 
-With a custom-made Cesium handler class, \gls{pops} can visualize:
-the Earth, spacecraft, their orbits, ground stations, and can draw polygons on
-the Earth.  In addition to displaying information, the handler class also
-enables a user to make changes in the viewer which are then reflected in
-\gls{pops} itself. The mission model service has many other features including:
-database management, opportunity filtering, and scheduling. These features will
-be discussed in the WORKFLOW section.  
+It should be noted that Cesium is only meant to display information to the user
+and intended to be a tool that performs any calculations. All data is generated
+through other means and then converted into a format that Cesium can display.
+The reason for this is that, since Cesium is such a large tool, it is difficult
+to validate in great depth because it is not clear what assumptions are being
+made at what level. So, as long as the entities being displayed by Cesium are
+qualitatively correct then that is sufficient.
+
+An example scenario generated by \gls{pops} can be seen in
+Figure~\ref{fig:example_cesium}. There, a few key elements of a Cesium viewer
+are visible. On the bottom, there is a timeline with some controls. A user can
+change the time of the scenario as they like and the scenario will update
+dynamically. This is very similar to tools such as \gls{stk} so an operator
+will be used to working in this way. In the centre the Earth can be seen with
+the camera hovering over North America.  The camera can be moved with the mouse
+or can be fixed to a particular position and orientation programmatically.
+Some entities have been added to the scenario. At the bottom, a polygon has
+been drawn on the Earth. A very useful feature of Cesium is that polygons can
+be defined with vertices and edges clamped to the WGS84 Ellipsoid. That is,
+vertices are placed on the Ellipsoid and edges are not straight lines but great
+ellipse arcs. This saves a great deal of calculations and code that must be
+maintained. Above the polygon, can be seen a satellite, the \gls{iss}, and a
+ground station, the \gls{sfl}. The ground station is fixed but the satellite
+orbits the Earth and changes position as the time changes in the scenario. The
+satellite's path is given by the teal line. 
+
+Every object in the Cesium viewer is treated as a single entity. There are two
+ways entities may be added, updated, or removed from a Cesium viewer. Either,
+through JavaScript, where a developer creates new objects programmatically, or,
+through a custom \gls{json} format called \gls{czml}. Though Cesium has an
+extensive client-side \gls{api}, \gls{czml} allows the cesium scenario to be
+generated from data rather than from custom code. Most of the underlying data
+is calculated through Python scripts so it is more appealing to have an
+interface that generates \gls{czml} data rather than having additional
+JavaScript. Also, by generating \gls{czml}, logic is not split between the
+backend Python code and front-end Javascript. In this way, the Python drives
+what is being shown in the Cesium viewer. \gls{czml} also allows for
+incrementally streaming data to a client. That is, not all of a scenario needs
+to be available immediately once a scenario is loaded. Rather, \gls{czml} data
+can be sent in a number of packets, and can be added as they become available.
+
+To set up a viewer, some JavaScript is needed. A placeholder is placed
+somewhere in the webpage hosting the viewer then the JavaScript searches for
+that placeholder and inserts all of the necessary data to generate the viewer.
+Some parameters need to be set for the viewer such as: the imagery provider,
+rendering modes, lighting, display options, or toolbar buttons. Once a viewer
+is created, it runs until it or the page is changed.  To facilitate
+communication between the Cesium viewer and the Python backend, a websocket is
+created as they allow for bi-directional communication. 
+
+\subsection{Cesium Handler and Cesium Models}
+
+To manage the Cesium viewer from the backend, a Python Cesium Handler class has
+been written that acts as the interface between the two. The Cesium Handler
+class: keeps track of the entities currently in the Cesium viewer, keeps track
+of what entities have been changed or that need to be updated, and generates
+new \gls{czml} data to be sent to the viewer. Some libraries do exist that
+perform this functionality but \gls{pops} has enough custom entities that an
+equivalent amount of development would need to be done to support them anyway.
+
+Before discussing the Cesium Handler class in depth, it would be useful to
+first go over Cesium Models. These model classes are not like the ones made for
+\gls{orm}, rather these models have two responsibilities. They must keep some
+metadata about a Cesium object and they must contain a method that generates a
+valid \gls{czml} packet. A \gls{uml} diagram that summarizes all of the
+currently implemented Cesium models can be seen in
+Figure~\ref{fig:cesium_models}. It should be noted that the diagram does not
+contain an exhaustive list of all of the member variables for each class;
+rather, it contains the most important variables. Each model contains some
+information about the object that does not change once it is created. For
+example a satellite object will not change which satellite it references once
+it's created. 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.9\textwidth]{Cesium_Models.png} 
+    \caption{Cesium Models UML}
+\label{fig:cesium_models}
+\end{figure}
+
+To begin, there is a \texttt{BaseObject} class which serves as a general parent
+class to all Cesium objects. It defines member variables that are common to all
+objects. Properties such as the object's unique ID, its display name, and its
+description. In addition there are three flags that describe the `state' of the
+object: \texttt{changed}, \texttt{remove}, and \texttt{enabled}. If the
+\texttt{changed} flag is set, this indicates to the Cesium Handler class that a
+new \gls{czml} should be generated for that object. By default, every time an
+object is created, the \texttt{changed} flag should be set. Once \gls{czml} is
+generated and uploaded to the viewer, this flag is reset. If the
+\texttt{remove} flag is set, this object should be removed from the Cesium
+viewer, and once this is done, the object should be deleted. Lastly,
+\texttt{enabled} hides Cesium Entities without unloading them from the viewer.
+Each sub-class has its own implementation of the \texttt{build()} method, since
+building a \gls{czml} object is unique to that object.
+\texttt{build\_delete\_request()} is common to all Cesium objects since the
+request only contains the object's ID. The currently supported Cesium models
+are as follows:
+
+\begin{description} 
+
+    \item[Document] Each Cesium scenario must have one and only one
+	\texttt{Document} object as it specifies general scenario data such as:
+	what is the scenario's time range, what is the current time in the
+	scenario, or what is the scenario's timestep. Once this object is set
+	for a scenario, it does not need to be set again unless the current
+	time should be changed.
+
+    \item[Satellite] Satellites are represented through a small \gls{png} image
+	called a `billboard'. They are given a descriptive label that maintains
+	a fixed position with respect to the satellites position. To have the
+	satellite move over time within the scenario, an ephemeris must be
+	included in the object. This ephemeris must conform to a particular
+	format and this conversion is handled by the Ephemeris data handler
+	discussed in Section \ref{sec:data_handler}. Lastly, a satellite is
+	given a path to visualize to the user, where the satellite will and has
+	been for some period in the future and the past.
+
+    \item[Ground Target] Ground Targets are essentially the same as Satellite
+	objects but, in this case, they are given only one position for the
+	entirety of the scenario. Ground Targets can be \glspl{aoi}, ground
+	stations or any other stationary ground object.
+
+    \item[Access Object] It is useful to display when a satellite has access to
+	a ground target. This is accomplished through drawing a line between
+	the satellite and the ground target. 
+
+    \item[Polygon]
+
+    \item[Swath]
+
+\end{description}
 
 
-\subsection{Data Handler}
+
+
+
+\subsection{Data Handler}\label{sec:data_handler}
 
 \subsection{ATU Handler}
 
