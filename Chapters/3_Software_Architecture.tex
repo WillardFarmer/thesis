@@ -294,21 +294,146 @@ reference them as necessary.
 \subsection{Data Handlers}\label{sec:data_handler}
 
 For \gls{pops}, there is a great deal of data and many different ways that the
-data can be formatted in. In an attempt to generalize the data and make them
+data can be formatted in. In an attempt to generalize the data and make it
 easier for a developer to work with, several Data Handler classes have been
-created to handle data format conversions and to provide helper functions. 
+created to handle data format conversions and to provide helper functions. The
+differences in data formats can be as simple as differences in what keys are
+used in dictionaries of key-value pairs. For example, the Propagator service
+uses the key \texttt{`position'} and the \glspl{atu} use the key
+\texttt{`pos'}.  This is a small discrepency and if all the differences were
+this simple, then we would just set some standard data format and be done with
+it.  Unfortunately, there are larger differences that require conversion. When
+describing lists of points there are currently 3 different formats. The
+Propagator service generates a list of points, $P_1$, as a list of the x, y,
+and z components for all $N$ points. 
 
-\subsubsection{Ephemeris Class}
+\begin{align*}
+    P_1 &= [\se{x}, \se{y}, \se{z}] 
+\end{align*}
+where
+\begin{align*}
+    \se{x} &= [x_0, x_1, x_2, \ldots, x_N],  \\
+    \se{y} &= [y_0, y_1, y_2, \ldots, y_N],  \\
+    \se{z} &= [z_0, z_1, z_2, \ldots, z_N]
+\end{align*}
+
+To describe swath boundaries as lists of points, $P_2$, the \gls{atu} service
+uses a dictionary of key-value pairs. There is one string key for each
+component (\texttt{`x'}, \texttt{`y'}, and \texttt{`z'}) and the value for each
+is the list of components for all $N$ points. 
+
+\begin{equation*}
+    P_2 = 
+    \left\{
+    \begin{aligned}
+	\texttt{`x'}&: [x_0, x_1, x_2, \ldots, x_N],  \\
+	\texttt{`y'}&: [y_0, y_1, y_2, \ldots, y_N],  \\
+	\texttt{`z'}&: [z_0, z_1, z_2, \ldots, z_N]
+    \end{aligned}
+    \right.
+\end{equation*}
+
+Lastly, the graphical Earth Visualization tool Cesium expects lists of
+points,$P_3$, to just be a single list, where the components of each point are
+ordered one after the other.
+
+\begin{equation*}
+    P_3 = \left[ x_0, y_0, z_0, x_1, y_1, z_1, \ldots x_N, y_N, z_N \right]
+\end{equation*}
+
+All of these formats contain the same information but organized in different
+ways.  A developer should not have to write conversions everywhere whenever
+they wish to use a data type.  They should only have to worry about the data
+itself and not how it needs to conform with whatever format. It is for this
+reason we must consolidate these conversions in separate data handler classes.
+Of course, there is much more data and many more data formats that must be
+supported, but these three examples are sufficient to give the reader an idea
+about the nuances involved. There are many Data Handler classes but the
+following are some of the larger more important ones.
+
+
+\subsubsection{Ephemeris Data Handler}
 
 Ephemerides are the most important collections of data as they are used as a
 basis to calculate most other data. As such, they are referenced many times and
-have a number of different formats. To illustrate what is meant by different
-data formats, let us briefly jump into some specifics. There are four different
-areas where Ephemerides are referenced: the Propagator service, the \gls{ATU}
-service, the Cesium Viewer, and the database.
+have a number of different formats. There are four different areas where
+Ephemerides are referenced: the Propagator service, the \gls{atu} service, the
+Cesium Viewer, and the Database. An Ephemeris object contains some of the
+following information:
+
+\begin{description}
+
+    \item[Epoch] An ISO 8601 Datetime string in UTC specifies the reference
+	time for the ephemeris data.
+
+    \item[Seconds] An array of float values that specify the offset from the
+	epoch.
+
+    \item[Position] Position vectors of the satellite. Each corresponds to a
+	seconds offset.
+
+    \item[Velocity] Velocity vectors of the satellite. 
+
+    \item[Pass Index] For each ephemeris point, the pass index is specified. 
+
+\end{description}
 
 
+An Ephemeris object can either be created by sending a request to the
+Propagator service or it can be loaded from the Database. For the case where we
+generate a new ephemeris from the Propagator service, the Ephemeris class
+handles communication with the Propagation service and directly saves the
+ouputted ephemeris data into a private variable. The propagator ephemeris data
+format serves as the base format from which we can convert to other formats as
+necessary. For example, there are member functions that take the saved
+ephemeris data and converts it into the format expceted by the \glspl{atu} or
+into a format expected by Cesium. Alternatively, if an ephemeris is loaded from
+the database, each row must be sorted, processed, and converted to the base
+format. 
 
+In some scenarios we do not wish to work with an entire Ephemeris for a large
+scenario, rather we may wish to only consider a subset of a larger Ephemeris
+object. When we take a subset of a larger Ephemeris, we refer to this process
+as `constraining' the Ephemeris. For this, a helper function has been added
+which accepts a time range that lies within the time range the Ephemreis object
+is defined for. This helper function then generates a new Ephemeris object
+which only contains the ephemeris data that lies in the desired time range.  
+ 
+\subsubsection{Swath Data Handler}
+
+The Swath Data Handler classes behaves very similarly to the Ephemeris Data
+handler. It too must have data conversion methods for the \glspl{atu}, for
+storage and retrieval from the database, and for loading into Cesium. It also
+has a helper function that constrains the Swath object to a specified time
+range. 
+
+It should be noted that at this level, there is no distinction between an
+access swath and a ground swath. Both are generated in the same way, stored in
+the same way, and displayed in the same way. Whether they are defined based on
+a \gls{fov} or \gls{for} is immaterial and not relevant in this context. 
+
+The data a Swath object stores is similar to an Ephemeris object. It
+also has an epoch and a seconds array. These match the epoch and seconds array
+of the Ephemeris object the Swath object was generated from. It also contains
+some data that is unique to Swaths:
+
+\begin{description} 
+
+    \item[FOV/FOR] For reference the FOV or FOR angle is stored along with the
+	swath data.
+
+    \item[OFF-1/2] These are the boundary polylines of the Swath object. They
+	are stored as lists of points.
+
+    \item[Ground Track] For display purposes, it may be useful to display the
+	ground track of the satellite generating the Swath Object so this
+	information is stored as a list of points.
+
+    \item[Ellipse List] Each swath timestep in a Swath Object is also given an
+	Ellipse. See section\ref{sec:atu-ellipse}.
+
+
+\end{description}
 
 \subsection{Access Time Utilities Handler}
 
@@ -325,7 +450,7 @@ can be imparted through text.
     \centering
     \includegraphics[width=0.9\textwidth]{Cesium_Example_Image.png} 
     \caption{Cesium Example Scenario with Example Entities}
-\label{fig:example_cesium}
+    \label{fig:example_cesium}
 \end{figure}
 
 To support this functionality, \gls{pops} makes use of the open-source CesiumJS
@@ -408,9 +533,12 @@ information about the object that does not change once it is created. For
 example a satellite object will not change which satellite it references once
 it's created. 
 
-\begin{figure} \centering
-\includegraphics[width=0.9\textwidth]{Cesium_Models.png} \caption{Cesium Models
-UML} \label{fig:cesium_models} \end{figure}
+\begin{figure} 
+    \centering
+    \includegraphics[width=0.9\textwidth]{Cesium_Models.png} 
+    \caption{Cesium Models UML} 
+    \label{fig:cesium_models} 
+\end{figure}
 
 To begin, there is a \texttt{BaseObject} class which serves as a general parent
 class to all Cesium objects. It defines member variables that are common to all
