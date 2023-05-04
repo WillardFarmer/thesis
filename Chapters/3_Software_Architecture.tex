@@ -2,7 +2,7 @@
 \chapter{Software Architecture}
 
 
-\section{POPS Architecture}
+\section{Payload Operations Planning Software Architecture}
 
 The \gls{pops} is made up of several distinct components separated into
 services.  Each service has its own Docker5 container. Containers are similar
@@ -290,6 +290,30 @@ are stored separately and then statically referenced in the \gls{html} file
 they apply to. By consolidating these files, it is much easier to organize and
 reference them as necessary. 
 
+
+\subsection{Data Handlers}\label{sec:data_handler}
+
+For \gls{pops}, there is a great deal of data and many different ways that the
+data can be formatted in. In an attempt to generalize the data and make them
+easier for a developer to work with, several Data Handler classes have been
+created to handle data format conversions and to provide helper functions. 
+
+\subsubsection{Ephemeris Class}
+
+Ephemerides are the most important collections of data as they are used as a
+basis to calculate most other data. As such, they are referenced many times and
+have a number of different formats. To illustrate what is meant by different
+data formats, let us briefly jump into some specifics. There are four different
+areas where Ephemerides are referenced: the Propagator service, the \gls{ATU}
+service, the Cesium Viewer, and the database.
+
+
+
+
+\subsection{Access Time Utilities Handler}
+
+\subsection{Opportunity Filter}
+
 \subsection{3D Earth Visualization}
 
 One of the required components of \gls{pops} is a graphical 3D Earth viewer.
@@ -366,35 +390,27 @@ is created, it runs until it or the page is changed.  To facilitate
 communication between the Cesium viewer and the Python backend, a websocket is
 created as they allow for bi-directional communication. 
 
-\subsection{Cesium Handler and Cesium Models}
+\subsection{Cesium Models}
 
-To manage the Cesium viewer from the backend, a Python Cesium Handler class has
-been written that acts as the interface between the two. The Cesium Handler
-class: keeps track of the entities currently in the Cesium viewer, keeps track
-of what entities have been changed or that need to be updated, and generates
-new \gls{czml} data to be sent to the viewer. Some libraries do exist that
-perform this functionality but \gls{pops} has enough custom entities that an
-equivalent amount of development would need to be done to support them anyway.
-
-Before discussing the Cesium Handler class in depth, it would be useful to
-first go over Cesium Models. These model classes are not like the ones made for
-\gls{orm}, rather these models have two responsibilities. They must keep some
-metadata about a Cesium object and they must contain a method that generates a
-valid \gls{czml} packet. A \gls{uml} diagram that summarizes all of the
-currently implemented Cesium models can be seen in
+Even though we are using Cesium as our 3D Earth visualization tool, a
+substantial amound of development must be done to properly configure and manage
+what is being shown on the viewer. Before discussing how a Cesium viewer is
+managed, it would be useful to first go over what can be displayed currenlty
+with \gls{pops}, the Cesium Models. These model classes are not like the ones
+made for \gls{orm}, rather these models have two responsibilities. They must
+keep some metadata about a Cesium object and they must contain a method that
+generates a valid \gls{czml} packet.  A \gls{uml} diagram that summarizes all
+of the currently implemented Cesium models can be seen in
 Figure~\ref{fig:cesium_models}. It should be noted that the diagram does not
 contain an exhaustive list of all of the member variables for each class;
-rather, it contains the most important variables. Each model contains some
+rather, it contains the most important variables.  Each model contains some
 information about the object that does not change once it is created. For
 example a satellite object will not change which satellite it references once
 it's created. 
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.9\textwidth]{Cesium_Models.png} 
-    \caption{Cesium Models UML}
-\label{fig:cesium_models}
-\end{figure}
+\begin{figure} \centering
+\includegraphics[width=0.9\textwidth]{Cesium_Models.png} \caption{Cesium Models
+UML} \label{fig:cesium_models} \end{figure}
 
 To begin, there is a \texttt{BaseObject} class which serves as a general parent
 class to all Cesium objects. It defines member variables that are common to all
@@ -439,24 +455,166 @@ are as follows:
 	stations or any other stationary ground object.
 
     \item[Access Object] It is useful to display when a satellite has access to
-	a ground target. This is accomplished through drawing a line between
-	the satellite and the ground target. 
+	a ground target. This is accomplished through drawing a polylline
+	between the satellite and the ground target for times where they have
+	access to each other. One useful feature of \gls{czml} is that we can
+	reference the position of other object by reference to their ID. This
+	saves us from having to load a satellite ephemeris into the object to
+	describe the position of the satellite. \gls{czml} also allows us to
+	specify when an object should or should not be visible by specifying
+	intervals of visibility. When an \texttt{Access Object} is created we
+	must pass a list of access times such that we may define these
+	intervals in the object.
 
-    \item[Polygon]
+\begin{figure}
+    \begin{minipage}[c]{0.45\textwidth}
+	\centering
+	\includegraphics[width=1\textwidth]{inside-outside-2.png} 
+	\caption{Smaller Area}
+	\label{fig:inside_polygon_1}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[c]{0.45\textwidth}
+	\centering
+	\includegraphics[width=1\textwidth]{inside-outside-1.png} 
+	\caption{Wider Area}
+	\label{fig:inside_polygon_2}
+    \end{minipage} 
+\end{figure}
 
-    \item[Swath]
+
+    \item[Polygon] As mentioned earlier, Cesium has the ability to display
+	polygons in any number of ways but, for our purposes, we are mainly
+	focused on polygons clamped to the Earth's surface. The two instances
+	where polygons are currently used for \gls{pops} are for Area Target
+	\glspl{aoi} and for intersection polygons. The difference practically
+	for these two cases is just in their colour. To draw a polygon in
+	Cesium, we must provide it a list of points in Cartesian coordinates or
+	in Latitude-Longitude-Altitude coordinates. For the Cartesian
+	coordinates, if a point does not directly lie on the WGS84 Ellipsoid,
+	Cesium will only draw the closest point on the Ellipsoid. From this
+	list of points, Cesium will guess the `inside' of the polygon. Note
+	that since we are drawing shapes on an Ellipsoid, the geometry is
+	non-Euclidean. The inside of a polygon on a 2D plane is clear for
+	polygons that do not self-intersect; it is simply the the region that
+	is enclosed by all of the sides of the polygon. For an Ellipse any
+	point can be enclosed. See an example of this in Figures
+	\ref{fig:inside_polygon_1} and \ref{fig:inside_polygon_2}. Both have
+	identical polygons where there are 4 vertices on the Ellipsoid and
+	their edges are the same. There is now a question of what forms the
+	inside of the polygon as this can be the larger area or the smaller
+	area. There are a number of ways this can be addressed. One way is to
+	specify the points on the polygon in a clockwise or counter clockwise
+	order. Then the internal area will be whatever conforms to this
+	ordering. Another way would be to specify one or more points that are
+	not vertices but rather example points that lie within the polygon. In
+	this way the area of the polygon will be the set of points that contain
+	the example point. For simplicity, Cesium makes a best guess at what
+	the inside of a polygon is by selecting the inside with the smaller
+	area. This is sufficient for smaller polygons but for larger or more
+	complicated polygons where the intended area is greater than one half
+	hemisphere, determining the inside of a polygon no longer becomes clear
+	and the viewer displays a garbled result. Alternatively, if there is a
+	polygon which intersects itself, Cesium also becomes confused. In these
+	scenarios, a large polygon must be sub-divided into sections that
+	Cesium can process.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.9\textwidth]{Cesium_Example_Swath.png} 
+    \caption{Example of a 30$^\circ$ Ground Swath}
+    \label{fig:cesium_swath}
+\end{figure}
+
+    \item[Swath] The last Cesium object that is currently handled are ground or
+	access swaths. The distinction here between \gls{fov} and \gls{for} is
+	unimportant since both are displayed in the same way. Swaths are
+	displayed with polygons but how they are generated can be tricky. From
+	the \glspl{atu}, swaths are represented through two polylines that loop
+	around the Earth $L_1$ and $L_2$. These represent the left and right
+	boundary of the swath with respect to the velocity vector (See
+	section~\ref{sec:atu}).  Typically, to display a swath all that we must
+	do is reverse $L_1$ and append it to $L_2$. In this way we create a
+	counter-clockwise ordered polygon that can be displayed on Cesium. But,
+	if we do this for a swath that is defined for greater than one
+	half-orbit Cesium will no longer be able to display the polygon because
+	it cannot determine what the inside of the polygon is. Thankfully,
+	swaths generally only need to displayed for times where a satellite has
+	access to an \gls{aoi}. Automatically sub-dividing swaths for longer
+	time ranges will be handled in future iterations of \gls{pops}.
+	Combining the two swaths boundaries is mostly sufficient for display
+	purposes but at the beginning and end of a constrained swath, we may
+	wish to show the footprint or access region of the satellite at the
+	beginning and end of the constrained swath. To do this, the \glspl{atu}
+	also provide ellipse lists for each point in an Ephemeris. From this
+	list, we can take the ellipsoids at the beginning and end of the
+	constrained swath, take only the points that lie outside of the swath
+	area, and append them to the boundary lists. That is,
+	\begin{equation*} 
+	    P_{swath} = L_1' + E_{start} + L_2 + E_{end}
+	\end{equation*} where $P_{swath}$ is the swath polygon, $L_1'$ is $L_1$
+	reversed, and $E_{start}/E_{end}$ are the ellipse points at the
+	beginning and of the constrained swath. Calculating $E_{start}/E_{end}$
+	is somewhat involved and is discussed in Algorithm~\ref{alg:ellipse}.
+	An example of a swath can be seen in Figure~\ref{fig:cesium_swath}.
 
 \end{description}
 
 
+\subsection{Cesium Models}
 
+Now that we have an understanding for all of the basic objects that are
+supported by \gls{pops}, we may now discuss how they are combined to display
+mission information to a user. For this, a Python Cesium Handler class has been
+written that acts as the interface between the Python backend and the Cesium
+viewer frontend. The Cesium Handler class: keeps track of the entities
+currently in the Cesium viewer, keeps track of what entities have been changed
+or that need to be updated, and generates new \gls{czml} data to be sent to the
+viewer. When the \texttt{main} script is first run, it creates an instance of
+the Cesium Handler class as a global variable. In this way it can be referenced
+as needed by any api call. Some libraries do exist that perform this
+functionality but \gls{pops} has enough custom entities that an equivalent
+amount of development would need to be done to support them anyway.
 
+To keep track of entities in the viewer, the Cesium Handler class has a list of
+objects where each object is a Cesium Model. As such, it has all of the meta
+information of the \texttt{BaseObject} as well as a method to build a
+\gls{czml} packet and delete packet. By setting up Cesium objects in this way,
+they can be treated completely generally by the Cesium Handler class and
+metadata can be stored and referenced for every object. This metadata tracks
+the status of Cesium objects and determines whether any changes need to be made
+in the viewer. 
 
-\subsection{Data Handler}\label{sec:data_handler}
+Objects can be added or removed with helper funcitons in the Cesium Handler
+class. Either objects can be added directly, by creating an instance of a
+Cesium Model class, then adding them to the list of objects in the Cesium
+Handler or a developer can use one of the helper methods. Some situations may
+require specific logic to set up a scenario. This is the case for displaying
+search scenarios or adding opportunities to a viewer. Currently, there is no
+way to generally display the results of a search scenario. A developer must
+explicitly define what swaths, intersection polygons, or \glspl{aoi} to add. In
+the future this may bemade completely general through some sophisticated but
+the current method is sufficient. As with the database, opportunities are also
+linked in the Cesium Handler class so that they can be referenced and enabled
+or disabled as desired. This makes visualizing search scenarios much more
+clear. 
 
-\subsection{ATU Handler}
+To actual effect changes to the Cesium viewer, the Cesium Handler makes use of
+an asynchronous approach. A user may make a change to the Viewer at any time or
+they may even make many changes in quick succession and the Viewer must be able
+to update correctly. Whenever a change is made to the objects list, first,
+\gls{czml} packets are generated for each object whose\texttt{changed} flag is
+raised. In this way czml is only sent when necessary and the viewer is not
+bombarded duplicate data. These packets are then added to a queue. Then, a flag
+is raised in the Cesium Handler class to signal that packets are ready to be
+sent to the Cesium Viewer. Within the \texttt{main} script there is a loop that
+checks for this flag. Once it is raised, the \texttt{main} service sends every
+\gls{czml} packet to the viewer then verifies that the correct number of
+packets were received in a return message. If the validation passes, then the
+changed flag is reset for all of the objects that were processed. The reason
+for using a queue is that it allows for many requests to be processed quickly
+without it potentially jumbling the viewer.
 
-\subsection{Opportunity Filter}
 
 \subsection{Scheduler}
 
