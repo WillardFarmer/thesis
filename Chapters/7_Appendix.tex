@@ -10,7 +10,7 @@ some form. To avoid detracting from the main body of the thesis they have been
 placed here, in the appendices.
 
 
-\section{Multiple Access Intersection Algorithm} 
+\section{Multiple Access Intersection Algorithm} \label{alg:mul-access-inter}
 
 For some search scenarios, we may need to determine for what times do all
 satellites have access to a target such as an \gls{aoi} or a ground station.
@@ -212,11 +212,136 @@ alogrithm definition is as follows,
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-\section{Single Access Intersection} \label{alg:ellipse}
+\section{Equator Crossing Algorithm} \label{sec:equator-crossing}
+
+For a given ephemeris, it is useful to determine each `pass' of that orbit.
+That is, for each ephemeris point, an index should be assigned to it which
+indicates how many times the spacecraft has orbited the Earth. In this way, if
+we have some time range and we wish to see the next `pass,' we would simply
+take that time range's pass index and add 1.
+
+There are many ways a pass may be defined. For example we could specify a
+latitude and longitude range and whenever the spacecraft is in this range, that
+could be considered a singular pass.  Generally, though, epehemeris data is not
+given in latitude or longitude, rather it is given in a cartesian position in
+some \gls{eci} or \gls{ecef} reference frame.  So for each position in the
+ephemeris, the position vector will need to be converted to latitude and
+longitude. 
+
+This is a completely acceptable approach but we may also simplify the problem.
+Instead of taking a latitude and longitude range, we could instead increment
+the pass index when the spacecraft crosses the equator and goes from the
+southern to the northern hemisphere. This would be when the spacecraft's
+position goes from a negative to a positive latitude. This definition of a pass
+has a few advantages. That being, we only need to do one check to determine a
+pass boundary. It also has the benefit of indexing the entire ephemeris. Still
+for this method, we need to convert from cartesian postiion to at least
+latitude.
+
+Let us make one further simplification by assuming that the x-y plane of the
+ephemeris's coordinate system is very near to the Earth's equitorial plane.
+This is not true for all cooordinate systems but it is true for the \gls{ecef}
+ephemerides used by \gls{pops}. By making this assumption, we no longer need to
+calculate the latitude of the spacecraft; rather, we can instead only look at
+the spacecraft's position along the z-axis. This is useful because the
+spacecraft's z-position will oscillate between some positive and negative
+extrema, which are determined by the orbit's inclination and excentricity. 
+
+There is a complicating factor that should be accounted for. In time, the
+spacecraft's position is periodic, but when considering only the spacecraft's
+z-position in an ephemeris, there is no guarantee that there is a constant
+timestep between position values. Additional data-points may be injected for
+periods where greater accuracy is desired and vice-versa. We may now articulate
+the problem to be addressed.
+
+% TODO: Add two figures, one showing a sinusoidal z-comp in time, and one
+% showing one with additional data points added, making it oblong.
+
+Given, an array of $z$-positions, $\se{z}$, generate
+that each element of $\se{p}$ is the index of an element in $\se{z}$ after a
+crossover occurs (ie. the positive value in the negative-to-positive
+crossing).
+
+
+To determine if elements, $n$ and $m$, of an array, $\se{z}$, form a crossover,
+they must satisfy three simple conditions:
+
+\begin{enumerate}
+    \item $\se{z}[n] < 0$
+    \item $\se{z}[m] > 0$ 
+    \item $m = n+1$
+\end{enumerate}
+
+
+A brute-force approach to finding $\se{p}$ would be to loop through all of the
+elements in $\se{z}$, and test them against the above conditions. This method
+is inelegant and may be computationally intensive, though.
+
+One approach to this problem is outlined in the following Algorithm. In
+essence, it attempts to reduce the number of comparissons made to search for
+crossovers. 
+
+\begin{algorithm}[h] 
+    \caption{Negative-Positive Crossing Search Algorithm} 
+    \label{alg:crossover}
+    \begin{algorithmic}[1] 
+	\Require{\se{z}is a $1\times N$ array } 
+
+	\Function{FindAllCrossovers}{$s, f, \se{z}$}
+	    \Let{$p$}{\Call{FindNextCrossover}{$0, s, f, \se{z}$}} \Comment{Start at beginning of array}
+	    \Let{$\se{p}$}{$\{ p \}$}
+
+	    \While{$p \neq -1$}
+		\Let{$p$}{\Call{FindNextCrossover}{$p, s, f, \se{z}$}}
+		\Comment{Start at beginning of array} \State
+		$\se{p}$.append($p$) \EndWhile 
+		\State \Return \se{p}
+	\EndFunction
+
+	\State
+
+	\Function{FindNextCrossover}{$i, s, f, \se{z}$} 
+	\Let{$j$}{$i+s$}
+	\If{$j > length(\se{z})$} 
+	    \State $s = \mathrm{s \times f}$  
+	\ElsIf{$j = length(\se{z})$}
+	    \State \Return $-1$	  \Comment{Search has completed}
+	\ElsIf{ $(\se{z}[i] < 0) \lor (\se{z}[j] > 0)$ }
+	    \If{$s=1$}
+	    \State \Return $i$ \Comment{Crossover index found}
+	    \Else
+		\State $s = ceil(s \times f)$
+	    \EndIf
+	\Else
+	    \State $i=j$
+	\EndIf
+	\State \Return \Call{FindNextCrossover}{$i, s, f, \se{z}$}
+	\EndFunction 
+    \end{algorithmic} 
+\end{algorithm}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+\section{Single Access Intersection Algorithm} \label{alg:contains}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 \section{Swath Boundary Ellipse Algorithm} \label{alg:ellipse}
 
+To review, Swaths are the area covered by a satellite's \gls{fov} footprint or
+\gls{for} access region over time. They are calculated from a satellite
+ephemeris, where for each telemetry point in the ephemeris, two swath boundary
+points are generated by drawing rays some angle from the Nadir and intersecting
+them with a WGS84 Ellipsoid. Therefore, a swath is represented by two
+polylines, OFF-1 and OFF-2. 
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+\section{Counter-Clockwise Reordering Algorithm} \label{alg:ccw}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+\section{Convex Polygon Conversion} \label{alg:force-complex}
 

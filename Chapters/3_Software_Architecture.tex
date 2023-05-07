@@ -165,15 +165,187 @@ more accurate algorithm is desired for orbital propagation, only the Propagator
 service needs to be changed and the rest of \gls{pops} can be left as is.
 
 
-\subsection{Access Time Utilities}
+\section{Access Time Utilities}
 
 The ATU service provides the basic building blocks for
 constraining observation opportunities. These can be added to depending on a
-mission’s need. The \gls{atu} service currently supports calculating: ground station
-access times, swath generation, horizon swath generation, and polygon
-intersection with a swath. These will be discussed in detail in their own
-section.  
+mission’s need. Some utilities the \gls{atu} service currently supports are
+calculating: ground station access times, swath generation, and polygon
+intersection with a swath. We will not go too much into detail on how some of
+these are calculated but rather we will discuss how they are used at a
+\gls{pops} level.
 
+\subsection{Ground Access Utility}
+
+A \textit{ground access} is defined as the time interval during which a
+satellite can establish contact with a ground station. A \textit{ground
+station} is a point on the Earth’s surface, identified with geodetic
+Latitude-Longitude-Altitude coordinates and an elevation mask. An
+\textit{elevation mask} is the angle above the horizon, at the ground station’s
+position, at which the satellite can be considered visible by the ground
+station. Calculating the ground access for satellites on a mission is a
+fundamental task in operations planning. These time intervals dictate the
+opportunities for data downlink, command uplink, and any other communication
+between the ground segment and satellite.
+
+The simplest way to compute ground access involves propagating the orbit of a
+satellite and checking, at every time step, the position of the satellite
+relative to the ground station and testing whether the relative position is
+above the elevation mask. While this method is trustworthy and capable of
+returning accurate results, its reliance on iterating over an entire satellite
+orbit input typically yields a long runtime. This is particularly evident in
+the case where a mission has multiple ground stations, multiple satellites, or
+a short propagator timestep. The computation time drawback motivates the use of
+other algorithms that can determine ground access more efficiently.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{ATU-1.png} 
+    \caption{Input Output Diagram for Ground Access Utiltiy}
+    \label{fig:atu-1} 
+\end{figure}
+
+So, from a satellite ephemeris and some ground station information, the access
+time utilities will generate a list of Access Times. That is the \textit{time}
+of an access and the \textit{type} (access enter or access leave) of an access
+will be specified. This is illustrated in Figure~\ref{fig:atu-1}.
+
+\subsection {Swath Utility}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{Swath Bound.png} 
+    \caption{Access Swath Boundary Calculation}
+    \label{fig:swath-bound} 
+\end{figure}
+
+As discussed in the Terminology section, the concept of an access swath is
+defined as a time-series of access regions as a satellite orbits the Earth.
+Within \gls{pops}, a swath is represented through a closed curve that describes
+the boundary of the cumulative access region of a sensor’s \gls{for} over a
+time interval. The process for calculating a swath boundary from an input
+ephemeris is described here.  
+
+\newcommand{\Fo}{$\vec{\mathcal{F}}_o$} 
+\newcommand{\Fe}{$\vec{\mathcal{F}}_E$}
+
+Let us first define the orbital reference frame of the satellite, \Fo, with
+respect to an ECEF fixed coordinate system, \Fe,  Then, let us take the
+satellites position, $\sev{r}$, and velocity, $\sev{v}$, with respect to \Fe.
+These two vectors are given for a single epoch in an ephemeris file. \Fo ~is
+then defined as $ \vec{\mathcal{F}}_o = \left[ \sev{x}, \, \sev{y}, \, \sev{z}
+\, \right]^T$, where:
+
+\begin{equation} 
+    \sev{x} = \frac{\sev{r}}{\norm{\sev{r}}}, 
+    \quad 
+    \sev{z} = \frac{\sev{r}\times\sev{v}}{\norm{\sev{r}\times\sev{v}}}
+\end{equation}
+
+And lastly $\sev{y} = \sev{z} \times \sev{x}$ to form an orthonormal set, but
+this is not important for our purposes. We shall then take two vectors,
+$\sesv{s}{1}$ and $\sesv{s}{2}$, that form the boundary of our conical FOR and
+lie within the x-z plane of \Fo,  These are defined as,
+
+\begin{align}
+    \sesv{s}{1} &= \vec{\mathcal{F}}_o^T \left[ \, -\cos\theta, \quad 0, \quad -\sin\theta \right]^T \\
+    \sesv{s}{2} &= \vec{\mathcal{F}}_o^T \left[ \, -\cos\theta, \quad 0, \quad \sin\theta \right]^T
+\end{align}
+
+Where $\theta$ is the half-angle of the satellite’s \gls{for}. These vectors
+are then transformed to \Fe~and the points where they intersect the Earth’s
+service are the swath’s bounds for that time instant. If this calculation is
+performed multiple times and the boundary points are connected, two lines are
+formed on the Earth’s surface. These lines are the satellite’s swath boundary
+for that time range.  This process is illustrated in
+Figure~\ref{fig:swath-boundary}.
+
+Using the same process, we may also find the ground track of the satellite by
+using the nadir vector, $\sesv{s}{n}$, which is defined as:
+
+\begin{align}
+    \sesv{s}{n} &= \vec{\mathcal{F}}_o^T \left[ 1, \quad 0, \quad 0 \right]^T
+\end{align}
+
+\newcommand{\Cx}[1]{\ses{C}{x}\!\!\left(#1 \right)}
+
+Lastly, we may also approximate the access region for each timestep. To do so,
+we can take an off angle vector, $\sesv{s}{1}$, and rotate it around the
+x-axis. Where the vector intersects the Earth's surface will be a boundary
+point of the access region. For $N$ boundary points, we must rotate the vector
+$N$ times. Let us first define a rotation matrix about the x-axis of \Fo~for
+some angle, $\phi$:
+
+\begin{equation}
+    \Cx{\phi} = 
+    \left[
+	\begin{array}{ccc}
+	1  & 0 & 0   \\
+	0 & \cos\phi  & -\sin\phi   \\
+	0 & \sin\phi  & \cos\phi
+    \end{array}
+    \right]
+\end{equation}
+
+We may then generate the set of vectors, $S$, that describe the \gls{for} for
+that time instant:
+
+\begin{equation}
+    S = \in  \left\{ \Cx{2\pi/n} \sesv{s}{1} \, \vert \, n = 1, 2, \ldots N \right\}
+\end{equation}
+Typically, access regions are described with 8 points but more can be added if
+necessary. 
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{ATU-2.png} 
+    \caption{Input Output Diagram for Swath Utility}
+    \label{fig:atu-2} 
+\end{figure}
+
+In summary, for every ephemeris point, a swath boundary is calculated, a a
+ground track is calculated, and a list of ellipses (access regions) are
+provided. This can be seen in Figure~\ref{atu-2}
+
+
+\subsection{ Swath Intersection Utility }
+
+Swath intersection is an important operation for determining what part of a
+specified region is observable by a satellite sensor during some time interval.
+Regions are polygons on the Earth’s surface whose vertices are oriented
+counter-clockwise. The edge between two consecutive vertices is the great
+ellipse arc connecting both points. Swaths are also approximated as polygons
+provided that the timestep is small enough. The edge between two swath boundary
+points being a great ellipse arc is assumed to be a sufficient approximation.
+
+Polygon clipping techniques are used to find the area of intersection between a
+swath and a polygon. First, the swath and polygon vertices are transformed into
+2D coordinates. The 2D projection used involves defining a plane that is
+tangent to some point on the Earth’s surface.  To project a point on the
+Earth’s surface to this plane, a vector is drawn from the centre of the Earth
+towards the point (its ECEF coordinates), and the vector is extended towards
+the point of intersection of the plane. This type of projection is commonly
+known as the Gnonomic projection; its advantage with respect to the polygon
+clipping operation is that great ellipse arcs are projected as straight lines.
+This means classical 2D polygon clipping techniques can be applied to polygons
+drawn on the Earth’s surface. So long as the swath and polygon occupy one
+hemisphere of the Earth’s surface, the projection will accurately represent the
+points of intersection of the swath and polygon, and any polygon clipping
+technique can be applied.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{ATU-3.png} 
+    \caption{Input Output Diagram for Swath Intersection Utility}
+    \label{fig:atu-3} 
+\end{figure}
+
+So given some swath data, specifically the swath boundaries and ellipse list,
+the Swath Intersect Utility will return a list of access times and an
+intersection polygon between the swath and the polygon. This is illustrated in
+Figure~\ref{fig:atu-3}
 
 
 \section{Mission Model}
@@ -398,7 +570,7 @@ as `constraining' the Ephemeris. For this, a helper function has been added
 which accepts a time range that lies within the time range the Ephemreis object
 is defined for. This helper function then generates a new Ephemeris object
 which only contains the ephemeris data that lies in the desired time range.  
- 
+
 \subsubsection{Swath Data Handler}
 
 The Swath Data Handler classes behaves very similarly to the Ephemeris Data
@@ -415,7 +587,7 @@ a \gls{fov} or \gls{for} is immaterial and not relevant in this context.
 The data a Swath object stores is similar to an Ephemeris object. It
 also has an epoch and a seconds array. These match the epoch and seconds array
 of the Ephemeris object the Swath object was generated from. It also contains
-some data that is unique to Swaths:
+data that is unique to Swaths:
 
 \begin{description} 
 
@@ -432,8 +604,73 @@ some data that is unique to Swaths:
     \item[Ellipse List] Each swath timestep in a Swath Object is also given an
 	Ellipse. See section\ref{sec:atu-ellipse}.
 
-
 \end{description}
+
+
+\subsubsection{Polygon Data Handler}
+
+The Polygon Data Handler is the last data handler class of note. It is used to
+represent area target \glspl{aoi} or intersection polygons. The core data a
+Polygon object contains is simply just a single list of points.  As with the
+Ephemeris and Swath data handlers, there is a small sweet of data format
+conversions.  But, for the Polygon Data Handler, much of the funcitonality lies
+in its utility functions.
+
+The first utility function is simple; it merely transforms all of the points in
+the Polygon from \acrfull{ecef} cartesian-xyz coordinates to
+Latitude-Longitude-Altitude coordinates and vice-versa.  Generally, with other
+objects such as Ephemeris objects or Swath objects, their underlying datawill
+never be explicitly displayed to the user. For this reason, points in those
+objects can be left as cartesian coordinates. But, when a user creates a
+Polygon object or if the coordinates of the vertices need to be displayed to
+the user, Latitude and Longitude is much more human readable than cartesian
+coordinates. 
+
+Early on in development, there were some restrictions placed on the types of
+polygons that the \glspl{atu} could accept. One restriction was that polygons
+must be convex. That is for the set of all points that lie within a polygon,
+there do not exist two points such that if a line is drawn between the points,
+that line intersects with an edge of the polygon. At first, it seemed as though
+this only limited the types of area-targets that could be specified but through
+developing the opportunity filter class there arose some scenarios where
+concave polygons were generated that needed to be inputted into the
+\glspl{atu}. For this reason, a simple algorithm was implemented that removes
+vertices to force a poygon to be convex. The implementation for this is
+discussed in Algorithm~\ref{alg:force-convex}. Thankfully, this restriction has
+been lifted but the implementation is interesting nonetheless.
+
+Another restriction placed on polygons is that their vertices must be ordered
+counter-clockwise (the motivation for this is discussed in
+Section~\ref{sec:cesium-models}). If a polygon is ordered in a different way,
+this may lead to garbled results from the \glspl{atu} or Cesium viewer. If
+necessary, when generating a Polygon object and a developer suspects that the
+source data may be un-ordered, they may set an option to \textit{force} a
+polygon to be counter-clockwise. Re-ordering is not always perfect, though, and
+that is why this is an option and not always done. The implementation for this
+can be found in Algorithm~\ref{alg:ccw}.
+
+
+ 
+
+\subsubsection{Other Data Handlers}
+
+There are a number of other data handler classes that are used but don't have
+as noteable functionality. Some of these are:
+
+\begin{itemize} 
+    
+    \item Access Times Data Handler
+    \item Ground Station Data Handler
+    \item Sensor Data Handler
+
+\end{itemize}
+
+For the Access Times Data Handler, there exists one utility function. There are
+some situations where a developer may need to determine what access times, if
+any, lie within some defined period of time. For this the Single Access
+Intersection algorithm was developed which is discussed in
+Algorithm~\ref{alg:contains}.
+
 
 \subsection{Access Time Utilities Handler}
 
@@ -515,7 +752,7 @@ is created, it runs until it or the page is changed.  To facilitate
 communication between the Cesium viewer and the Python backend, a websocket is
 created as they allow for bi-directional communication. 
 
-\subsection{Cesium Models}
+\subsection{Cesium Models}\label{sec:cesium-models}
 
 Even though we are using Cesium as our 3D Earth visualization tool, a
 substantial amound of development must be done to properly configure and manage
@@ -689,7 +926,7 @@ are as follows:
 \end{description}
 
 
-\subsection{Cesium Models}
+\subsection{Cesium Handler}
 
 Now that we have an understanding for all of the basic objects that are
 supported by \gls{pops}, we may now discuss how they are combined to display
@@ -746,7 +983,119 @@ without it potentially jumbling the viewer.
 
 \subsection{Scheduler}
 
+The last component of the Mission Model that should be discussed is the
+Scheduler Class. The purpose of this class is to keep track of what
+observations are planned for all the satellites that are being tracked by
+\gls{pops}. The class should be able to: store satellite events, validate
+schedules based on some ruleset, and must be able to display all events in a
+timeline to the user. 
 
+The base unit for the schedule class are Events. An Event is a general object
+that can be used to describe anything. Every Event contains two categories of
+data. They have data that is universal to all Events and a payload. The
+universal data describes information about the object itself, such as:
+
+\begin{description} 
+
+    \item[ID] The ID of an event which is either a serial number or an
+	enumerated descriptive name.
+
+    \item[Name] This is what is actually displayed to the user and may have
+	more information than just an ID.
+
+    \item[Type] Is the event a station keeping maneuver, a planned observation,
+	a ground contact, etc. The type is arbitrary but it allows events to be
+	filtered or treated in different ways.
+
+    \item[Satellite] Each event must be associated with a single satellite. If
+	multiple satellites are undergoing an event, each must have their own
+	event.
+
+    \item[Time Data] Information such as the start, stop, and epoch of an
+	event. An epoch can mostly be ignored but it is important for when
+	\glspl{ttc} are created. This is discussed in the \gls{ttc} generation
+	section, Section~\ref{sec:ttc-gen}.
+
+    \item[Linked Events] For the case where multiple events are related in some
+	way, they may be linked together such that if one is deleted, all other
+	linked event may be deleted.
+
+\end{description} 
+
+Along with each event is a Payload. The Payloads allow for specific information
+to be stored in an Event without the Scheduler class being aware of what's
+there. This functionality will primary be used to contain observation-specific
+information such that \glspl{ttc} can be generated from lists of Events without
+having the Scheduler class be aware of what observations are possible.
+Observations are just one example of how an Events make Events completely
+generalizable. In the future, there may be some other type of Event a developer
+may wish to store information in. It should be noted that the Scheduler class
+will never access or manipulate an Event's payload except to display the
+information to a user.
+
+A `schedule' is a universal concept. A satellite has one and only one timeline.
+This means that, the scheduler class exists outside off plans or observation
+configuration. A plan may add events to a schedule or certain events may be
+relevant in a plan but ultimately Events and the timeline exist outside of any
+given plan. This is all to say that when a timeline is displayed to a user,
+only the parts of the schedule that are relevant to the plan are visible.
+Events are filtered by satellites, time ranges, or type. If Events are added to
+the schedule by a plan, those events now exist universally for any plan. In
+other words, there does not exist one schedule for one plan, it is all the same
+schedule.
+
+With this universality in mind, it follows that the Scheduler class has a
+1-to-1 relationship with the database. Within the database there is a table of
+Events and within the scheduler class there is a list of Events. Every time an
+Event is added to the list of Events, a corresponding row is added to the
+Database. When the Scheduler class is instantiated, it immediately loads all of
+the Events currently stored in the database to its list of Events. The purpose
+of this is that \gls{pops} may be shutdown at any time and the list of Events
+is retained in the database. By design, there exists no situation where the
+Scheduler class differs from the Database.
+
+The Scheduler class also has the ability to validate schedules based on a
+library of rulesets. These rulesets are separate add-ons to the Scheduler
+class. Within the class, their is a \texttt{validate\_schedule()} method, which
+passes the list of events to every ruleset. These rulesets then return lists of
+conflicts. These conflicts are stored and displayed to the user graphically and
+in a list. The reason why rulests are treated in this way, is that it allows
+the Scheduler class to be expandable. Currently, there is only one ruleset and
+it checks for time conflicts. For a satellite, do there exist times where 2 or
+more Events are scheduled to happen at the same time.  This is a very basic
+rule, and it stems from the fact that a satellite cannot be told to do more
+than one thing at once. In the future, there will be more rulesets. For
+example: the schedule must not exceed a satellite's data budget, the schedule
+must conform with a satellite's attitude control constraints, check if Events
+are possible with updated weather reports, etc.
+
+Though not currently supported, it is planned that an interface will be
+developed that allows events to be generated from ground software. From a list
+of \glspl{ttc} that have been uploaded to a satellite, Events will be generated
+in the schedule to represent them. In this way, a \gls{pops} user will be able
+to see what \glspl{ttc} are already planned for a given satellite. This will
+help them develop an operations strategy. This funcitonality will also expand
+the usefulness of \gls{pops} beyond just planning.
+
+%% TODO: Add observations to timeline
+\begin{figure}
+    \centering
+    \includegraphics[width=1\textwidth]{timeline-example.png} 
+    \caption{\hl{Example of a Timeline}}
+    \label{fig:scheduler-timeline}
+\end{figure}
+
+The last functionality of the Scheduler class is visualizing a schedule in a
+timeline. To do this, the Schedleer class will take a list of Events, filter
+them based on the visualization request, format them into a large data packet,
+and pass that packet to the webpage. On the webpage, an open-source library is
+used to format the timeline. An example of a timeline can be seen in
+Figure~\ref{fig:scheduler-timeline}. Observations for each satellite are split
+into diffent rows. To give more information to the user, the pass boundaries
+are displayed as blue vertical lines. The red vertical line corresponds to the
+current time in the Cesium viewer. The shaded regions specify when a satellite
+has access to a ground station. Currently, this is all that is displayed is
+subject to change based on feedback from operators using the tool.
 
 
 \section{Database}
@@ -764,88 +1113,6 @@ can be accessed simultaneously by multiple users or services.
 
 
 
-
-\section{Access Time Utilities}
-
-
-The Access Time Utilities are the fundamental components that enable POPS to be
-a planning software. They form the basic building blocks for constraining
-observation opportunities. Additional utilities can be added depending on a
-mission’s need. The following sections discuss the baseline functionality that
-has currently been implemented.
-
-
-\subsection{Ground Access Utility}
-
-A Ground Access is defined as the time interval during which a satellite can
-establish contact with a ground station. A ground station is a point on the
-Earth’s surface, identified with geodetic latitude-longitude-altitude
-coordinates and an elevation mask. An elevation mask is the angle above the
-horizon, at the ground station’s position, at which the satellite can be
-considered visible by the ground station. Calculating the ground access for
-satellites on a mission is a fundamental task in operations planning. These
-time intervals dictate the opportunities for data downlink, command uplink, and
-any other communication between the ground segment and satellite. 
-
-The simplest way to compute ground access involves propagating the orbit of a
-satellite and checking, at every time step, the position of the satellite
-relative to the ground station and testing whether the relative position is
-above the elevation mask. While this method is trustworthy and capable of
-returning accurate results, its reliance on iterating over an entire satellite
-orbit input typically yields a long runtime. This is particularly evident in
-the case where a mission has multiple ground stations, multiple satellites, or
-a short propagator timestep. The computation time drawback motivates the use of
-other algorithms that can determine ground access more efficiently. 
-
-There have been a plethora of papers published on the subject of efficiently
-computing ground access over the years. Early work includes Lawton’s
-development of a method for calculating ground access for low-eccentricity
-satellite orbits by leveraging the Fast Fourier Transform to quickly find a
-ground access11. Alfano et al.12 use another technique known as parabolic
-blending for constructing the visibility function and finding ground access.
-While POPS currently utilizes the simplest method for calculating ground
-access, the method that is selected for future implementation is that of Han et
-al.13, which uses a self-adaptive interpolation technique to approximate the
-waveform of the visibility function. The advantage of this method is its
-suitability for all orbit types and orbit propagators, which allows the methods
-employed by POPS to generalize for any mission orbit definition. 
-
-
-\subsection{Swath Utility} 
-
-As discussed in the Terminology section, the concept of an access swath is
-defined as a time-series of access regions as a satellite orbits the Earth.
-Within \gls{pops}, a swath is represented through a closed curve that describes
-the boundary of the cumulative access region of a sensor’s \gls{for} over a
-time interval. The process for calculating a swath boundary from an input
-ephemeris is described here. 
-
-
-
-\subsection{Swath Intersection Utility}
-
-Swath intersection is an important operation for determining what part of a
-specified region is observable by a satellite sensor during some time interval.
-Regions are polygons on the Earth’s surface whose vertices are oriented
-counter-clockwise. The edge between two consecutive vertices is the great
-ellipse arc connecting both points. Swaths are also approximated as polygons
-provided that the timestep is small enough. The edge between two swath boundary
-points being a great ellipse arc is assumed to be a sufficient approximation. 
-
-Polygon clipping techniques are used to find the area of intersection between a
-swath and a polygon. First, the swath and polygon vertices are transformed into
-2D coordinates. The 2D projection used involves defining a plane that is
-tangent to some point on the Earth’s surface. To project a point on the Earth’s
-surface to this plane, a vector is drawn from the centre of the Earth towards
-the point (its \gls{ecef} coordinates), and the vector is extended towards the
-point of intersection of the plane. This type of projection is commonly known
-as the Gnonomic projection; its advantage with respect to the polygon clipping
-operation is that great ellipse arcs are projected as straight lines. This
-means classical 2D polygon clipping techniques can be applied to polygons drawn
-on the Earth’s surface. So long as the swath and polygon occupy one hemisphere
-of the Earth’s surface, the projection will accurately represent the points of
-intersection of the swath and polygon, and any polygon clipping technique can
-be applied. 
 
 
 
