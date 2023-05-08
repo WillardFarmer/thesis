@@ -23,6 +23,10 @@ see the capabilities of a service without accessing the source code. Currently,
 \gls{pops} has 4 main services; they are the: Mission Model, Propagator,
 Database, and Access Time Utilities,  Mission Model.
 
+%% ======================================================================== %%
+%%			    General Architecture
+%% ======================================================================== %%
+
 \section{General Service Architecture}
 
 Every service contains the same basic components so it is worth discussing
@@ -92,6 +96,9 @@ Docker Compose is that it also creates a bridget network for the containers
 Docker Compose creates. Containers are intended to be standalone units but a
 bridge network allows containers to communicate with each other directly.
 
+%% ======================================================================== %%
+%%			    Propagator
+%% ======================================================================== %%
 
 \section{Propagator Service}
 
@@ -164,6 +171,121 @@ Part of the benefit of having the Propagator as its own service is that if a
 more accurate algorithm is desired for orbital propagation, only the Propagator
 service needs to be changed and the rest of \gls{pops} can be left as is.
 
+
+%% ======================================================================== %%
+%%			    Database
+%% ======================================================================== %%
+
+\section{Database}
+
+\gls{pops} must be able to retain information, even if it is
+shut down or moved somewhere else. It is also necessary that data be stored
+such that it does not sit in \gls{ram}. For this reason, an \acrshort{sql}
+database service is included with \gls{pops}. It stores all the data necessary
+for \gls{pops} to function. This includes but is not limited to satellite
+information, \glspl{tle}, current and previous plans, ephemeris data,
+observation opportunity data, and planned observations. 
+
+An \acrshort{sql} database is a type of database management system that uses
+the \gls{sql}. It is commonly used where data needs to be organized and
+accessed in a structured and efficient way. \gls{sql} is a programming language
+used to manage and make changes to a \gls{rdbms}. In an \gls{rdbms}, data is
+stored in tables with rows and columns. Using an SQL database allows for
+effective data storage and access. Relationships may also be made with data in
+an \gls{rdbms}. There are no read or write restrictions on an SQL database so
+data can be accessed simultaneously by multiple users or services.
+
+When a Docker container is deleted, all of the information stored in the
+container is lost. To retain information between restarts, all of the data in
+the database is stored in a Docker Volume. There are two ways information may
+be persistently stored with Docker, either through bind-mounts or with Docker
+volumes. Bind-mounts are simply just a directory on the host's system mounted
+to the docker container. This is the simplest solution but it may be slow and
+unreliable. Alternatively, with Docker volumes, the data is stored in Docker
+itself. If Docker is deleted, so to is the volume. The benefit is that volumes
+can be backed up and shared.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{database.png} 
+    \caption{High Level Overview of the Database}
+    \label{fig:database} 
+\end{figure}
+
+Figure~\ref{fig:database} shows a high-level overview of the structure of the
+\gls{pops} database. The figure is not an exhaustive reference as some tables
+have been omitted in favor of clarity. The entries in each table have also been
+omitted for the same reason. While the figure may lack detail, it does give an
+accurate qualitative description of the database's structure. 
+
+Each box in the diagram represents a single table. Red boxes contain
+`primitive' data. That is, data that has not been derived from any other
+element. The blue boxes represent user-created data, or data that has been
+created from user inputs. The green boxes represent raw data that has been
+generated from \gls{pops}'s algorithms. Arrows indicate that there is a
+relationship between two tables, including 1-to-1, 1-to-many, and many-to-many
+relationships
+
+Starting from the top, the base table for most \gls{pops} data is the
+\textbf{Missions} table. \gls{pops} may be configured for other missions which
+have different configurations. Each mission has a number of satellites stored
+in the \textbf{Satellites} table. This table is a primitive because while
+satellites come from a mission, they exist outside of \gls{pops} and cannot be
+generated. They must be manually entered upon the creation of a new mission.
+Each satellite will have multiple \glspl{tle}, stored in the \textbf{TLEs}
+table. These may be pulled from online or custom generated.
+
+Next is the most fundemental unit of mission planning, the \textbf{Plans}
+table. A plan is derived from a mission and is associated with one \gls{tle}
+for each satellite. Currently, plans are restricted to one set of \glspl{tle}.
+If new \glspl{tle} are available, a new plan will need to be created. 
+
+From a plan and its corresponding \glspl{tle} ephemerides are generated which
+are stored in the \textbf{Ephemerides} table. This table only stores
+information about the ephemeris, such as time range and step size. The actual
+data is stored in the \textbf{Ephemeris Data}. The reason this information is
+divided is such that information about an ephemeris can be queried without
+having to load the entire table of data.
+
+Another primitive table is the \textbf{Ground Stations} table. Here information
+is stored for each ground station, such as Latitude, Longitude, Altitude,
+Elevation Mask, etc. From satellite ephemerides, we can generate \textbf{Ground
+Access Times} using the Ground Access Utility from the \glspl{atu}.
+
+Areas of Interest may be stored in the \textbf{AOIs} table. These may be
+generated from a file or drawn by a User. The data for each \gls{aoi}, is
+generally stored as a JSON string, which can be parsed when requested.
+
+From a plan and an \gls{aoi} we may search for opportunities through a
+\textbf{Search Scenario}.  This table contains information about what kind of
+search was performed, as well as what configuration parameters were included.
+
+Not all satellites may be included in a search scenario. To capture this
+information, there is a \textbf{Search Satellites} table which links search
+scenarios with satellites and search data.
+
+Depending on the type of search, raw search data may be stored in the,
+\textbf{Access Times}, \textbf{Swaths}, and \textbf{Intersection Polygons}
+tables. Each data point is associated with a search satellite. 
+
+Lastly, at the end of the search hierarchy is the \textbf{Opportunities} table.
+This table is simply a list of references to raw search data. With just the raw
+search data, determining what constitutes an `opportunity' may indeterminable.
+So when the search data is generated, so to is the corresponding opportunity
+
+Separate from the rest of the tables discussed so far is the \textbf{Schedule}
+table. Here Events are stored. Each Event is linked to a satellite, and may
+also be linked to a plan.
+
+It should be noted that the Database service only hosts the \gls{sql} database.
+To interact with the data, either the \acrshort{orm} in the Mission Model
+service must be used or a separate database viewer.
+
+
+
+%% ======================================================================== %%
+%%			    ATUs
+%% ======================================================================== %%
 
 \section{Access Time Utilities}
 
@@ -347,6 +469,9 @@ the Swath Intersect Utility will return a list of access times and an
 intersection polygon between the swath and the polygon. This is illustrated in
 Figure~\ref{fig:atu-3}
 
+%% ======================================================================== %%
+%%			    Mission Model
+%% ======================================================================== %%
 
 \section{Mission Model}
  
@@ -1098,17 +1223,6 @@ has access to a ground station. Currently, this is all that is displayed is
 subject to change based on feedback from operators using the tool.
 
 
-\section{Database}
-
-\gls{pops} must be able to retain information, even if it is
-shut down or moved somewhere else. It is also necessary that data be stored
-such that it does not sit in RAM. For this reason, an SQL database service is
-included. It stores all the data necessary for \gls{pops} to function. This
-includes but is not limited to satellite information, \gls{tle}s, current and
-previous plans, ephemeris data, observation opportunity data, and planned
-observations. Using an SQL database allows for effective data storage and
-access. There are also no read or write restrictions on an SQL database so data
-can be accessed simultaneously by multiple users or services.
 
 
 
