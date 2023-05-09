@@ -138,5 +138,84 @@ reaches the time specified in the timestamp, that command is exectuted. These
 spacecraft. This allows operators to control the spacecraft when direct
 communication cannot be established.
 
+\section{Operations Scenario}
 
+\gls{pops} is being developed to plan operations for missions at \gls{sfl} but,
+to maintain the privacy of their customers' operations strategies, we shall
+examine an imaginary scenario that is realistic but hypothetical. Given that
+\gls{pops} is meant to be a general mission planning software, a hypothetical
+mission scenario is still a valid example. Throughout this thesis, references
+and examples will be made with this mission scenario in mind.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{EG-SAT.png} 
+    \caption{EG-SAT Example Mission Scenario}
+    \label{fig:eg-sat-1} 
+\end{figure}
+
+A common technique of remote sensing is Tip-and-Cue \cite{}.  In this
+observation mode, multiple sensor systems are used to track both stationary and
+moving targets over a wide area with high accuracy. First, a sensor with a wide
+\gls{fov} is used to detect potential targets and these targets are passed to
+another more accurate sensing system as ‘tips.’ The more accurate system is
+then ‘cued’ to sense these potential targets. This is especially useful for
+situations where the more accurate sensing system has a limited \gls{fov}.
+
+Let us say, as part of the “EG-SAT” mission, which is an imaginary mission, we
+have a two-satellite constellation in formation where Sat-A leads Sat-B. Sat-A
+has a course conical imager with a wide 60° off-nadir \gls{fov} but low ground
+resolution.  Sat-B has a fine conical imager with high ground resolution but
+narrow \gls{fov}.  For the best coverage, Sat-A is always pointed at the nadir.
+Sat-B has some freedom and can be pointed 20° off-nadir by changing the
+spacecraft’s attitude.  It should be noted that since Sat-A’s sensor is never
+pointed away from the nadir, its \gls{fov} is equivalent to its \gls{for}. This
+makes our definition for access swath valid for this case. This mission has two
+operations modes: Course Imaging and Tip-and-Cue Imaging.
+
+\begin{description} 
+
+    \item[Course Imaging] In this mode, Sat-A must take images from all or part
+	of an Area of Interest. This sensor data must then be recorded and
+	downlinked at a ground station some time in the future.
+
+    \item[Tip-and-Cue Imaging] In this mode, Sat-A first performs Coarse
+	Imaging over an Area of Interest. This data is then downlinked to a
+	ground station which processes it and commands Sat-B to take fine
+	images over the Area of Interest on the next pass.
+
+\end{description}
+
+The Course imaging mode is quite simple. When the \gls{aoi} first intersects
+the \gls{fov} of Sat-A, we begin taking in sensor data. When the \gls{fov} no
+longer intersects the \gls{aoi} we stop reading data.
+
+For the Tip-and-Cue Imaging mode, we cannot know where potential targets will
+be on the next pass a priori, so we must rely on Sat-B's \gls{for}. It is
+assumed that, in this scenario, the ground systems are already capable of
+processing Sat-A data and creating new commands to be sent to Sat-B. 
+
+
+\begin{figure} 
+    \centering
+    \begin{minipage}[c]{0.45\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{EG-SAT - obs 1.png} 
+	\caption{Course Imaging}
+	\label{fig:eg-sat-2} 
+    \end{minipage}
+    \hfill
+    \begin{minipage}[c]{0.45\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{EG-SAT - obs 2.png} 
+	\caption{Next-Pass Tip-and-Cue Imaging}
+	\label{fig:eg-sat-3} 
+    \end{minipage} 
+\end{figure}
+
+
+\section{Opportunity Filtering High-Level}
+
+Before discussing the implementation of \gls{pops} it would be helpful to
+discuss, at a high-level, how potential observations may be searched for. 
 

@@ -799,7 +799,40 @@ Algorithm~\ref{alg:contains}.
 
 \subsection{Access Time Utilities Handler}
 
+In order to abstract the communication between the Mission Model service and
+the \gls{atu} service, an \gls{atu} handler class has been developed. Its
+purpose is simple, from input data data, it sends requests to the \gls{atu}
+service and formats the result. A developer shouldn't need to create a POST
+request every time they wish to utilitize some \gls{atu} functionality. They
+may make a mistake that wastes development. 
+
+Every \gls{api} call provided by the \gls{atu} service has a corresponding
+method in the \gls{atu} handler. For ease of use, the inputs and outputs of
+each method are Data Handler objects. For example, if a user wishes to perform
+polygon intersection with a swath and a polygon, all they must do is pass a
+Swath object and Polygon object to the \texttt{polygon\_intersection()} method
+and an Access Times object and another Polygon object will be returned. The
+purpose of this is to make interacting with the \gls{atu} service as simple as
+specifying their high-level inputs and outputs.
+
+
 \subsection{Opportunity Filter}
+
+The Opportunity Filter class is the most important but also most complex aspect
+of the Mission Model service. It is here that the Mission Model actually
+searches for potential observation opportunities. Opportunity Filtering is the
+process of taking an infinite set of potential observations and filtering out
+opportunities based on a set of constraints. The Access Time Utilities provide
+the basic primitive operations that allow us to constrain potential
+observations. By themselves, they do not constitute Opportunity Filtering but
+rather it is how they are used together.
+
+\gls{pops} is intended to be a generalizable and easily expandable tool but the
+process of filtering for observation opportunities is inherently specific to a
+mission’s operation’s strategy. This is the purpose of the Opportunity Filter
+class. Its purpose is to combine the functionality of the Data Handler classes
+and the \gls{atu} Handler class  to make Opportunity Filtering
+
 
 \subsection{3D Earth Visualization}
 
