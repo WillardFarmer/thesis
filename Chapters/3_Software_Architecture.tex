@@ -176,7 +176,7 @@ service needs to be changed and the rest of \gls{pops} can be left as is.
 %%			    Database
 %% ======================================================================== %%
 
-\section{Database}
+\section{Database}\label{sec:database}
 
 \gls{pops} must be able to retain information, even if it is
 shut down or moved somewhere else. It is also necessary that data be stored
@@ -287,7 +287,7 @@ service must be used or a separate database viewer.
 %%			    ATUs
 %% ======================================================================== %%
 
-\section{Access Time Utilities}
+\section{Access Time Utilities}\label{sec:atu}
 
 The ATU service provides the basic building blocks for
 constraining observation opportunities. These can be added to depending on a
@@ -820,18 +820,133 @@ specifying their high-level inputs and outputs.
 
 The Opportunity Filter class is the most important but also most complex aspect
 of the Mission Model service. It is here that the Mission Model actually
-searches for potential observation opportunities. Opportunity Filtering is the
-process of taking an infinite set of potential observations and filtering out
-opportunities based on a set of constraints. The Access Time Utilities provide
-the basic primitive operations that allow us to constrain potential
-observations. By themselves, they do not constitute Opportunity Filtering but
-rather it is how they are used together.
+searches for potential observation opportunities and implements the filters
+discussed in Section~\ref{sec:opp-filtering}. Its purpose is to combine
+the functionality of the Data Handler classes and the \gls{atu} Handler class
+to make Opportunity Filtering as close as possible to their high-level
+summaries. In general, with opportunity filtering, the implementation process
+is straightforward and matches well with its high-level description. This is
+not always the case though. Let us now revisit the Filters discussed earlier,
+and outline how they are actually implemented in \gls{pops}. 
 
-\gls{pops} is intended to be a generalizable and easily expandable tool but the
-process of filtering for observation opportunities is inherently specific to a
-mission’s operation’s strategy. This is the purpose of the Opportunity Filter
-class. Its purpose is to combine the functionality of the Data Handler classes
-and the \gls{atu} Handler class  to make Opportunity Filtering
+\algnewcommand\algorithmicforeach{\textbf{for each}}
+\algdef{S}[FOR]{ForEach}[1]{\algorithmicforeach\ #1\ \algorithmicdo}
+
+\begin{algorithm} 
+    \caption{Coarse Imaging Opportunity Filter}
+    \label{alg:coarse-imaging} 
+    \begin{algorithmic}[1]
+	\Function{CoarseImaging}{$E_A$, $g_{AOI}$} 
+
+	    \Let{$S_A$}{\Call{Swath}{$E_A$, $60^\circ$}} \Comment{Coarse Imaging Swath}
+
+	    \Let{$A_{A}$, $G_A$}{\Call{PolygonIntersection}{$S_A$, $g_{AOI}$}} 
+
+	    \Let{$O$}{$[A_{A}, G_A]$} \Comment{List of Opportunities}
+	\State \Return $O$, $S_A$
+	\EndFunction
+    \end{algorithmic}
+\end{algorithm}
+
+The implementation of the Coarse Filter can be seen in
+Algorithm~\ref{alg:coarse-imaging} and is very close to its high-level
+description. The inputs to the filter are the Ephemeris of Sat-A, $E_A$, and
+the Area of Interest polygon $g_{AOI}$. First the coarse imaging swath is
+generated, $S_A$. Then the swath and \gls{AOI} are passed into the Polygon
+Intersection Utility which return a list of access times, $A_{A}$, and a list
+of intersection polygons, $G_A$. Note that the length of $A_{A}$ and $G_A$
+are the same since you cannot have an intersection polygon without an access.
+Given this property, the list of opportunities, $O$, is only the combination of
+$A_{A}$ and $G_A$. Finally, the list of opportunities is returned along with
+the coarse imaging swath. 
+
+Some details of the polygon filtering process have been omitted for clarity.
+That being, the insertion of all the data into the database. How opportunities
+are actually stored, as mention in the Section~\ref{sec:database}, is that
+first, the search data is generated, then it loaded into the database, and
+finally each opportunity is a list of database ID's corresponding to each
+search element. The purpose of this is to not duplicate data and to also allow
+an opportunity to be defined with as many search elements as is desired by a
+developer.
+
+
+%% Note for tomorrow: do ground accesses. Change variable for polygons so G 
+%% can be for ground accesses.
+
+
+\begin{algorithm} 
+    \caption{Tip-and-Cue Imaging Filter}
+    \label{alg:tip-and-cue} 
+    \begin{algorithmic}[1] 
+	\Require{$E_A$ and $E_B$ must be defined for the same time range and time step.}
+	\Function{TipAndCueImaging}{$E_A$, $E_B$, $g_{AOI}$} 
+
+	    \Let{$S_A$}{\Call{Swath}{$E_A$, $60^\circ$}} \Comment{Tip Swath}
+	    \Let{$S_B$}{\Call{Swath}{$E_B$, $20^\circ$}} \Comment{Cue Swath}
+
+	    \Let{G_A}{\Call{GroundAccess}}
+
+	    \Let{$A_{A}$, \_}{\Call{PolygonIntersection}{$S_A$, $g_{AOI}$}} 
+
+	    \ForEach{$a_A$ in $A_{A}$}
+
+		\Let{\_, $g_A$}{\Call{PolygonIntersection}{$S_A(a_A)$, $g_{AOI}$}} 
+		\Comment{Constrain Swath to access}
+
+		\Let{$p$}{\Call{Pass}{E_A, a_A}} \Comment{Get pass that contains access}
+
+		\Let{$a_B$, $g_{A \wedge B}$}{\Call{PolygonIntersection}{$S_B(p')$, $g_{A}$}} 
+		\Comment{Constrain Swath to next pass}
+
+		\Let{$O$}{$O + (a_A, a_B, g_{A \wedge B})$}
+
+	    \EndFor
+
+	\State \Return $O$, $S_A$, $S_B$
+	\EndFunction
+    \end{algorithmic}
+\end{algorithm}
+
+Tip-and-Cue Filtering can be seen in Algorithm~\ref{alg:tip-and-cue}. The main
+components of the filter are still there but some modifications have been made
+as part of the implementation and to speed up processing. Let us walk through
+the filter. As expected, the inputs to the filter are merely the ephemerides
+for both Sat-A and Sat-B, $E_A$ and $E_B$, and the \gls{aoi}, $g_{AOI}$. From
+the ephemerides the tip and cue swaths are generated, $S_A$ and $S_B$. 
+
+After this, instead of calculating all of intersection polygons for the tip
+swath and the \gls{aoi}, only the list of access times are recorded, $A_A$.
+This has two purposes.  First, it is faster to just calculate the access times
+for the Intersection Polygon Utilty. Second, this gives us a list of access
+times that can be iterated over to find opportunities. The significance of this
+is that there may exist \glspl{aoi} where Sat-A has mutliple accesses within a
+single pass. By iterating over each access we create an opportunity for every
+access in a pass.  The alternative would be to iterate over every pass. This
+method would either require taking only the first access in the tip pass as an
+opportunity or specialized logic would be needed that would overcomplicate the
+filter.
+
+With an access list for Sat-A, we can iterate over every individual access,
+$a_A$. The first operation in each iteration is to calculate the Intersection
+Polygon of Sat-A and the \gls{AOI} during that access. Note the notation used,
+$S_A(a_A)$ indicates that the swath is constrained to only the time range
+within the parantheses. Next we find the pass, $p$, the access lies in.  This
+is done with a built-in helper function in the Ephemeris Data Handler Class.
+From this pass we can constrain the Cue swath to only the next pass and perform
+Polygon Intersection with it and the intersection polygon from the previous
+step. This outputs the access time for Sat-B, $a_B$ and the Intersection
+Polygon for Sat-A, Sat-B, and the \gls{aoi}, $g_{A \wedge \B}$. Sat-A's access,
+Sat-B's access, and the intersection polygon are then appended to the list of
+opportunities. This process is then repeated for each of Sat-A's access times.
+
+From this process, some edge cases have been omitted. That being, at the
+beginning and end of a scenario, we cannot generate any opportunities because
+there would be no corresponding tip or cue pass respectively. Also, another
+edge case would be where there are no accesses for Sat-A and Sat-B in a single
+pass. 
+
+%% Ground station contacts?? yuck
+
 
 
 \subsection{3D Earth Visualization}
