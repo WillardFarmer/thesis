@@ -1,5 +1,5 @@
 \glsresetall{} 
-\chapter{Software Architecture}
+\chapter{Software Architecture}\label{chap:architecture}
 
 
 \section{Payload Operations Planning Software Architecture}
@@ -852,7 +852,7 @@ The implementation of the Coarse Filter can be seen in
 Algorithm~\ref{alg:coarse-imaging} and is very close to its high-level
 description. The inputs to the filter are the Ephemeris of Sat-A, $E_A$, and
 the Area of Interest polygon $g_{AOI}$. First the coarse imaging swath is
-generated, $S_A$. Then the swath and \gls{AOI} are passed into the Polygon
+generated, $S_A$. Then the swath and \gls{aoi} are passed into the Polygon
 Intersection Utility which return a list of access times, $A_{A}$, and a list
 of intersection polygons, $G_A$. Note that the length of $A_{A}$ and $G_A$
 are the same since you cannot have an intersection polygon without an access.
@@ -870,21 +870,18 @@ an opportunity to be defined with as many search elements as is desired by a
 developer.
 
 
-%% Note for tomorrow: do ground accesses. Change variable for polygons so G 
-%% can be for ground accesses.
-
-
 \begin{algorithm} 
     \caption{Tip-and-Cue Imaging Filter}
     \label{alg:tip-and-cue} 
     \begin{algorithmic}[1] 
 	\Require{$E_A$ and $E_B$ must be defined for the same time range and time step.}
-	\Function{TipAndCueImaging}{$E_A$, $E_B$, $g_{AOI}$} 
+	\Function{TipAndCueImaging}{$E_A$, $E_B$, $g_{AOI}$, $L_G$} 
 
 	    \Let{$S_A$}{\Call{Swath}{$E_A$, $60^\circ$}} \Comment{Tip Swath}
 	    \Let{$S_B$}{\Call{Swath}{$E_B$, $20^\circ$}} \Comment{Cue Swath}
 
-	    \Let{G_A}{\Call{GroundAccess}}
+	    \Let{$A_{G,A}$}{\Call{GroundAccess}{$E_A$, $L_G$}} \Comment{Calculate Ground Accesses}
+	    \Let{$A_{G,B}$}{\Call{GroundAccess}{$E_B$, $L_G$}}
 
 	    \Let{$A_{A}$, \_}{\Call{PolygonIntersection}{$S_A$, $g_{AOI}$}} 
 
@@ -893,12 +890,14 @@ developer.
 		\Let{\_, $g_A$}{\Call{PolygonIntersection}{$S_A(a_A)$, $g_{AOI}$}} 
 		\Comment{Constrain Swath to access}
 
-		\Let{$p$}{\Call{Pass}{E_A, a_A}} \Comment{Get pass that contains access}
+		\Let{$p$}{\Call{Pass}{$E_A$, $a_A$}} \Comment{Get pass that contains access}
 
 		\Let{$a_B$, $g_{A \wedge B}$}{\Call{PolygonIntersection}{$S_B(p')$, $g_{A}$}} 
 		\Comment{Constrain Swath to next pass}
 
-		\Let{$O$}{$O + (a_A, a_B, g_{A \wedge B})$}
+		\If{ $\exists \alpha \in A_{G,A}, \exists \beta \in{A_{G,B}}, (a_A < \alpha, \beta < a_B) $}
+		    \Let{$O$}{$O + (a_A, a_B, g_{A \wedge B})$}
+		\EndIf
 
 	    \EndFor
 
@@ -911,8 +910,12 @@ Tip-and-Cue Filtering can be seen in Algorithm~\ref{alg:tip-and-cue}. The main
 components of the filter are still there but some modifications have been made
 as part of the implementation and to speed up processing. Let us walk through
 the filter. As expected, the inputs to the filter are merely the ephemerides
-for both Sat-A and Sat-B, $E_A$ and $E_B$, and the \gls{aoi}, $g_{AOI}$. From
-the ephemerides the tip and cue swaths are generated, $S_A$ and $S_B$. 
+for both Sat-A and Sat-B, $E_A$ and $E_B$, and the \gls{aoi}, $g_{AOI}$. In
+addition to these, we also include a list of ground stations that are available
+for this mode, $L_G$. From the ephemerides the tip and cue swaths are
+generated, $S_A$ and $S_B$.  Using the Ground Access Utility we can generate
+lists of ground access times for Sat-A and Sat-B, $A_{G,A}$ and $A_{G,B}$ for
+every ground station provided. 
 
 After this, instead of calculating all of intersection polygons for the tip
 swath and the \gls{aoi}, only the list of access times are recorded, $A_A$.
@@ -928,25 +931,26 @@ filter.
 
 With an access list for Sat-A, we can iterate over every individual access,
 $a_A$. The first operation in each iteration is to calculate the Intersection
-Polygon of Sat-A and the \gls{AOI} during that access. Note the notation used,
+Polygon of Sat-A and the \gls{aoi} during that access. Note the notation used,
 $S_A(a_A)$ indicates that the swath is constrained to only the time range
 within the parantheses. Next we find the pass, $p$, the access lies in.  This
 is done with a built-in helper function in the Ephemeris Data Handler Class.
 From this pass we can constrain the Cue swath to only the next pass and perform
 Polygon Intersection with it and the intersection polygon from the previous
 step. This outputs the access time for Sat-B, $a_B$ and the Intersection
-Polygon for Sat-A, Sat-B, and the \gls{aoi}, $g_{A \wedge \B}$. Sat-A's access,
-Sat-B's access, and the intersection polygon are then appended to the list of
-opportunities. This process is then repeated for each of Sat-A's access times.
+Polygon for Sat-A, Sat-B, and the \gls{aoi}, $g_{A \wedge B}$. Before adding an
+opportunity, we must check if suitable ground station contacts exist in between
+Sat-A's access and Sat-B's access. If this is the case Sat-A's access, Sat-B's
+access, and the intersection polygon are then appended to the list of
+opportunities. Otherwise the opportunity is discarded. This process is then
+repeated for each of Sat-A's access times.
 
 From this process, some edge cases have been omitted. That being, at the
 beginning and end of a scenario, we cannot generate any opportunities because
 there would be no corresponding tip or cue pass respectively. Also, another
 edge case would be where there are no accesses for Sat-A and Sat-B in a single
-pass. 
-
-%% Ground station contacts?? yuck
-
+pass. Similarly, the process of adding the search data to the database is also
+omitted.
 
 
 \subsection{3D Earth Visualization}

@@ -1,45 +1,36 @@
-\glsresetall{} \chapter{Software Workflow}
+\glsresetall{} 
 
 
-To illustrate how \gls{pops} may be used, let us walk through an example
-scenario.  \gls{pops} is being developed to perform operations for missions at
-\gls{sfl} but to maintain the privacy of our customers’ operations strategies we
-shall examine an imaginary scenario that is realistic but hypothetical.
+\chapter{Software Workflow}\label{chap:workflow}
 
-A common technique of remote sensing is Tip and Cue14. In this observation
-mode, multiple sensor systems are used to track both stationary and moving
-targets over a wide area with high accuracy. First, a sensor with a wide
-\gls{fov} is used to detect potential targets and these targets are passed to
-another more accurate sensing system as ‘tips.’ The more accurate system is
-then ‘cued’ to sense these potential targets. This is especially useful for
-situations where the more accurate sensing system has a limited \gls{fov}. 
+To demonstrate how \gls{pops} may be used, let us walk through setting up
+\gls{pops} for the EG-SAT mission. Suppose the customer defines an Area Target
+AOI in the Norwegian Sea where they wish Coarse Imaging and Tip-and-Cue Imaging
+to be performed. The \gls{aoi} is defined by the points  in
+Table~\ref{tab:norway-aoi}. It is the operator’s responsibility to construct an
+operations plan for the next week. To do this, they may use \gls{pops} to aid
+them in laying out the deterministic aspects of an operations plan.  That
+being, determining remote-sensing opportunities, creating a schedule of
+observations, validating that schedule, and creating \glspl{ttc} to be uploaded
+to the spacecraft. It should be noted that the real-time ground processing of
+the data and the generation of new \glspl{ttc} for the next pass of the
+Tip-and-Cue Mode are beyond the capabilities of \gls{pops} and this is handled
+by separate, mission-specific automatic ground processing. 
 
-Let us say, as part of the “EG-SAT” mission, which is an imaginary mission, we
-have a two-satellite constellation in formation where Sat-A leads Sat-B. Sat-A
-has a course imager with a wide 60° off-nadir \gls{fov} but low ground
-resolution.  Sat-B has a fine imager with high ground resolution but narrow
-\gls{fov}. For the best coverage, Sat-A is always pointed at the nadir. Sat-B has
-some freedom and can be pointed 20° off-nadir by changing the spacecraft’s
-attitude. It should be noted that since Sat-A’s sensor is never pointed away
-from the nadir, its \gls{fov} is equivalent to its \gls{for}. This makes our
-definition for access swath valid for this case. This constellation uses the
-Tip and Cue method of remote sensing. When a target of interest is identified,
-Sat-A stores that information and downlinks it on the next available ground
-contact. The ground station processes the data, then commands Sat-B to image
-the geolocation of the target on the next pass. It is assumed that, in this
-scenario, the ground systems are already capable of processing the Sat-A data
-and creating new commands to be sent to Sat-B. 
+\begin{table}[h] 
+    \centering
+    \caption{Area of Interest Definition}
+    \begin{tabular}{cccc}
+	Point                  & Latitude [$^\circ$] & Longitude [$^\circ$] & Altitude [m] \\ \hline
+	\multicolumn{1}{l|}{0} & 73       & -20      & 0        \\
+	\multicolumn{1}{l|}{1} & 66       & 19       & 0        \\
+	\multicolumn{1}{l|}{2} & 78       & 41       & 0        \\
+	\multicolumn{1}{l|}{3} & 82       & 9        & 0        \\
+	\multicolumn{1}{l|}{4} & 79       & -17      & 0       
+    \end{tabular}
+    \label{tab:norway}
+\end{table}
 
-Now, let us say the customer defines a polygon AOI in the Norwegian Sea where
-they wish Tip and Cue to be performed. It is the operator’s responsibility to
-construct an operations plan for the next week. To do this, they may use
-\gls{pops} to aid them in laying out the deterministic aspects of an operations
-plan. That being, determining remote-sensing opportunities, creating a schedule
-of observations, validating that schedule, and creating \glspl{ttc} to be
-uploaded to the spacecraft. It should be noted that the real-time ground
-processing of the data and the generation of new \glspl{ttc} for the next pass
-are beyond the capabilities of \gls{pops} and this is handled by separate,
-mission-specific automatic ground processing. 
 
 
 \subsection{Plan Configuration}
@@ -48,9 +39,9 @@ First, \gls{pops} must be configured for a particular mission. The operator
 must specify the mission, its satellites, satellite sensor parameters, and its
 available ground stations. This will only need to be set once per mission. For
 our example scenario, the mission is EG-SAT, the satellites are Sat-A and
-Sat-B, and the ground station is the Space Flight Laboratory in Toronto. After
-this is done, the operator will then start creating a plan. The first part of a
-plan is specifying the \glspl{tle} for each satellite. These can be previous
+Sat-B, and the ground station is the \gls{sfl}in Toronto. After this is done,
+the operator will then start creating a plan. The first part of a plan is
+specifying the \glspl{tle} for each satellite. These can be previous
 \glspl{tle} stored in the \gls{pops} database, new \glspl{tle} taken from
 CelesTrak, or custom-made \glspl{tle} that may be used for simulation or may be
 more accurate \glspl{tle} derived from a spacecraft’s onboard \gls{gps}
@@ -59,6 +50,16 @@ satellite and stored in the database. For the EG-SAT scenario, \glspl{tle} were
 generated with the \gls{stk}. A current limitation of \gls{pops} is that once
 \glspl{tle} are selected for a plan, they cannot be changed. This will be
 addressed in future revisions. 
+
+\begin{table}[h] 
+    \centering
+    \caption{SFL Ground Station}
+    \begin{tabular}{cccc}
+	Station                  & Latitude [$^\circ$] & Longitude [$^\circ$] & Altitude [m] \\ \hline
+	\multicolumn{1}{l|}{SFL} & 73       & -20      & 0        \\
+    \end{tabular}
+    \label{tab:ground-stations}
+\end{table}
 
 \subsection{Observation Configuration}
 
@@ -115,8 +116,8 @@ used to constrain the swath. The \glspl{atu} serve as the primitive operations
 that allow us to articulate how observations may be filtered.
 
 
-\algnewcommand\algorithmicforeach{\textbf{foreach}}
-\algdef{S}[FOR]{ForEach}[1]{\algorithmicforeach\ #1\ \algorithmicdo}
+%\algnewcommand\algorithmicforeach{\textbf{foreach}}
+%\algdef{S}[FOR]{ForEach}[1]{\algorithmicforeach\ #1\ \algorithmicdo}
 
 \begin{algorithm*}[h] 
     \caption{Simple Tip-and-Cue Opportunity Filtering}

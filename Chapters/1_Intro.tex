@@ -1,5 +1,5 @@
 \glsresetall{} 
-\chapter{Introduction}
+\chapter{Introduction}\label{chap:intro}
 %\subsection{Small Satellites and New Space}
 
 
@@ -50,33 +50,103 @@ as the \gls{atu}.  \gls{pops} also handles its orbital propagation by making use
 open-source Python implementations of the SGP4 algorithm. 
 
 
-
-\subsection*{Thesis Outline} 
-
-
 \section{Existing Solutions}\label{sec:exsoln}
 
-This is not a problem that is unique to Gray Jay Pathfinder.
-For any mission with sufficiently complicated operations, developing or purchasing a license for planning software is prudent.
-There are a multitude of existing solutions, each with their own benefits and shortcomings.
+Mission planning is not unique to \gls{sfl}. Leveraging software automation
+should be done for any mission with sufficiently complicated operations.  As
+such, existing mission planning solutions already exist. For these existing
+solutions though, we should keep in mind the microspace design approach. Even
+though there may exist software that finds the best possible solutions with the
+best algorithms and interface, can the same results be achieved through a more
+limited but still satisfactory solution? 
 
 
+\subsection{Collection Planning and Analysis Workstation}
+
+The \acrfull{cpaw} is the one of the more sophisticated operations planning
+tools available on the market.  Developed by Orbit Logic, \gls{cpaw} has a
+mission heritage and has been used for planning imaging operations for: Landsat
+8/9~\cite{gokhale_mission_nodate}, Worldview-1/2, GeoEye-1, and
+RADARSAT-2~\cite{herz_eo_2014}. Typically, \gls{cpaw}'s use case is for medium
+to large constellations of synthetic-aperture RADAR or electro-optical
+satellites. It combines dynamic modeling of the spacecraft with optimized
+schedule planning. These schedules can then be used to generate commands to be
+sent to the spacecraft. Planning may either be done manually or automatically. 
+
+This is a very appealing solution but it has some limitations. Firstly,
+\gls{cpaw} is expensive and licensing the software would require yearly
+payments per mission. License fees does not necessarily preclude the use of
+\gls{cpaw}, rather it is the fact that not all of \gls{cpaw}'s capabilities are
+necessary.  \gls{sfl} does not require a tool that fully automates satellite
+operations, rather it needs a tool that automates repetitive calculations.
+Operators will still be in the loop setting plans for satellites. \gls{cpaw}
+also provides a suite of proprietary algorithms that produce an optimized
+operations schedle.  While this would be a nice to have, an optimal schedule is
+equivalent to a satisfactory schedule if both meet their operational
+requirements. Time and money spent towards approaching optimality could be
+wasted. In addition, out-of-the-box, \gls{cpaw} does not provide support for
+all of the operations modes performed at \gls{sfl}. These modes would need to
+be developed and integrated into the software. This limits \gls{cpaw} to only
+the mission that it is licensed for and cannot be extended to future missions
+without new licensing.
 
 
-\subsection{\acrshort{cpaw}}
+\subsection{STK Scheduler} 
 
-The \gls{cpaw} is the one of the most sophisticated operations planning tools on the market. 
-Developed by Orbit Logic, \gls{cpaw} is one of their products available on the open market. 
-Others being: SpyMeSat Mobile App, Order Logic, STK Scheduler, UAV Planner, and On-board Autonomous Planning System.
-\gls{cpaw} has been used by a number of missions for their imaging planning operations: Landsat 8/9 \cite{gokhale_mission_nodate}, Worldview-1/2, GeoEye-1, and RADARSAT-2 \cite{herz_eo_2014}.
+STK Scheduler is an extension to the Ansys \acrlong{stk} developed by orbit
+logic. It provides the scheduling utility of \gls{cpaw} but utilizes objects
+defined in \gls{stk}. That is, the scheduling algorithms build off of the
+flight dynamics from \gls{stk} to generate optimal schedules. Operators at
+\gls{sfl} are already very experienced with \gls{stk} so utilitizing a plugin
+that supports schedule creation is appealing.
+
+Similar to \gls{cpaw}, \gls{stk} Scheduler also requires a license fee payed
+yearly. If mission planning only needs to be done for a single mission, this
+would be a good cost-effective solution. But, for multiple missions, they must
+either use the same license, which may become challenging logistically, or
+multiple licenses would need to be procured.
 
 
-\gls{cpaw} specializes specifically on image planning. 
-Once set up by an operator, it can generate operations schedules and can generate commands to be sent to spacecraft in orbit.
-It supports both automatic and manual operations.
+\subsection{Mission Planning and Scheduling Software}
+
+The \gls{mpss} was developed for the NEMO-AM by \gls{sfl} in 2013~\cite{payam}.
+Its purpose was to facilitate operations planning for Earth observation
+missions at \gls{sfl}. It was designed with the NEMO-AM mission in mind and
+incorperated: orbit visualization, attitude control algorithms, star tracker
+data, \gls{gps} data, orbit propagation, and spacecraft command generation.
+Having an already built in-house solution would be an ideal foundation to build
+a new tool off of. 
+
+There are a number of drawbacks to using the \gls{mpss}, though. The first
+issue is that the software was developed in 2013 and built to run on the
+\textit{RedHat Enterprise Linux 5}. The operating system was a specific
+requirement from the customer and is not used or supported by \gls{sfl}. At the
+very least using the tool would require updating all of the libraries to newer
+versions. Some libraries may not even be supported 9 years later. Building off
+of the \gls{mpss} locks development to decisions made that were reasonable in
+2013, by may note be valid for our current puproses. For example, should the
+new software be a desktop application using Qt for its \gls{gui}? Or, should
+the new software directly handle attitude control sensor data. These are very
+mission specific and potentially limit the software extensibility. Lastly, the
+\gls{mpss} was designed with operation mode in mind. The new software solution
+should be able to be extensible to different operations modes.    
 
 
+\section{Thesis Outline} 
 
+The puprpose of this Thesis is to summarize the development of the
+\acrlong{pops}. As well, its purpose is to highlight some of the challenges
+that go along with creating a mission plannng software. In
+Chapter~\ref{chap:ops}, some operations concepts are discussed such as
+terminology and the use of \glspl{ttc}. An example scenario is also introduced
+to demonstrate how \gls{pops} may be used without giving away \gls{sfl}'s
+customers' operations strategies. In Chapter~\ref{chap:architecture}, the
+software architecture of \gls{pops} is discussed. This is the largest chapter
+as it goes into the different services provided by \gls{pops}. In Chapter
+\ref{chap:workflow}, we walk through how \gls{pops} may be used for the example
+scenario introduced in Chapter~\ref{chap:ops}. Finally, the thesis is concluded
+in Chapter~\ref{chap:conclusion}. After the conclusion, some algorithms of note
+are discussed in the appendix.
 
 
 
