@@ -1161,24 +1161,18 @@ are as follows:
 	scenarios, a large polygon must be sub-divided into sections that
 	Cesium can process.
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.9\textwidth]{Cesium_Example_Swath.png} 
-    \caption{Example of a 30$^\circ$ Ground Swath}
-    \label{fig:cesium_swath}
-\end{figure}
 
     \item[Swath] The last Cesium object that is currently handled are ground or
 	access swaths. The distinction here between \gls{fov} and \gls{for} is
 	unimportant since both are displayed in the same way. Swaths are
-	displayed with polygons but how they are generated can be tricky. From
-	the \glspl{atu}, swaths are represented through two polylines that loop
-	around the Earth $L_1$ and $L_2$. These represent the left and right
-	boundary of the swath with respect to the velocity vector (See
+	displayed with polygons but how this data is generated can be tricky.
+	From the \glspl{atu}, swaths are represented through two polylines that
+	loop around the Earth $L_1$ and $L_2$. These represent the left and
+	right boundary of the swath with respect to the velocity vector (See
 	section~\ref{sec:atu}).  Typically, to display a swath all that we must
-	do is reverse $L_1$ and append it to $L_2$. In this way we create a
-	counter-clockwise ordered polygon that can be displayed on Cesium. But,
-	if we do this for a swath that is defined for greater than one
+	do is reverse $L_1$ and append it to $L_2$. In this way, we create a
+	counter-clockwise ordered polygon that can be displayed on Cesium.
+	But, if we do this for a swath that is defined for greater than one
 	half-orbit Cesium will no longer be able to display the polygon because
 	it cannot determine what the inside of the polygon is. Thankfully,
 	swaths generally only need to displayed for times where a satellite has
@@ -1188,17 +1182,66 @@ are as follows:
 	purposes but at the beginning and end of a constrained swath, we may
 	wish to show the footprint or access region of the satellite at the
 	beginning and end of the constrained swath. To do this, the \glspl{atu}
-	also provide ellipse lists for each point in an Ephemeris. From this
-	list, we can take the ellipsoids at the beginning and end of the
-	constrained swath, take only the points that lie outside of the swath
-	area, and append them to the boundary lists. That is,
+	also provide ellipse representations of the footprint/access region for
+	each point in an Ephemeris.  From this list, we can take the ellipsoids
+	at the beginning and end of the constrained swath, take only the points
+	that lie outside of the swath area, and append them to the boundary
+	lists.  That is, 
+
 	\begin{equation*} 
-	    P_{swath} = L_1' + E_{start} + L_2 + E_{end}
-	\end{equation*} where $P_{swath}$ is the swath polygon, $L_1'$ is $L_1$
-	reversed, and $E_{start}/E_{end}$ are the ellipse points at the
-	beginning and of the constrained swath. Calculating $E_{start}/E_{end}$
-	is somewhat involved and is discussed in Algorithm~\ref{alg:ellipse}.
-	An example of a swath can be seen in Figure~\ref{fig:cesium_swath}.
+	    P_{swath} = L_1' + E_{start} + L_2 + E_{end} 
+	\end{equation*} 
+
+	where $P_{swath}$ is the swath polygon, $L_1'$
+	is $L_1$ reversed, and $E_{start}/E_{end}$ are the ellipse points at
+	the beginning and end of the constrained swath.  Calculating
+	$E_{start}/E_{end}$ is somewhat involved and is discussed in
+	Algorithm~\ref{alg:ellipse}.
+	
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+	\includegraphics[width=\textwidth]{Swath-1.png} 
+	\caption{Basic Swath}
+	\label{fig:swath-1}
+    \end{subfigure}
+    \hfille
+    \begin{subfigure}[b]{0.45\textwidth}
+	\includegraphics[width=\textwidth]{Swath-2.png} 
+	\caption{Footprint/Access Region for each point}
+	\label{fig:swath-2}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+	\includegraphics[width=\textwidth]{Swath-3.png} 
+	\caption{Start and End Ellipses}
+	\label{fig:swath-3}
+    \end{subfigure}
+    \hfille
+    \begin{subfigure}[b]{0.45\textwidth}
+	\includegraphics[width=\textwidth]{Swath-4.png} 
+	\caption{Final Rounded Swath}
+	\label{fig:swath-4}
+    \end{subfigure}
+
+    \caption{Steps to display a rounded swath}
+    \label{fig:swath-steps}
+\end{figure}
+
+To illustrate this process, see Figure~\ref{fig:swath-steps}.
+In~\ref{fig:swath-1}, we begin a with a simple swath which is just described by
+the two boundaries. For each timestep in the swath, the corresponding
+footprint/access regions are provided, which can be seen in~\ref{fig:swath-2}.
+From this list, only the start and end ellipses are selected,
+\ref{fig:swath-3}. Finally, these are inputted into Algorithm~\ref{alg:ellipse}
+and the results are outputted to Cesium. An example of a swath being displayed
+in cesium can be seen in Figure~\ref{fig:cesium_swath}.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.9\textwidth]{Cesium_Example_Swath.png} 
+    \caption{Example of a 30$^\circ$ Ground Swath}
+    \label{fig:cesium_swath}
+\end{figure}
 
 \end{description}
 

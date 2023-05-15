@@ -343,11 +343,16 @@ approximated through a list of some number of points. For clarity, These points
 grouped together are refered to as an `Ellipse', $E$, just so that we do not
 need to distinguish between footprints and access regions.  
 
-\hl{include figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Swath-Edge.png} 
+    \caption{Swath Edge Illustration}
+    \label{fig:swath-edge}
+\end{figure}
 
 Suppose we wish to more accurately display a swath by including the ellipse
 points at the boundaries. Our main problem is that we must determine what
-points in first, $E_{start}$, and last, $E_{end}$ ellipse lie `outside' of the
+points in the first, $E_{start}$, and last, $E_{end}$ ellipse lie `outside' of the
 swath.  If they are inside the swath, they provide no new information and do
 not lie on the boundary.  We must also omit points on the ellipses that can be
 found on the boundary lines since they are already accounted for. Also, for
@@ -355,19 +360,73 @@ robustness, let us assume that the list of points in each Ellipse are not
 necessarily in order. This may be the case but this saves us from having to
 rely on convention which may be broken in the future.
 
-#\newcommand{\a}{$\sesv{a}$} 
+%\newcommand{\a}{$\sesv{a}$} 
 
-The procedure for finding the `outside` points for a given swath end is as
-follows. First, we take the two last points of the boundary lines, $a$ and $b$.
-Let us also take a third point, $c$, which is the second last point on the
-right boundartry line. From these points, we are going to define a coordinate
-reference frame. To do so, let us define two vectors, $\sesv{a}$ and
-$\sesv{b}$, where:
+\newcommand{\Fs}{$\vec{\mathcal{F}}_s$} 
+%\newcommand{\Fe}{$\vec{\mathcal{F}}_E$}
 
-\begin{align}
-    \sesv{a} &= b - a \\
-    \sesv{b} &= c - a
-\end{align}
+Here is the procedure for finding the `outside' points on one end of a swath.
+First, we take the two last points of the boundary lines, $\sev{a}$ and
+$\sev{b}$, defined in \gls{ecef} coordinates, \Fe. If we look down the length
+of a swath towards the end we are calculating ellipse points for, $\sev{a}$ is
+on the right and $\sev{b}$ is on the left.  Let us also take a third point,
+$\sev{c}$, which is the second last point on the right boundary line.  From
+these points, we can to define a coordinate reference frame, \Fs $= [\sev{x},
+\sev{y}, \sev{z}]$, with respect to \Fe, where:
+
+\begin{equation}
+    \sev{x} = \frac{\sev{b}-\sev{a}}{\norm{\sev{b} - \sev{a}}}
+    , \quad
+    \sev{y} = \frac{\sev{c}-\sev{a}}{\norm{\sev{c} - \sev{a}}}
+    , \quad
+    \sev{z} = \sev{x} \times \sev{y}
+\end{equation}
+
+In this reference frame, all of the ellipse points that are outside the swath
+will have negative y-components. To determine this, we can project each point
+in the ellipse onto the x-y plane of \Fs~and then take the dot product of the
+projected point with $\sev{y}$. To order the edge points such that they
+correctly form the boundary, we can take the dot product of the projected point
+and $\sev{x}$ and then store them in ascending order. This procedures yields
+the algorithm in Algorithm~\ref{alg:swath-edge}.
+
+%% NOTE: this is not how it's defined in the code. Here it's been reversed for clarity
+
+\begin{algorithm}
+    \caption{Swath Edge Algorithm} 
+    \label{alg:swath-edge}
+    \begin{algorithmic}[1] 
+	\Function{SwathEdge}{$L_1, L_2, E$}
+	\Let{$\sev{a}$}{$L_2[-1]$}	\Comment{Last Point}
+	\Let{$\sev{b}$}{$L_1[0]$}	\Comment{First Point}
+	\Let{$\sev{c}$}{$L_2[-2]$}	\Comment{Second Last Point}
+	\Let{$\sev{x}$}{$\sev{b}-\sev{a}/\norm{\sev{b}-\sev{a}}$}
+	\Let{$\sev{y}$}{$\sev{c}-\sev{a}/\norm{\sev{c}-\sev{a}}$}
+	\Let{$\sev{z}$}{$\sev{x} \times \sev{y}$}
+
+	\ForEach{Ellipse Point $\sev{e}$ in $E$}
+	    \Let{$\sesv{p}{e}$}{$\sev{e} - (\sev{e}\cdot\sev{z})\sev{z}$} 
+	    \Comment{Projection onto x-z plane}
+
+	    \If {$(\sesv{p}{e} \cdot \sev{y}) < 0 $}
+		\Let{$O$}{\Call{InsertSorted}{$\sev{e}$, $(\sesv{p}{e}\cdot\sev{x})$, $O$}}
+		\Comment{Sort in Descending order}
+	    \EndIf
+	\EndFor
+	\State \Return $O$
+	\EndFunction
+    \end{algorithmic} 
+\end{algorithm}
+
+When providing points to this algorithm, it is assumed that the points in $L_1$
+and $L_2$ are ordered Counter Clockwise. Also, sorting algorithms are not the
+focus here so the implementation of that has been omitted for clarity. This was
+the procedure for finding the swath edge for the start of the swath. To find
+the edge for the end, we can use the same algorithm but exchange exchange $L_1$
+and $L_2$, and pass the Ellipse at the end of the swath. In so doing, we have
+flipped $L_1$ to be the right side of the swath instead of the left and
+similarly for $L_2$. 
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
