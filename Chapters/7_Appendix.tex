@@ -179,30 +179,30 @@ alogrithm definition is as follows,
 	    \Let{$\se{A}$}{\Call{Zeros}{$n$,$l$}}
 
 	    %\Let{$\se{A}[\se{s}[0],0]$}{1}  \Comment{Set up the first column}
-	    \Let{$temp$}{$\se{A}[:,0]$} \Comment{Temporary array to store column of $\se{A}$}
+	    \Let{$\se{t}$}{$\se{A}[:,0]$} \Comment{Temporary array to store column of $\se{A}$}
 
 	    \Let{$i$}{0} \Comment{Boundary iterator}
 
 	    \While{$i \neq m$}
 		\Let{$s$}{$\se{s}[i]$} \Comment{Satellite index}
 		
-		\If{!$temp$($s$)}
-		    \Let{$temp$($s$)}{!$temp$($s$)}
+		\If{!$\se{t}$($s$)}
+		\Let{$\se{t}$($s$)}{!$\se{t}$($s$)}
 		    \Comment{Flip element then copy values over}
-		    \Let{$\se{A}[:,s]$}{\Call{OR}{$\se{A}[:,s]$, $temp$}} 
+		    \Let{$\se{A}[:,s]$}{\Call{OR}{$\se{A}[:,s]$, $\se{t}$}} 
 		\Else
-		    \Let{$\se{A}[:,s]$}{\Call{OR}{$\se{A}[:,s]$, $temp$}} 
+		    \Let{$\se{A}[:,s]$}{\Call{OR}{$\se{A}[:,s]$, $\se{t}$}} 
 		    \Comment{Copy values over then flip element}
-		    \Let{$temp$($s$)}{!$temp$($s$)}
+		    \Let{$\se{t}$($s$)}{!$\se{t}$($s$)}
 		\EndIf
 
 
 		\Let{$i$}{$i+1$}
 	    \EndWhile 
 
-	    \Let{$\se{A}'$}{\Call{ColumnsAND}{$\se{A}$}}
+	    \Let{$\se{a}'$}{\Call{ColumnsAND}{$\se{A}$}}
 
-	    \Let{$\se{b}'$}{$\se{b}[\se{A}']$}
+	    \Let{$\se{b}'$}{$\se{b}[\se{a}']$} \Comment{Select indeces based on logical value}
 
 	\State \Return $\se{b}'$
 	\EndFunction

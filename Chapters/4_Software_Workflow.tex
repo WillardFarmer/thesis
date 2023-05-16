@@ -15,7 +15,7 @@ observations, validating that schedule, and creating \glspl{ttc} to be uploaded
 to the spacecraft. It should be noted that the real-time ground processing of
 the data and the generation of new \glspl{ttc} for the next pass of the
 Tip-and-Cue Mode are beyond the capabilities of \gls{pops} and this is handled
-by separate, mission-specific automatic ground processing. 
+by separate, mission-specific automatic ground processing.
 
 \begin{table}[h] 
     \centering
@@ -28,10 +28,13 @@ by separate, mission-specific automatic ground processing.
 	\multicolumn{1}{l|}{3} & 82       & 9        & 0        \\
 	\multicolumn{1}{l|}{4} & 79       & -17      & 0       
     \end{tabular}
-    \label{tab:norway}
+    \label{tab:norway-aoi}
 \end{table}
 
-
+Each step in this process makes use of menus and forms in \gls{pops} that a
+user can fill out. To avoid having an excessive number of screenshots for each
+step, the input data itself will be shown in tables or figures rather than
+through screenshots of the menus.
 
 \subsection{Plan Configuration}
 
@@ -39,27 +42,114 @@ First, \gls{pops} must be configured for a particular mission. The operator
 must specify the mission, its satellites, satellite sensor parameters, and its
 available ground stations. This will only need to be set once per mission. For
 our example scenario, the mission is EG-SAT, the satellites are Sat-A and
-Sat-B, and the ground station is the \gls{sfl}in Toronto. After this is done,
-the operator will then start creating a plan. The first part of a plan is
-specifying the \glspl{tle} for each satellite. These can be previous
-\glspl{tle} stored in the \gls{pops} database, new \glspl{tle} taken from
-CelesTrak, or custom-made \glspl{tle} that may be used for simulation or may be
-more accurate \glspl{tle} derived from a spacecraft’s onboard \gls{gps}
-ephemeris.  Once the TLEs are selected, Ephemerides are generated for each
-satellite and stored in the database. For the EG-SAT scenario, \glspl{tle} were
-generated with the \gls{stk}. A current limitation of \gls{pops} is that once
-\glspl{tle} are selected for a plan, they cannot be changed. This will be
-addressed in future revisions. 
+Sat-B, and the ground station is the \gls{sfl} in Toronto. The relevant payload
+sensors must be specified for each satellite. These are the sensors that affect
+payload observations and are referenced by the Opportunity Filter. Currently,
+the sensor information is very simple but in the future, this system will be
+more developed as \gls{pops}'s modeling capabilities are improved. The sensor
+information for Sat-A and Sat-B can be seen in Table~\ref{tab:sensors}. 
+
+\begin{table}[h] 
+    \centering
+    \caption{Sensor Definitions}
+    \begin{tabular}{ccc}
+	Satellite                  & Sensor Name & Parameters    \\ \hline
+	\multicolumn{1}{l|}{Sat-A} & Coarse      & \{"FOV": 60.0\} \\
+	\multicolumn{1}{l|}{Sat-B} & Fine        & \{"FOR": 20.0\}
+    \end{tabular}
+    \label{tab:sensors}
+\end{table}
+
+Relevant ground stations should also be addded into \gls{pops}. For each
+station the name, location, and elevation mask should be specified. The
+location is just in Latitude-Longitude-Altitude. The elevation mask specifies
+at what angle, from the horizon, does an object in space become visible. This
+is approximated as a single angle. The minimum value for the mask is $0^\circ$,
+which is when there are no obstructions at all. For larger mask values, the
+less a ground station is able to observe. For EG-SAT, only \gls{sfl} will be
+added. Its parameters can be seen in Table~\ref{tab:ground-stations}. It should
+be noted that the elevation mask is just an example value.
 
 \begin{table}[h] 
     \centering
     \caption{SFL Ground Station}
-    \begin{tabular}{cccc}
-	Station                  & Latitude [$^\circ$] & Longitude [$^\circ$] & Altitude [m] \\ \hline
-	\multicolumn{1}{l|}{SFL} & 73       & -20      & 0        \\
+    \begin{tabular}{ccccc}
+	Station                  & Latitude [$^\circ$] & Longitude [$^\circ$] & Altitude [m] & Elev. Mask [$^\circ$] \\ \hline
+	\multicolumn{1}{l|}{SFL} & 43.78   & -79.47   & 193.0  & 10      \\
     \end{tabular}
     \label{tab:ground-stations}
 \end{table}
+
+After this is done, the operator will then start creating a plan. Plans lay out
+the scenario from which an operator can search for observations and add
+them to the schedule. Plan creation begins by specifying the
+\glspl{tle} for each satellite.  These can be previous \glspl{tle} stored in
+the \gls{pops} database, new \glspl{tle} taken from CelesTrak or Spacer-Track,
+or custom-made \glspl{tle} that may be used for simulation or may be more
+accurate \glspl{tle} derived from a spacecraft’s onboard \gls{gps} ephemeris.
+Once the TLEs are selected, Ephemerides are generated for each satellite and
+stored in the database. For the EG-SAT scenario, \glspl{tle} were generated
+with the \gls{stk}. A current limitation of \gls{pops} is that once \glspl{tle}
+are selected for a plan, they cannot be changed. Allowing \glspl{tle} to be
+changeable would make far too complicated at this stage of development so this
+will be addressed in future revisions. For EG-SAT, we will use the following
+TLEs in Figure~\ref{fig:tles} 
+
+\begin{figure}[h]
+    \begin{verbatim}
+    SAT-A
+    1 99999U 18099H   24015.66666667  .00000264  00000-0  11261-4 0  0003
+    2 99999  96.4575 096.8235 0010629 287.9022 255.6332 15.22959214000011
+
+    SAT-B
+    1 99999U 18099H   24015.66666667  .00000265  00000-0  11291-4 0  0007
+    2 99999  96.4569 096.8239 0010629 287.8995 250.4360 15.22958218000013
+    \end{verbatim}
+    \caption{\glspl{tle} For Sat-A and Sat-B}
+    \label{fig:tles}
+\end{figure}
+
+These \glspl{tle} are artificial and have been created for this scenario. As
+such, their NORAD-ID is 9999. Their specifics are not important but, of note,
+is that both of their orbits are nearly identical. The only difference being
+that the Mean Anomaly of Sat-B is $5^\circ$ less than Sat-A. This means Sat-B
+follows the same approximate orbit of Sat-B but it lags behind by some period
+of time. Also of note is the reference epoch of both \glspl{tle}, ``2024-01-15
+16:00:00.000''.
+
+Once the \glspl{tle} have been selected and confirmed. Ephemerides must be
+generated for each satellite in the plan. To do this, the start and end epochs
+must be specified, as well as the step size of the propagation. Propagating a
+\glspl{tle} is generally only accurate $\pm 2$ weeks from the reference epoch
+of the \gls{tle}. They may be accurate for more or less time on a case-by-case
+basis but, for now, \gls{pops} sets a limit of 2 weeks from the reference epoch
+for ephemerides. Any time later or earlier is likely to be inaccurate.
+Currently, the step size must be set for the entire scenario. This has become
+an issue and will need to be addressed in the future. For long scenarios, such
+as 1-2 weeks, having a small step size will yield a large amount of data that
+needs to be stored. For a 2 week scenario, at a 10s timestep, one satellite
+ephemeris has 120,960 points.  Where each point contains 3 floats for position,
+3 floats for velocity, and an epoch string. Some scenarios may have multiple
+satellites and this increases the amount of data geometrically. So, for long
+scenarios, having a small timestep is not ideal. If a larger timestep is used,
+then the opportunity filtering may become less accurate because there is less
+information. In the future, more sophisticated methods of ephemeris generation
+that better handle data usage but for now, the step size is constant for a
+whole scenario. For EG-SAT, we will create a 3 day scenario starting at the
+reference epoch with a 10s timestep. 
+
+Before continuing, we must also specify what ground stations are relevant to a
+plan. Earlier, a ground station was added to \gls{pops} but here we must
+associate it with the plan. The reason for doing it in this way is that there
+may be scenarios where a mission has a constrained set of potential ground
+stations, or other ground stations may become available. Associating ground
+stations with a plan allow for them to be configurable. 
+
+Once these settings are confirmed, ephemeris data is generated for each
+satellite in the mission and this data is stored in the database. The access
+times for each ground station are also calculated for each satellite and that
+data is stored as well.
+
 
 \subsection{Observation Configuration}
 
@@ -67,7 +157,7 @@ addressed in future revisions.
 The next stage of the workflow is, on the surface, quite simple. \gls{pops}
 must display potential observation opportunities to the user and must enable
 the user to create observations based on these potential opportunities.
-Opportunity filtering is the process of taking a large set of potential
+Opportunity filtering is the process of taking a large set of :potential
 observations and constraining them to an \gls{aoi}. Observations can be
 performed anywhere on Earth, but we only care about those that provide useful
 data for our operations strategy.  The basic process for displaying
