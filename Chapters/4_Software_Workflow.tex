@@ -151,7 +151,7 @@ times for each ground station are also calculated for each satellite and that
 data is stored as well.
 
 
-\subsection{Observation Configuration}
+\subsection{Observation Configuration Webpage}
 
 \begin{figure}[h]
     \centering
@@ -210,13 +210,10 @@ out to add or make changes to the plan. Currently, that consists of forms to
 create search scenarios or to add observations to the plan. The bottom tabs are
 meant to display information to the user or allow them to interact with the
 Cesium viewer. Currently visible, in the bottom is the schedule timeline.
-Here, events are displayed to the user in an interactable viewer.
+Here, events are displayed to the user in an interactable viewer. Before going
+through how the page is used, the different aspects of the page will be touched
+on briefly. 
 
-To create a search, a user must specify the search type, the \gls{aoi} the
-search should be conducted on, and the  satellites that should be considered.
-When the \texttt{Create Search} button in clicked, \gls{pops} will send the
-data to the Opportunity Filter and a search will be performed. The observation
-creation tab is under developed and only contains a placeholder form currently.
 
 \begin{figure}
     \centering
@@ -265,23 +262,41 @@ are of interest to an operator.
 \end{figure}
 
 Every \gls{aoi} that is stored in \gls{pops} can be seen in the \texttt{AOI}
-tab. \gls{aois} May be added either through a text file that is read and loaded
-into \gls{pops}. Alternatively, \glspl{aoi} can be draw directly in the Cesium
-viewer with the \texttt{aoi} button in the Cesium viewer. When it is clicked,
-the controls for the viewer change. Every time a user clicks on the Earth, a
-polygon vertex is placed at that location. As vertexes are added a white
-polygon becomes visible. If a mistake is made, the user can undo vertices by
-pressing \texttt{CTRL-Z}. To give the user more information, some instructions
-are included in a text box as well as the Latitude and Longitude of the cursor.
-Once the user is satisfied, they can right click and the area-target \gls{aoi}
-is saved to the database and can be referenced by search scenarios. A Partially
-completed \gls{aoi} can be seen in Figure~\ref{fig:obs-conf-draw}.
+tab. \glspl{aoi} May be added either through a text file that is read and
+loaded into \gls{pops}. Alternatively, \glspl{aoi} can be drawn directly in the
+Cesium viewer with the \texttt{aoi} button in the Cesium viewer. When it is
+clicked, the controls for the viewer change. Every time a user clicks on the
+Earth, a polygon vertex is placed at that location. As vertexes are added a
+white polygon becomes visible. If a mistake is made, the user can undo vertices
+by pressing \texttt{CTRL-Z}. To give the user more information, some
+instructions are included in a text box as well as the Latitude and Longitude
+of the cursor.  Once the user is satisfied, they can right click and the
+area-target \gls{aoi} is saved to the database and can be referenced by search
+scenarios. A Partially completed \gls{aoi} can be seen in
+Figure~\ref{fig:obs-conf-draw}. 
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.8\textwidth]{obs-conf-draw.png} 
     \caption{Drawing an AOI}
     \label{fig:obs-conf-draw} 
+\end{figure}
+
+Since there may be many \glspl{aoi} stored in \gls{pops}, a user can display
+\glspl{aoi} in the Cesium viewer from the \texttt{AOI} tab. This can be seen in
+Figure~\ref{fig:obs-conf-aoi-display}. These `displayed' \glspl{aoi} have red
+outlines and purple areas. This is to distinguis them from \glspl{aoi} that are
+displayed as part of a search scenario. A useful feature of Cesium is also
+viewable in the Figure. When an entity in Cesium is selected, an information
+box appears giving the name of the entity as well as its description. Here, the
+\gls{aoi} has no description, but it from the name, we can tell its: an
+\gls{aoi}, its ID is \texttt{16}, and it is a display \gls{aoi}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{obs-conf-aoi-disp.png} 
+    \caption{Displaying an AOI}
+    \label{fig:obs-conf-aoi-display} 
 \end{figure}
 
 The last two tabs serve minor purposes. The \texttt{Cesium} tab lists all of
@@ -292,6 +307,217 @@ from a number of opportunities. Alternatively, they may wish to compare swaths
 from different passes. This tab gives the user the granular ability to make
 those changes. The \texttt{Ground Access} tab shows a filter-able list of
 ground station accesses, with time links that change Cesium's current time.
+
+\subsection{Creating Searches}
+
+Let us now create two search scenarios, one for the Coarse Imaging Operations
+mode and one for the Tip-and-Cue Imaging Mode. To do this we will use the
+\texttt{Create Search} tab. In this form, we must specify the search type, the
+\gls{aoi} the search should be conducted on, and the  satellites that should be
+considered. The search type may just be selected from the dropdown. If a user
+is unsure about what ID their desired \gls{aoi} is given, they can go to the
+\texttt{AOI} tab, where they may look at the list of \glspl{aoi} and display
+them on Cesium for their reference. Earlier in the chapter, an \gls{aoi} was
+specified by the imaginary customer in Table~\ref{tab:norway-aoi}. A text file
+for this \gls{aoi} definition was written and then uploaded to \gls{pops}. The
+ID that was generated was \texttt{16}. This \gls{aoi} can actually be seen
+displayed earlier in Figure~\ref{fig:obs-conf-aoi-display}.
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+	\centering
+	\includegraphics[width=0.60\textwidth]{obs-conf-search-1.PNG} 
+	\caption{Coarse Imaging Settings}
+	\label{fig:obs-conf-search-1} 
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+	\centering
+	\includegraphics[width=0.60\textwidth]{obs-conf-search-2.PNG} 
+	\caption{Tip-and-Cue Imaging Settings}
+	\label{fig:obs-conf-search-2} 
+    \end{subfigure}
+    \caption{Search Scenario Form Parameters}
+    \label{fig:obs-conf-searches} 
+\end{figure}
+
+
+For Coarse Imagine the search mode is, of course, \texttt{COARSE\_IMAGING}.
+The satellites of relevance for this mode is just Sat-A, because Sat-B is not
+equipped with a Coarse Imager. In the future, only relevant satellites will be
+selecatable but, for now, it is left configurable.  The search form for this
+mode can be seen in Figure~\ref{fig:obs-conf-search-1}. Similarly, for
+Tip-and-Cue imaging, the mode is \texttt{TNC\_IMAGING} the relevant satellites
+are Sat-A and Sat-B.  The mode's settings can be seen in
+Figure~\ref{fig:obs-conf-search-2}. Once the \texttt{Create Search} button is
+clicked, \gls{pops} will send the data to the Opportunity Filter and a search
+will be performed. The two searche can be seen in the \texttt{Observation
+Search} tab in Figure~\ref{fig:obs-conf-search}. In the Figure, note that: the
+swaths are displayed with green outlines and feint green areas, The \gls{aoi}
+has a red outline and a black area, and the intersection polygons have magenta
+areas. The Coarse Imaging search mode can be seen in
+Figure~\ref{fig:obs-conf-opps}. In total, there are 43 opportunities for this
+mode in a 72 hour period. The reason there are so many is that there are not
+many constraints for this kind of observation. All it really is is a single
+access time to an area target. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{obs-conf-tnc-all.png} 
+    \caption{Tip-and-Cue Imaging All opportunities}
+    \label{fig:obs-conf-tnc-all} 
+\end{figure}
+
+In contrast, all the opportunities for Tip-and-Cue Imaging mode can be seen in
+Figure~\ref{fig:obs-conf-tnc-all}. This view is a bit cluttered but there are
+not many opportunities, so individual screenshots have been taken for each
+opportunity in Figure~\ref{fig:obs-conf-tnc-opps}. The way each opportunity is
+displayed is with two swaths.  The tip swath is the larger one. It comes from
+Sat-A during the first pass. The cue swath is the thinner swath withing the
+tip-swath. This come from Sat-B during the next pass. Note here, the
+intersection polygon is the intersection between the tip swath, cue swath, and
+\gls{aoi}. For all these opportunities, the tip swath totally encompasses the
+cue swath but this is not always the case. In total, there are 5 opportunities
+in a 72 hour period. This is far less than there are Course Imaging
+opportunities. This is even less than there are generatl Tip-and-Cue
+opportunities. That is, where the cue swath intersects the tip swath and
+\gls{aoi}. The reason there are so few opportunities, is because of the ground
+station constraint. There must be a ground station contact between the first
+pass and next pass. If the satellites are moving from right to left in all of
+the views, notice that the tip swaths are all `pointed' at the \gls{sfl} which
+is the only ground station. \gls{sfl} is far aways from the \gls{aoi} so
+opportunities are limited. 
+
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-tnc-1.PNG} 
+	\caption{Opportunity 1}
+	\label{fig:obs-conf-tnc-1} 
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-tnc-2.PNG} 
+	\caption{Opportunity 2}
+	\label{fig:obs-conf-tnc-2} 
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-tnc-3.PNG} 
+	\caption{Opportunity 3}
+	\label{fig:obs-conf-tnc-3} 
+    \end{subfigure}
+    
+    \begin{subfigure}[b]{0.3\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-tnc-4.PNG} 
+	\caption{Opportunity 4}
+	\label{fig:obs-conf-tnc-4} 
+    \end{subfigure}
+    \quad \quad
+    \begin{subfigure}[b]{0.3\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-tnc-5.PNG} 
+	\caption{Opportunity 5}
+	\label{fig:obs-conf-tnc-5} 
+    \end{subfigure}
+
+    \caption{Individual Tip-and-Cue Opportunities}
+\label{fig:obs-conf-tnc-opps}
+\end{figure}
+
+\begin{table}[h] 
+    \centering
+    \caption{Plan Summary}
+    \begin{tabular}{cc}
+	Plan & Stations \\ \hline
+	1   &	SFL \\
+	2   &	SFL, GSW \\
+	3   &	SFL, ESCS 
+    \end{tabular}
+    \label{tab:additional-plans}
+\end{table}
+
+As an example, let us create two more plans with different additional ground
+stations, to compare the number of opportunities we can observe. Each plan is
+set up identically, the only difference being the ground stations added. If the
+plan we have been working with so far is Plan 1, let us create two more plans,
+Plan 2 and Plan 3, which have additional ground stations added.  Plan 2 has the
+\gls{sfl} and the Weilheim ground station (GSW), near Munich, in Germany. Plan
+3 has the \gls{sfl} and the Esrange Space Center Station (ESCS) in Sweden. This
+is summarized in Table~\ref{tab:additional-plansl}. The parameters for both
+these ground stations can be seen in Table~\ref{tab:additional-gs}. The
+placements of each ground station with respect to \gls{sfl} and the \gls{aoi}
+can be seen in Figure~\ref{fig:obs-conf-gs-placements}. Of course, these are
+just example ground stations that have been picked just for this scenario.
+Whether they support commercial missions or if they are equipped to support
+EG-SAT, is not relevant.  It should be assumed that they can. 
+
+\begin{table}[h] 
+    \centering
+    \caption{Additional Ground Stations}
+    \begin{tabular}{ccccc}
+	Station & Latitude [$^\circ$] & Longitude [$^\circ$] & Altitude [m] & Elev. Mask [$^\circ$] \\ \hline
+	\multicolumn{1}{l|}{GSW}  & 47.88   & 11.08   & 610.0  & 6      \\
+	\multicolumn{1}{l|}{ESCS} & 67.88   & 21.05   & 440.6  & 10      \\
+    \end{tabular}
+    \label{tab:additional-gs}
+\end{table}
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-plan-2.PNG} 
+	\caption{Weilheim Station and SFL}
+	\label{fig:obs-conf-gs-placements-1} 
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-plan-3.PNG} 
+	\caption{Esrange Station and SFL}
+	\label{fig:obs-conf-gs-placements-2}
+    \end{subfigure}
+    \caption{Additional Ground Stations}
+    \label{fig:obs-conf-gs-placements} 
+\end{figure}
+
+Before running the search, we can make some quick hypotheses.
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-opps-2.PNG} 
+	\caption{Plan 1}
+	\label{fig:obs-conf-opps-1} 
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-opps-1.PNG} 
+	\caption{Plan 2}
+	\label{fig:obs-conf-opps-2} 
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-opps-3.PNG} 
+	\caption{Plan 3}
+	\label{fig:obs-conf-opps-3} 
+    \end{subfigure}
+
+    \caption{Different Plan Opportunities}
+    \label{fig:obs-conf-opps}
+\end{figure}
+
+
 
 \subsection{Scheduling}
 
