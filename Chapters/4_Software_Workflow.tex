@@ -153,15 +153,21 @@ data is stored as well.
 
 \subsection{Observation Configuration}
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{opp_search_flow.png} 
+    \caption{Observation Filtering Summary}
+    \label{fig:obs_fil} 
+\end{figure}
 
-The next stage of the workflow is, on the surface, quite simple. \gls{pops}
+Once our scenario is set up, we begin Observation Configuration. \gls{pops}
 must display potential observation opportunities to the user and must enable
 the user to create observations based on these potential opportunities.
-Opportunity filtering is the process of taking a large set of :potential
+Opportunity filtering is the process of taking a large set of potential
 observations and constraining them to an \gls{aoi}. Observations can be
 performed anywhere on Earth, but we only care about those that provide useful
 data for our operations strategy.  The basic process for displaying
-opportunities to the user can be seen in Figure \ref{fig:obs_fil}. An operator
+opportunities to the user can be seen in Figure~\ref{fig:obs_fil}. An operator
 first creates a search scenario through the \gls{gui}.  For a given mission,
 there may be multiple observation types, multiple possible \glspl{aoi}, and a
 combination of one or more satellites that are part of the observation. All of
@@ -176,85 +182,116 @@ the 3D Earth visualization. Currently, satellites, satellite trajectories,
 ground stations, ground access times, \glspl{aoi}, and swaths can be displayed.
 
 
-\begin{figure} 
+Since an operator will spend most of their time on the Observation
+Configuration page, we shall spend some time discussing it and the utilities
+provided with the page. It should be emphasized that \gls{gui}  development is
+difficult and time-consuming. A good \gls{gui} and a bad \gls{gui} can
+functionally do the same thing but the good \gls{gui} will be easier to use,
+robust, and visually pleasing. What's more is that they are extremely
+time-consuming; hours can be spent on just a single button, for example. The
+goal for \gls{pops} is not to create the perfect user interface but rather the
+actual functionality itself, time spent on the webpages themselves is minimized
+in favor of creating a functional product. 
+
+\begin{figure}
     \centering
-    \includegraphics[width=0.7\textwidth]{opp_search_flow.png} 
-    \caption{Observation Filtering Summary}
-    \label{fig:obs_fil} 
+    \includegraphics[width=0.8\textwidth]{obs-conf-base.png} 
+    \caption{Observation Configuration Webpage}
+    \label{fig:obs-conf-base} 
 \end{figure}
 
 
-\gls{pops} is intended to be a general and easily expandable tool but the process of
-filtering for observation opportunities is inherently specific to a mission’s
-operation’s strategy. To address this, an ‘opportunity filter’ class has been
-created as well as several data handler classes. The opportunity filter class
-contains all of the logic necessary for opportunity filtering. Ideally, if a
-future developer wishes to add a new search scenario for an observation mode,
-they would simply need to create a new method in the opportunity filter class.
-Specifics, like data formats, coordinate systems, and communication with other
-services have been abstracted away through the data handler classes. At a high
-level, the opportunity filter class takes ephemerides and outputs access times,
-swaths, and intersection polygons.
+With that in mind, the Observation Configuration page can be seen in
+Figure~\ref{fig:obs-conf-base}. The Cesium viewer is located on the top left of
+the page.  There, an operator can see: the Earth, the satellites, their
+trajectories, possible ground access times, an Area of Interest, and potential
+observation opportunities. In the top right are forms that the user can fill
+out to add or make changes to the plan. Currently, that consists of forms to
+create search scenarios or to add observations to the plan. The bottom tabs are
+meant to display information to the user or allow them to interact with the
+Cesium viewer. Currently visible, in the bottom is the schedule timeline.
+Here, events are displayed to the user in an interactable viewer.
 
-An observation opportunity is easy to conceptualize but difficult to define
-programmatically. For our purposes, we have broken an opportunity into two
-components: where on Earth an observation can take place and when that
-observation can take place. Where can be described in a number of ways. We use
-an intersection polygon that shows where the swath intersects with the
-\gls{aoi}.  When can be described simply with an access time which can also be
-used to constrain the swath. The \glspl{atu} serve as the primitive operations
-that allow us to articulate how observations may be filtered.
+To create a search, a user must specify the search type, the \gls{aoi} the
+search should be conducted on, and the  satellites that should be considered.
+When the \texttt{Create Search} button in clicked, \gls{pops} will send the
+data to the Opportunity Filter and a search will be performed. The observation
+creation tab is under developed and only contains a placeholder form currently.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{obs-conf-search.png} 
+    \caption{Observation Search Tab}
+    \label{fig:obs-conf-search} 
+\end{figure}
+
+The results of the search can be seen in the observation search tab in
+Figure~\ref{fig:obs-conf-search}. This tab is split into two lists. The left
+list displays a list of the search scenarios that are associated with the plan.
+When a new search scenario is added, it is added to this list. Here, search
+scenarios can be deleted with the trash icon or they may be displayed in the
+viewer. For a selected search scenario, the right list displays all of the
+opportunities associated with it. Information such as the pass index of the
+opportunity, start epoch and end epochs are displayed to the user. The blue
+text entries are hyperlinks. When clicked, they update the current time of the
+Cesium viewer. For example, for opportunity \texttt{788} (these are global IDs
+not search scenario IDs) if the user clicks on the start epoch, the viewer will
+change time to 12:38 AM Jan 17, 2024. The globe icon on the right allows a user
+to display or hide an opportunity. Similarly, the eraser icon in the header
+toggles the visibility of all opportunities.  The usefulness of these can be
+seen in Figure~\ref{fig:obs-conf-opps}.  In Figure~\ref{fig:obs-conf-opps-1},
+all of the opportunities in the scenario are displayed. This is of course quite
+messy and difficult to understand. In Figure~\ref{fig:obs-conf-opps-2} all of
+the opportunities in the scenario have been hidden except for two
+opportunities. This makes it far easier to select only the opportunities that
+are of interest to an operator.
 
 
-%\algnewcommand\algorithmicforeach{\textbf{foreach}}
-%\algdef{S}[FOR]{ForEach}[1]{\algorithmicforeach\ #1\ \algorithmicdo}
+\begin{figure}[h] 
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+	\includegraphics[width=\textwidth]{obs-conf-ces-coarse-1.PNG} 
+	\caption{All Opportunities}
+	\label{fig:obs-conf-opps-1} 
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+	\includegraphics[width=\textwidth]{obs-conf-ces-coarse-2.PNG} 
+	\caption{Two Opportunities}
+	\label{fig:obs-conf-opps-2} 
+    \end{subfigure}
+    \caption{Opportunities Displayed in Cesium}
+    \label{fig:obs-conf-opps} 
+\end{figure}
 
-\begin{algorithm*}[h] 
-    \caption{Simple Tip-and-Cue Opportunity Filtering}
-    \label{alg:tnc-filter} 
-    \begin{algorithmic}[1] 
-	\Require{$E_A$ and $E_B$ must be for the same time range} 
+Every \gls{aoi} that is stored in \gls{pops} can be seen in the \texttt{AOI}
+tab. \gls{aois} May be added either through a text file that is read and loaded
+into \gls{pops}. Alternatively, \glspl{aoi} can be draw directly in the Cesium
+viewer with the \texttt{aoi} button in the Cesium viewer. When it is clicked,
+the controls for the viewer change. Every time a user clicks on the Earth, a
+polygon vertex is placed at that location. As vertexes are added a white
+polygon becomes visible. If a mistake is made, the user can undo vertices by
+pressing \texttt{CTRL-Z}. To give the user more information, some instructions
+are included in a text box as well as the Latitude and Longitude of the cursor.
+Once the user is satisfied, they can right click and the area-target \gls{aoi}
+is saved to the database and can be referenced by search scenarios. A Partially
+completed \gls{aoi} can be seen in Figure~\ref{fig:obs-conf-draw}.
 
-	\Function{FindOpportunityTNC}{$E_A$, $E_B$, $P_{AOI}$}
-	    \Let{$S_{A}$}{\Call{Swath}{$E_A$, $60^\circ$}}
-	    \Let{$S_{B}$}{\Call{Swath}{$E_B$, $20^\circ$}}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{obs-conf-draw.png} 
+    \caption{Drawing an AOI}
+    \label{fig:obs-conf-draw} 
+\end{figure}
 
-	    \ForEach{pass $n$ in $E_A$}
-		\Let{$A_{A}[n]$, $P_{A}[n]$}{\Call{PolygonIntersect}{$S_{A}[n]$, $P_{AOI}$}}
-		\Let{$A_{B}[n+1]$, $P_{A \wedge B}[n+1]$}{\Call{PolygonIntersect}{$S_{B}[n+1]$, $P_{A}[n]$}}
-	    \EndFor
-	    \State \Return $S_{A}$, $S_{B}$, $A_{A}$, $A_{B}$, $P_{A \wedge B}$,  
-	\EndFunction
-
-    \end{algorithmic} 
-\end{algorithm*}
-
-
-Let us walk through opportunity filtering for the Tip-and-Cue mode for the
-imaginary EG-SAT mission. The basic procedure can be seen in Algorithm
-\ref{alg:tnc-filter}. From the Plan Configuration stage, we begin with the
-ephemerides generated for each satellite. The ATUs we use are the Swath
-Generation and Polygon Intersection utilities. From the Ephemerides of Sat-A
-and Sat-B ($E_A$, $E_B$), we generate their swaths ($S_A$, $S_B$). Then, for
-each pass ($n$) around the Earth – the period between consecutive southern to
-northern hemisphere crossings – we first find the intersection between the
-Sat-A’s Swath and the Area of Interest ($P_{AOI}$).  This gives an access time
-($A_A$) and a Swath/\gls{aoi} intersection polygon ($P_A$). This intersection
-polygon is then intersected again with Sat-B’s Swath from the next pass, which
-finally gives us the intersection polygon which is the intersection of the
-\gls{aoi}, Sat-A’s swath, and Sat-B’s next pass swath ($P_{A \wedge B}$). Once
-this process is completed, all of this data is returned and stored in the
-database. It should be noted that it is not up to the opportunity filter to
-determine the quality of potential opportunities. Rather, that judgement is up
-to the operator using \gls{pops}.
-
-Once an operator has been presented with potential observation opportunities,
-they may now add an observation to the plan via a form. Some metadata is
-consistent across all possible observations, such as: observation type,
-observation ID, the satellites involved, and timing information. There are also
-parameters specific to an observation. These vary based on the high-level
-configuration necessary for a specific observation. 
-
+The last two tabs serve minor purposes. The \texttt{Cesium} tab lists all of
+the currently loaded objects in the Cesium Viewer. It allows a user to display
+or hide any object. This is mostly useful for debugging, or if a user wants a
+specialized view. For example, they may wish to show the intersection polygons
+from a number of opportunities. Alternatively, they may wish to compare swaths
+from different passes. This tab gives the user the granular ability to make
+those changes. The \texttt{Ground Access} tab shows a filter-able list of
+ground station accesses, with time links that change Cesium's current time.
 
 \subsection{Scheduling}
 
@@ -296,39 +333,28 @@ rules (a plan must conform with a satellite’s data budget), attitude control
 considerations, as well as the weather forecast. Again, \gls{pops} is meant to
 be an easily generalizable tool, so rules may be added as necessary.
 
-A screenshot of the observation configuration page can be seen in Figure
-\ref{fig:screen-1}. The 3D Earth visualization tool is located on the top left
-of the page.  There, an operator can see: the Earth, the satellites, their
-trajectories, possible ground access times, an Area of Interest, and potential
-observation opportunities. In the top right, there is a basic form to add
-observations to the plan. At the bottom of the page, there is an interactable
-timeline showing every event, grouped by satellite, that is currently part of
-the plan. In the schedule, there are some demonstration events to match our
-example scenario.  Notice how station-keeping event 21 conflicts with the
-proposed Tip and Cue ‘Cue’ Event 6. These events are marked in red and flagged
-to the operator that they conflict and the schedule is not valid.
 
-\begin{figure}[h] 
-    \centering
-    \includegraphics[width=\textwidth]{2023-04-05-POPS-1.PNG} 
-    \caption{Screenshot of Observation Configuration Page}
-    \label{fig:screen-1} 
-
-    \includegraphics[width=\textwidth]{2023-04-05-POPS-LABELS.PNG} 
-    \caption{Labeled Screenshot of Single Opportunity}
-    \label{fig:screen-2} 
-\end{figure}
-
-\begin{figure}[h] 
-    \centering
-    \includegraphics[width=\textwidth]{2023-04-05-POPS-4.PNG} 
-    \caption{Good Quality Observation Opportunities}
-    \label{fig:screen-3} 
-
-    \includegraphics[width=\textwidth]{2023-04-05-POPS-5.PNG} 
-    \caption{Poor Quality Observation Opportunities}
-    \label{fig:screen-4} 
-\end{figure}
+%\begin{figure}[h] 
+%    \centering
+%    \includegraphics[width=\textwidth]{2023-04-05-POPS-1.PNG} 
+%    \caption{Screenshot of Observation Configuration Page}
+%    \label{fig:screen-1} 
+%
+%    \includegraphics[width=\textwidth]{2023-04-05-POPS-LABELS.PNG} 
+%    \caption{Labeled Screenshot of Single Opportunity}
+%    \label{fig:screen-2} 
+%\end{figure}
+%
+%\begin{figure}[h] 
+%    \centering
+%    \includegraphics[width=\textwidth]{2023-04-05-POPS-4.PNG} 
+%    \caption{Good Quality Observation Opportunities}
+%    \label{fig:screen-3} 
+%
+%    \includegraphics[width=\textwidth]{2023-04-05-POPS-5.PNG} 
+%    \caption{Poor Quality Observation Opportunities}
+%    \label{fig:screen-4} 
+%\end{figure}
 
 
 Figure \ref{fig:screen-2}, shows a close-up labeled screenshot of the 3D Earth
