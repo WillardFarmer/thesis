@@ -1,0 +1,87 @@
+\glsresetall{} 
+
+\chapter{Discussion and Future Work}
+
+\lettrine[lines=2, findent=0pt, nindent=5pt]{A}{}t the time of writing this
+thesis, the \gls{pops} is still very much in development. The project began in
+2021 and has undergone continued work since then. When designing something that
+is completely unique and as ambitious as a mission planning tool, it is
+difficult to guage the work required to meet its requirements. Before,
+discussing future directions for the tool, it would be helpful to first go over
+how \gls{pops} became what it is. 
+
+\subsection{Research and the Development Process}
+
+Early on in development, much effort was put into exploring possible tools,
+languages, and frameworks to build off of. Intitially, before the creation of
+the Propagator service, the intention was to rely on an open-source tool
+developed by NASA called the \gls{gmat}. \gls{gmat} is well made and designed
+to model, optimise, and estimate spacecraft trajectories. Originally, it was
+thought that it could act as a replacement for \gls{stk}. It could be used to
+take \glspl{tle} and generate ephemerides. \gls{gmat} comes with its own
+propagators and the software can be run from the command line. Given a script
+representation of a mission, ephemeris data could be generated in the form of a
+report. Unfortunately not one among thewas SGP4 which made \glspl{tle} unusable
+given this approach. \gls{gmat} can be expanded and has a very well set up
+plugin interface with the rest of the software. Theoretically, an open-source
+implementation of an SGP4 propagator could be implemented into the software and
+it could have been used. Then the question arose, if we were adding in our own
+propagator, what was \gsl{gmat} providing. The answer, of course, was that it
+created a great deal of work with no benefit. Some issues were: \gls{gmat} was
+developed for a windows environment, data needed to be transfered through a
+\gls{tcp} connection, generating mission scripts was convoluted, and several
+more. This is not to say that this time was wasted; rather, this was time spent
+exploring a, what seemed to be, useful tool that ended up being inadequate for
+\gls{sfl}'s purposes. It was, for all intents and purposes, research.
+
+%https://gmat.atlassian.net/wiki/spaces/GW/overview
+%https://core.ac.uk/download/pdf/80605179.pdf
+
+Similar work was done for another NASA tool called, OpenSPIFe. Its purpose was
+to handle scheduling and planning. Very similar \gls{gmat}, it provided a great
+deal of functionality that could be updated and developed. Similarly, this tool
+would have increased the amount of work for any developer working on the
+project. For any tool that is used, developers must take responsibility for it
+to at least understand how to use the tool but also make changes if bugs
+appear. For both \gls{gmat} and OpenSPIFe, it was determined that the
+development overhead for developing the tools from scratch would be far less
+than having to maintain two tools which are fully fledged projects in their own
+rights, developed by teams of professional software engineers.
+
+Since the decision was made to move to develop the tool from scrath,
+development became more productive than exploratory. The first service
+developed was the Propagator service. Ephemeris data is fundemantal to every
+aspect of \gls{pops} so it was the top priority. Here was a situation where an
+open-source library was more helpful than it was burdensome. Implementations in
+many languages (including Excel) of the SGP4 algorithm are available along with
+its source document, \hl{`Revisiting Spacetrack Report #3'}. These
+implementations, though, are only of the algorithm itself and not any
+surrounding functionality such as coordinate frame transforms or generating an
+entire ephemeris. All of the heavy lifting was already done but the surrounding
+implementation was missing. This is where a separate open-source implementation
+of SGP4 came in very helpful. It was based on the same source implementation
+and it provided a library of helper functions that enabled all of the
+surrounding functionality. This allowed efforts to be focused on validation and
+on actually using the ephemeris data rather than generating it.
+
+\hl{cite all this}
+
+A quick note on licensing. It is of the utmost importance that a developer
+conforms with the license associated with a library lest they become exposed to
+litigation if caught. This boils down to whether a library requires that the
+source code of the software that makes use of it must be disclosed to the
+public. A `copyleft' license requires that derivative works must disclose their
+source code. The \gls{gpl} license is a very common copyleft license.
+Conversly, a `permissive' license makes no obligations to derivative works. The
+\gls{MIT} license and Apache License are very common examples of permissive
+licenses. With this in mind, much time was spent ensuring that all of the open
+source tools used by \gls{pops} fell under the permissive category. 
+
+
+
+
+
+
+
+%\section{Thermal Design}
+

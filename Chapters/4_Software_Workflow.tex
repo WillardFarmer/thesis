@@ -308,7 +308,8 @@ from different passes. This tab gives the user the granular ability to make
 those changes. The \texttt{Ground Access} tab shows a filter-able list of
 ground station accesses, with time links that change Cesium's current time.
 
-\subsection{Creating Searches}
+
+\subsection{Searching For Opportunities}
 
 Let us now create two search scenarios, one for the Coarse Imaging Operations
 mode and one for the Tip-and-Cue Imaging Mode. To do this we will use the
@@ -456,7 +457,7 @@ placements of each ground station with respect to \gls{sfl} and the \gls{aoi}
 can be seen in Figure~\ref{fig:obs-conf-gs-placements}. Of course, these are
 just example ground stations that have been picked just for this scenario.
 Whether they support commercial missions or if they are equipped to support
-EG-SAT, is not relevant.  It should be assumed that they can. 
+EG-SAT, is not relevant. It should be assumed that they can. 
 
 \begin{table}[h] 
     \centering
@@ -488,28 +489,37 @@ EG-SAT, is not relevant.  It should be assumed that they can.
     \label{fig:obs-conf-gs-placements} 
 \end{figure}
 
-Before running the search, we can make some quick hypotheses.
+The resulting opportunities can be seen in Figure~\ref{fig:obs-conf-opps}.  For
+clarity, the tip swaths have been omitted. As mentioned earlier, Plan-1 only
+has 5 opportunities; Plan-2 has 11 opportunities; and Plan-3 has 13
+opportunities. It makes sense that with the Weilheim station, more
+opportunities will be available since it is located in a different direction
+with respect to the \gls{aoi}. Therefore there are accesses for this station
+that are not available to \gls{sfl}. The Esrange station happens to be located
+very close the \gls{aoi} in this scenario. Therefore, every time the satellites
+have access to the \gls{aoi}, it is likely they will also have a ground access
+available. 
 
 \begin{figure}[h]
     \centering
-    \begin{subfigure}[b]{0.3\textwidth}
+    \begin{subfigure}[b]{0.32\textwidth}
 	\centering
 	\includegraphics[width=\textwidth]{obs-conf-opps-2.PNG} 
-	\caption{Plan 1}
-	\label{fig:obs-conf-opps-1} 
+	\caption{Plan 1, 5 Opportunities}
+	\label{fig:obs-conf-opps-1}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.3\textwidth}
+    \begin{subfigure}[b]{0.32\textwidth}
 	\centering
 	\includegraphics[width=\textwidth]{obs-conf-opps-1.PNG} 
-	\caption{Plan 2}
+	\caption{Plan 2, 11 Opportunities}
 	\label{fig:obs-conf-opps-2} 
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.3\textwidth}
+    \begin{subfigure}[b]{0.32\textwidth}
 	\centering
 	\includegraphics[width=\textwidth]{obs-conf-opps-3.PNG} 
-	\caption{Plan 3}
+	\caption{Plan 3, 13 Opportunities}
 	\label{fig:obs-conf-opps-3} 
     \end{subfigure}
 
@@ -517,6 +527,27 @@ Before running the search, we can make some quick hypotheses.
     \label{fig:obs-conf-opps}
 \end{figure}
 
+For the opportunity filters, there will need to be some fine-tuning going
+forward. Edge cases, that were not immediately addressed in their high-level
+descriptions or in the actual implementation may have been missed. Questions
+like, can one satellite communicate with a ground station while the other is
+taking sensor measurements? Are there limitations on ground contacts beyond
+just the spacecraft having access? These will be addressed iteratively, and the
+opportunity filters will be refined through testing and through operations
+trials.
+
+\subsection{Creating Observations}
+
+With these opportunities, operators can then create observations. Currently,
+this is a manual entry process. An operator must specify both the epoch of an
+observation as well as the duration. For the Course Imaging mode, this will
+just be a single event. For the Tip-and-Cue mode, this will be both a tip event
+and a cue event. In the future, these observations will be added straight from
+the list of opportunities. Nominally, an opportunity should correspond 1-to-1
+with an observation. There may exist some parameters that need to be set for
+the purposes of \gls{ttc} generation, so a form is still necessary and the
+process cannot be completely automated. This system is being reworked and
+hasn't been fully integrated at the time of writing this thesis.
 
 
 \subsection{Scheduling}
@@ -524,31 +555,10 @@ Before running the search, we can make some quick hypotheses.
 
 Once observations are added to a plan, they must be added to the schedule and
 validated. The schedule is universal to any observation, plan, or mission and
-is used to describe what actions a satellite may perform. For this reason, it
-is a separate part of the software. The schedule is contained and interacted
-with via the scheduler class. With it, events may be added, removed, edited, or
-queried for. An event describes an action or a series of actions that a
-spacecraft might make within some time range. It is a general object that can
-be used to describe any arbitrary item in the schedule. Observations, attitude
-maneuvers, ground station contacts, or propulsive maneuvers are examples of
-potential events. Even though \gls{pops} is intended to only handle payload
-operations and not other types of orbit operations, it is still important for
-an operator to be aware of what other events are planned for a particular
-satellite in case there is a conflict. Another aspect of events to note is that
-they may be linked together. This is necessary for situations where there are
-multiple events associated with a single observation. This is the case when
-multiple satellites are used for an observation or there is some time between
-actions.  
-
-Events may be added through the observation configuration page or an interface
-with \gls{sfl}’s other ground support software. If \glspl{ttc} have been
-uploaded to the satellite, they are visible in the schedule. Once added, events
-are immediately stored in the database. Events can be visualized either in
-tabular form or displayed graphically with an interactable timeline. The
-timeline allows for scrolling and zooming and also allows the user to edit or
-delete events. Not all events may be relevant to a user when they are
-constructing a plan, so events are filtered based on relevance. For example,
-only observations within the plan’s time range are displayed.
+is used to describe what actions a satellite may perform. Events may be added
+through the observation configuration page or an interface with \gls{sfl}’s
+other ground support software. The interfaces have not yet been developed and
+will be future additions to the software.
 
 Finally, once events are added to the schedule, the schedule is then validated.
 Validation is based off of a library of validation rules. All events are
@@ -560,43 +570,39 @@ considerations, as well as the weather forecast. Again, \gls{pops} is meant to
 be an easily generalizable tool, so rules may be added as necessary.
 
 
-%\begin{figure}[h] 
-%    \centering
-%    \includegraphics[width=\textwidth]{2023-04-05-POPS-1.PNG} 
-%    \caption{Screenshot of Observation Configuration Page}
-%    \label{fig:screen-1} 
-%
-%    \includegraphics[width=\textwidth]{2023-04-05-POPS-LABELS.PNG} 
-%    \caption{Labeled Screenshot of Single Opportunity}
-%    \label{fig:screen-2} 
-%\end{figure}
-%
-%\begin{figure}[h] 
-%    \centering
-%    \includegraphics[width=\textwidth]{2023-04-05-POPS-4.PNG} 
-%    \caption{Good Quality Observation Opportunities}
-%    \label{fig:screen-3} 
-%
-%    \includegraphics[width=\textwidth]{2023-04-05-POPS-5.PNG} 
-%    \caption{Poor Quality Observation Opportunities}
-%    \label{fig:screen-4} 
-%\end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{obs-conf-schedule.png} 
+    \caption{Example Schedule for Plan-2}
+    \label{fig:obs-conf-schedule}
+\end{figure}
 
+An example schedule can be seen in Figure~\ref{fig:obs-conf-schedule} for
+Plan-2. Plan-2 was selected because there are more opportunities and there is
+some time between an \gls{aoi} access and a ground access. Here, there are five
+observations scheduled, 3 Tip-and-Cue Imaging observations and 2 Course Imaging
+observations. The first Tip-and-Cue observation, \texttt{TNC-1-TIP}, begins at
+10:10AM on Jan 17, in pass 7. Here, Sat-A begins its first first tip pass over
+the \gls{aoi}.  This is immdeiately followed by a ground contact for both
+satellites with the Weilheim station. This is represented by the light grey
+vertical bar.  Currently, ground contact events have not been included in the
+schedule as part of an observation but this will be done in the future.  The
+cue observation, \texttt{TNC-1-CUE}, happens on the next pass at 11:43AM on Jan
+17.  That concludes the first observation.
 
-Figure \ref{fig:screen-2}, shows a close-up labeled screenshot of the 3D Earth
-viewer.  Here, the \gls{aoi} is represented as a dark polygon with a red
-outline, Sat-A and Sat-B’s swaths are visualized in green, and finally, the
-intersection polygon is displayed in magenta. For this labeled diagram, the
-first-pass ‘Tip’ swath of Sat-A is visualized. This is not done for the
-following figures to avoid visual clutter. Also, notice how the intersection
-polygon is the intersection area of Sat-A’s swath, Sat-B’s swath, and the
-intersection polygon. Part of the purpose of POPS is to enable an operator to
-judge the quality of a potential observation. It is clear that the
-opportunities in Figure \ref{fig:screen-3} are good quality because they
-observe large portions of the \gls{aoi}. The opportunities in Figure
-\ref{fig:screen-4} are less desirable because they barely clip the AOI and have
-very short access times.
+While Sat-B performs the cue pass of the first observation, Sat-A begins
+another observation simultaneously. Sat-B does not rely on Sat-A during a pass
+so Sat-A can begin an operation as it likes. With respect to how observations
+are defined, this is acceptable, but it may conflict with the missions data
+budget. So while the schedule does not report that there is a conflict, in the
+future, another rule may be added that deals with this case.
 
+Next are the two Coarse Imaging Observations, \texttt{CI-1} and \texttt{CI-2},
+which can be seen at 2:51PM and 4:22PM. The first is a legal observation but
+the second conflicts with the last Tip-and-Cue observation at 4:25PM. The
+scheduler recognizes this time conflict and highlights both events in red,
+signifying to the operator that these two events must be sorted before
+continuing.
 
 \subsection{Time-Tag Command Generation}
 
@@ -604,16 +610,18 @@ The last stage of the \gls{pops} workflow is \gls{ttc} generation.  At this
 point, the operator has created a plan that suits their own needs as well as
 their customer’s needs, the plan has been validated, and all that remains is
 generating \glspl{ttc} to be uploaded to their specific spacecraft.  Depending
-on the observation mode, not all events have commands to be generated. In our
-‘EG-SAT’ example case, on the first pass, we may command the satellite to begin
-capturing wide-view images. But, on the next pass, we cannot command the
-satellite to image potential targets as we cannot know where they will be a
-priori. It is known that new commands will be generated between the first and
-second pass and, from a planning perspective, this is handled with the
-scheduler. The time when these inter-pass commands will be executed will lie
-within the second-pass event. In this way, no other \glspl{ttc} should conflict
-with the automatically generated commands because if they were scheduled for
-that time, they would conflict. 
+on the observation mode, not all events have commands to be generated. In the
+Plan-2 schedule, commands may be only generated for the Sat-A events because we
+may command it to do coarse imaging in all cases. The Sat-B events cannot
+generate \glspl{ttc}. This is because for the Tip-and-Cue observation mode, on
+the first pass, we may command the satellite to begin capturing wide-view
+images.  But, on the next pass, we cannot command the satellite to image
+potential targets as we cannot know where they will be a priori. It is known
+that new commands will be generated between the first and second pass and, from
+a planning perspective, this is handled with the scheduler. The time when these
+inter-pass commands will be executed will lie within the second-pass event. In
+this way, no other \glspl{ttc} should conflict with the automatically generated
+commands because if they were scheduled for that time, they would conflict. 
 
 To generate \glspl{ttc}, templates are combined and populated based on the
 observation and the configuration parameters specified when creating the
@@ -628,24 +636,25 @@ templates.
     \label{fig:timing} 
 \end{figure}
 
-The generation process is fairly straightforward and specific to each
-observation mode on each satellite. But, there are some intricacies worth
-noting. Firstly, from the previous example, when creating an observation, the
-operator only specifies a duration because that is all they are concerned with.
-Generally, for any observation, there are some preliminary and closing
-commands. These commands cannot happen instantaneously and may require some
-non-negligible margin. It is for this reason that each event is subdivided into
-separate timing components. This can be seen in Figure \ref{fig:timing}. The
-start and stop times are the same as the event’s start and stop but they
-specify when the first \gls{ttc} is executed and when the final \gls{ttc} has
-concluded its execution respectively. The epoch is the time when the
-observation begins sensing and the duration is the period after which the
-sensing is performed. As part of the \gls{ttc} generation capabilities, these
-timings can be determined programmatically by evaluating the templates for each
-observation. As such, when an observation is created by the operator in the
-observation configuration stage, they specify the epoch and the duration, and
-the \gls{ttc} generator determines the start and stop times.
-
+The generation process is fairly straightforward and specific to
+each observation mode on each satellite. But, there are some intricacies worth
+noting. Firstly, when creating an observation, the operator only specifies a
+duration because that is all they are concerned with.  Generally, for any
+observation, there are some preliminary and closing commands. These commands
+cannot happen instantaneously and may require some non-negligible margin. It is
+for this reason that each event is subdivided into separate timing components.
+This can be seen in Figure~\ref{fig:timing}. The start and stop times are the
+same as the event’s start and stop but they specify when the first \gls{ttc} is
+executed and when the final \gls{ttc} has concluded its execution respectively.
+The epoch is the time when the satellite begins sensing for an observation mode
+and the duration is the period after which the sensing is performed. As part of
+the \gls{ttc} generation capabilities, these timings can be determined
+programmatically by evaluating the templates for each observation. As such,
+when an observation is created by the operator in the observation configuration
+stage, they specify the epoch and the duration, and the \gls{ttc} generator
+determines the start and stop times. The process of generating \glspl{ttc} is
+still under development. It requires an intimate knowledge of the mission it is
+being developed for. 
 
 
 
