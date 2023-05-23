@@ -261,16 +261,252 @@ process.
 \subsection{Performance}
 
 Currently \gls{pops} has issues with large amounts of data. For scenarios
-longer than a few days, opportunity filtering becomes very slow. To illustrate
-this, let us do a cursory comparisson of the processing times for an example
-scenario.  We will run the Tip-and-Cue Imaging opportunity filter for a number
-of scenarios, each with an increasing scenario size and a 10s timestep. Each
-scenario will have two satellites (Sat-A and Sat-B), three ground stations
-(\acrshort{sfl}, ESCS, and GSW), and the same \gls{aoi} discussed in
-Chapter~\ref{chap:workflow}.
+longer than a few days, storing and retrieving data, displaying information,
+and opportunity filtering becomes slow. To illustrate this, let us run a simple
+benchmark test. For this test, we will run the Tip-and-Cue Imaging opportunity
+filter for a number of scenarios, each with an increasing scenario size and a
+10s timestep. Each scenario will have two satellites (Sat-A and Sat-B), three
+ground stations (\acrshort{sfl}, ESCS, and GSW), and the same \gls{aoi}
+discussed in Chapter~\ref{chap:workflow}. The reason we'll use the opportunity
+filter as a benchmark is that it interacts with almost every part of \gls{pops}
+and Tip-and-Cue Imaging is the more complicated observation mode.
+The purpose of this test is not to give an in-depth characterization of the
+performance of \gls{pops} but rather its purpose is to give a rough idea.
+These scenarios were run on a laptop with 40GB of RAM and an $11^{th}$
+generation Intel Core i7-1165G7 CPU running at 2.80 GHz. 
+
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}
+    \begin{axis}[
+	title={TNC Imaging Calculation Time},
+	xlabel={Scenario Length [days]},
+	ylabel={Time [min]},
+	xmin=0, xmax=14,
+	ymin=0, ymax=35,
+	xtick={0, 2, 4, 6, 8, 10, 12, 14},
+	minor x tick num=1,
+	minor y tick num=4,
+	ymajorgrids=true,
+	yminorgrids=true,
+	minor grid style=dotted,
+    ]
+
+    \addplot[
+	color=blue,
+	mark=square,
+	]
+	coordinates {
+	(0.5, 0.400643333) (1, 0.651415) (2, 1.976971667) (3, 3.57072) (4, 5.415478333) (5, 7.492456667) (6, 6.871896667) (13, 32.980525)
+	};
+	
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Simple Opportunity Filtering performance benchmark}
+    \label{fig:performance-benchmark}
+\end{figure}
+
+The results of this test can be seen in Figure~\ref{fig:performance-benchmark}.
+As can be seen from the plot, 8 scenarios were generated. Scenarios less than 4
+days are reasonably quick, taking less than \~5 minutes. But, as we approach a
+13-14 day scenario filtering takes more than half an hour. It could be argued
+that this is tolerable for an \gls{mvp} but it is certainly not ideal.  Note,
+this test was only for a 2-satellite scenario. Every satellite added increases
+the running time exponentially. 
+
+To address this, there are a number of areas for improvement.  These range from
+simple algorithmic changes to heavily involved architectural changes. For each
+change, work will need to be done characterizing what is taking up the most
+time to justify the change. Some possible avenues for improvement, in increasing
+difficulty, are:
+
+\begin{enumerate}
+    \item Making ephemeris data dynamic,
+    \item Splitting up the data in the filtering process,
+    \item Utilizing parallel computation,
+    \item Offloading computation to a dedicated server, or
+    \item Leveraging the GPU
+\end{enumerate}
+
+
+\subsubsection{1. Making Ephemeris data dynamic}
+
+As mentioned earlier, ephemerides are generated for each satellite once when a
+plan is created. This ephemeris data has a set time range and timestep. It is
+here a user must decide whether they want an accurate but slow to process plan,
+or an inaccurate but fast plan. Why should they be required to make this
+decision? Or, at least, why should this decision be made once and then be set
+in stone for the duration of the plan? What's more, if the timestep is constant
+for an entire plan, it is likely that, for small timesteps, most of that data
+is wasted. If a user is concerned with an \gls{aoi} in the Northern Hemisphere,
+they will not need a high accuracy ephemeris for times where the spacecraft is
+in the southern hemisphere. Of course, if the user is concerned with a very
+large \gls{aoi} that the spacecraft more often than not has access to, then
+nothing can be done but this is an outlier case.
+
+This touches on potential improvements for how ephemerides can be better
+handled.  Instead of initially making a large, small timestep, ephemeris, a
+rougher, large timestep, ephemeris could be generated. For periods where high
+accuracy is needed, such as when there is an access, ephemeris data could be
+dynamically generated in that area specifically to increase the accuracy where
+it is needed. Or, conversely, a small timestep ephemeris could be initially
+generated, then after the calculations are performed, unnecessary data could be
+omitted. These are both general ideas for now and would need dedicated
+development time to plan out and troubleshoot any pitfalls.
+
+In terms of difficulty, this would require a re-work of a large portion of
+\gls{pops}.  Thankfully, through abstracting how ephemeris data is handled
+through the Data handler class, \gls{pops} is well situated for this change.
+Overall, this is a change that should likely be made anyway. Having ephemeris
+data be static artificially limits \gls{pops}'s functionality.
+
+
+\subsubsection{2. Splitting up data in the filtering process}
+
+Currently, during opportunity filtering, all of the data is loaded for the
+entire scenario. That being ephemeris data, swaths, access times, etc. If
+having all of this data loaded in at once is causing the filtering process to
+slow down, it may be better to instead load the data in chunks. For example,
+for a 14 day scenario, instead of loading in all 14 days of data, this could be
+split up into 2 day chunks. This will likely not reduce the processing time but
+it may reduce the time spent indexing and accessing the data. In terms of
+difficulty, this would be an easy modification but time would need to be spent
+determining whether this actually addresses a problem in the software.
+
+
+\subsubsection{3. Utilizing parallel computation}
+
+Moving from single-threaded processing to multi-threaded processing begins to
+stray from algorithmic changes to changes in how the host PC's is utilized.
+These solutions, while most likely effective, increase the complexity of
+\gls{pops} and should be pursued if there are no other alternatives.
+
+Thankfully, opportunity filtering is well suited for multi-threaded
+programming. Searching for opportunities is done through brute-force numerical
+computation, and many of the calculations are performed independently from each
+other. A system could be developed that splits the filtering process into a
+number of processes, each handling sub-components of the filtering process. 
+
+This would be a difficult solution to implement. Multi-threaded programming is
+not necessarily complicated in Python, but asynchronous processes are almost
+always much more complicated that asynchronous process. Synchronous processes
+are predictable, straightforward, and easy to debug. Asynchronous processes
+introduce a multitude of challenges. For example: race conditions, memory
+management, locking out resources, unpredictable behavior, error handling, etc.
+There are many benefits to parallel computing, but such a change should not be
+undertaken lightly.
+
+
+\subsubsection{4. Offloading computation to a dedicated server}
+
+When performing opportunity filtering, or any other function of \gls{pops}, if
+other software is being run on a user's computer, that may negatively impact
+the tool's performance. Or, if the user's computer is not particularly
+powerful, that may limit \gls{pops}'s usefulness. Instead, a dedicated server
+could be constructed that is optimized to perform calculations for \gls{pops},
+such as ephemeris generation, the \glspl{atu}, database management, and
+opportunity filtering. In this way, all that a user's computer will run is what
+they need to display the information or construct requests. Or alternatively,
+all of \gls{pops} could be hosted on a server, and a user just sends requests
+to it. 
+
+There are potential benefits to this approach, but it would vastly increase the
+complexity of \gls{pops}, especially for the front-end user interface. Some
+difficulties would include: managing data transfer, tracking user sessions, or
+potentially removing functionality from the Mission Model service. The issue of
+tracking user sessions is particularly difficult. If a user runs \gls{pops} on
+their own computer, it can be assumed that only they will be interacting with
+the webserver. But, if the server is hosted remotely, then the webserver needs
+to track both what requests are being sent to it as well as from what source.
+For example, let us say there are two users who wish to work with two different
+plans. User 1 will open Plan A and the webserver will display Plan A. User 2
+will open Plan B and Plan B will be displayed. But now there are two instances
+of the Cesium viewer. Which one should the server send data to? The behavior is
+undefined and both User 1 and User 2 will have unstable sessions. In this way,
+sessions should be split somehow, such that one user's inputs cannot affect
+another user. This problem has many solutions but is non-trivial and strays
+into professional web development which is not the priority for \gls{pops}. 
+
+
+\subsubsection{5. Leveraging the GPU}
+
+So far, all computation has been done on the \gls{cpu} which is general purpose
+but slow. The \gls{gpu} is optimized for computer graphics and image
+processing. Specifically, they are built to process large blocks of data in
+parallel. They are especially good at handling any process that uses linear
+algebra. Historically, \glspl{gpu} were only meant to be used for computer
+graphics but in recent decades, they have become much more general purpose. By
+leveraging the \gls{gpu}, computation times may be decreased by orders of
+magnitude. Some precedent does exist for this by accelerating SGP4 calculation
+\hl{cite}.
+
+% https://core.ac.uk/download/pdf/301091034.pdf
+% https://amostech.com/TechnicalPapers/2016/SSA-Algorithms/Moeckel.pdf
+
+Using a \gls{gpu} would be the most rewarding but also most difficult and
+complicated improvement to \gls{pops} that could be made. Writing code for a
+\gls{gpu} is to some extent specific to the manufacturer and age of the
+\gls{gpu}. Some computers that may run \gls{pops} may not even have one that
+supports this functionality. So in addition to creating the custom shaders for
+\gls{pops}, work would need to be done to ensure that they can be used at all
+by users at \gls{sfl}.
+ 
+
+\subsubsection{Miscellaneous Improvements}
+
+In addition to any large improvements, there exists many smaller changes that
+can have a positive effect on \gls{pops}'s performance. Small changes such as:
+dynamically loading data from the database, sending multiple batches of data to
+the \glspl{atu} in a single HTTP request rather than multiple HTTP requests,
+or.
+
+
+\subsection{Updating Plans}
+
+Another area that must be improved is the ability to update plans in
+\gls{pops}. Currently, once \glspl{tle} are set for a plan, they cannot be
+changed. This was done to reduce the complexity of the tool. This is not ideal
+though. Suppose a plan has been made and observations have been scheduled, but
+then suppose after some time a new \gls{tle} is generated that invalidates the
+observations made with the older \gls{tle}. This is a reasonable scenario that
+could very well occur but currently there is no way to handle this in
+\gls{pops} aside from creating a new plan and rescheduling observations.
+
+This is a multi-faceted problem that must be addressed in a number of areas.
+First, we must at least determine if a new \gls{tle} invalidates observations
+from a plan with a previous \gls{tle}. Next, there must be a way to edit
+observations in an old plan, or there must be a way to migrate those old
+observations to a new plan with updated timings. Lastly, if a change is made to
+an observation, \glspl{ttc} that have already been generated must be updated in
+some way to reflect the changes. This problem has not yet been approached and
+is an on-going limitation of the tool.
+
+
+\subsection{Communication With Other Ground Software}
+
+\gls{pops} is not meant to be used in isolation. It is important that it is
+able to communicate with other ground software at \gls{sfl}. Specifically,
+\gls{pops} must be able to read what commands are currently scheduled for
+different spacecraft. This is necessary for planning and for scheduling.
+Without an understanding of what is already planned for a satellite,
+observations that a user adds may conflict with existing \glspl{ttc}. 
+How exactly \gls{pops} will interact with \gls{sfl}'s ground software has yet
+to be determined.  
+
+This additional functionality is planned to be an additional class which acts
+as an interface between the scheduler class and \gls{sfl}'s ground software. It
+is here uploaded \glspl{ttc} will be read and added onto the schedule.
+
 
 
 \subsection{Testing}
 
+The last task that must be performed before \gls{pops} has reached the
+\gls{mvp} is user testing. Quite simply, this is where operators begin to use
+the tool and give feedback. This information is critical since it gives
+information: bugs, user interface problems, and what parts of the tool can be
+improved.  This then begins the process of iterating in their feedback,
+improving the tool, receiving further feedback and so on.
 
 
