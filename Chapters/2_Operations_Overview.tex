@@ -345,6 +345,149 @@ chapter.
 
 \section{Orbit Propagation}
 
+For \gls{pops} it is essential that there is some way of propagating a
+satellite's orbit. That is, we must have a way of estimating a satellites
+position at a given time. Very accurate methods of propagation do exist, but
+these are involved and may be time consuming to implement. The desire for
+\gls{pops} currently is to have \textit{some} method of propagation that is
+suitably accurate rather than a very accurate method that would take a great
+deal of time to develop.
+
+The United States Space Force tracks all detectable Earth \glspl{rso} and makes
+this information public in the form of lists of \gls{norad} \gls{tle} sets.
+\glspl{rso} are any natural or artificial object in Earth's orbit or any other
+body.  This information is one of the only public sources of data regarding
+Earth orbiting \glspl{rso}. A \gls{tle} is a standard data format that contains
+a list of specialized orbital elements at a specific time, referred to as the
+epoch. \glspl{tle} are inextricably linked to the `simplified perturbation
+models' family of algorithms, specifically \gls{sgp4}. Though less accurate
+than numerical computation methods, these allow for quick and relatively
+accurate computation of satellite trajectories. This section is not intended to
+be an in-depth reference of propagating satellite trajectories with \glspl{tle}
+but rather it is a summary of the concepts as well as some of the literature.
+
+Unfortunately, there have not been many publications made by the U.S. military
+regarding the exact process to generate \glspl{tle}. This is essential because
+the assumptions made in the creation of a \gls{tle} must be accounted for to
+produce accurate results. There are, though, a few publications of note on this
+subject. Originally the source code for the `simplified perturbation models'
+family of algorithms was defined explictly in \cite{hoots_spacetrack_1980}.
+After some years, many purpose built versions of \gls{sgp4} were developed,
+each with their own assumptions and implementation details. These were
+consolidated together in \cite{vallado_revisiting_2006}, which provided a
+number of tested implementations of \gls{sgp4} in a variety of programming
+languages. Still today, this is the best reference for \gls{sgp4}. Later,
+\cite{vallado_sgp4_2008} was published as a reference for generating
+\glspl{tle} from ephemeris data. In addition, \cite{vallado_fundamentals_2001}
+was published as an exhaustive reference on orbital dynamics which discusses at
+length not only \glspl{tle} and \gls{sgp4} but also the underlying theory as
+well as derivation examples.
+
+
+
+\begin{figure}[h]
+    \begin{verbatim}
+    IDENTIFIER
+    1 16609U 86017A   93352.53502934  .00007889  00000-0  10529-3 0  0342
+    2 16609  51.6190 13.3340 0005770  102.5680 257.5950 15.59114070 44786
+    \end{verbatim} 
+    \caption{Example of a \gls{tle}}
+    \label{fig:tle-ex} 
+\end{figure}
+
+An example of a \gls{tle} can be seen in Figure~\ref{fig:tle-ex} taken from
+\cite{vallado_fundamentals_2001}.  As the name implies, there are two 69
+character lines of data. Occaisionally, a title is added for reference but this
+is not required as part of the \gls{tle} definition. The data allocations can
+be seen in Figure~\ref{fig:tle-legend}. The corresponding allocations for each
+reference number can be seen in Table~\ref{tab:tle-line-1} and
+Table~\ref{tab:tle-line-2} for lines 1 and 2 respectively.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{TLE.png} 
+    \caption{TLE Data Format}
+    \label{fig:tle-legend} 
+\end{figure}
+
+\begin{table}[!htb]\small
+%\setlength{\tabcolsep}{6pt}
+
+\begin{minipage}{.49\textwidth}
+\centering
+
+\caption{Data Format, Line 1}
+\label{tab:tle-line-1}
+
+\medskip
+
+\begin{tabular}{|c|ll|}
+\hline
+
+\multicolumn{1}{|l|}{} & \multicolumn{1}{l|}{Description} & \multicolumn{1}{l|}{Units} \\ \hline
+a  & Line Number   &   \\ \hline
+1  & Satellite Number   &   \\
+2  & Classification (U/C/S)   &   \\
+3  & International Designator   &   \\
+4  & Epoch, Year   & years  \\ 
+5  & Epoch, Day   & days  \\
+6  & Mean Motion, $1^{\mathrm{st}}$ Derivative & rev/day  \\
+7  & Mean Motion, $2^{\mathrm{nd}}$ Derivative    & rev/day$^3$  \\
+8  & B* (B Star)   & $R_{\mathrm{Earth}}^{-1}$  \\
+9  &  Ephem Type (always 0)  &   \\
+10  &  Element Number  &   \\ \hline
+b  & Checksum   &  \\
+\hline
+
+\end{tabular}
+\end{minipage}\hfill
+\begin{minipage}{.49\textwidth}
+\centering
+
+\caption{Data Format, Line 2}
+\label{tab:tle-line-2}
+
+\medskip
+
+\begin{tabular}{|c|ll|}
+\hline
+
+\multicolumn{1}{|l|}{} & \multicolumn{1}{l|}{Description} & \multicolumn{1}{l|}{Units} \\ \hline
+a  & Line Number   &   \\ \hline
+11 & Satellite Number   &   \\
+12 & Inclination   & $^\circ$  \\
+13 & Right Ascension   & $^\circ$  \\
+14 & Eccentricity &   \\
+15 & Perigee & $^\circ$  \\
+16 & Mean Anomaly & $^\circ$ \\
+17 & Mean Motion & rev/day \\
+18 & Orbit Number &  \\ \hline
+b  & Checksum   &  \\
+\hline
+
+\end{tabular}
+\end{minipage}
+
+
+\end{table}
+
+It is not essential to have a complete understanding of every term in a
+\gls{tle}. Generally, they are meant to be consumed by an algorithm and are not
+human readable. Despite this, it is good to have a general understanding of the
+terms.  Elements 1, 2, 3, and 11 give us information about the satellite the
+\gls{tle} has been generated for. Elements 4 and 5 give us the epoch the
+\gls{tle} has been generated for. Elements 12-17 give us the independent orbit
+elements that can be used to describe a satellite's orbit. Elements 6-8
+describe the effects of perturbations on that orbit. Lastly, Elements a and b
+give us meta-information about the \gls{tle} itself. Even though the orbital
+elements of a satellite can be extracted from a \gls{tle} and can then be used
+as inputs for another propagator, this would be a mis-step and would produce
+erroneous results. ``[\glspl{tle}] are `mean' values obtained by removing
+periodic variations in a particular way. In order to obtain good predictions,
+these periodic variations must be reconstructed (by the prediction model) in
+exactly the same way they were removed.'' \cite{hoots_spacetrack_1980}.
+
+
 
 
 
