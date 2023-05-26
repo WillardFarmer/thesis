@@ -482,10 +482,33 @@ describe the effects of perturbations on that orbit. Lastly, Elements a and b
 give us meta-information about the \gls{tle} itself. Even though the orbital
 elements of a satellite can be extracted from a \gls{tle} and can then be used
 as inputs for another propagator, this would be a mis-step and would produce
-erroneous results. ``[\glspl{tle}] are `mean' values obtained by removing
+erroneous results. 
+
+\begin{quote}
+[\glspl{tle}] are `mean' values obtained by removing
 periodic variations in a particular way. In order to obtain good predictions,
 these periodic variations must be reconstructed (by the prediction model) in
-exactly the same way they were removed.'' \cite{hoots_spacetrack_1980}.
+exactly the same way they were removed by \gls{norad}. Hence, inputting
+[\glspl{tle}] into a different model (even though the model may be more accurate or even
+a numerical integrator) will result in degraded predictions. \cite{hoots_spacetrack_1980}.
+\end{quote}
+
+Within the simplified general perturbations family of algorithms there are 5
+oribital propagation models: SGP, SGP4, SDP4, SGP8, and SDP8. SGP was
+originally developed in 1966 for near-Earth satellites (orbital periods less
+than 225 minutes). It was then replaced by SGP4 and SDP4. SGP4 was originally
+developed in 1970 for near Earth Satellites and SDP4 was an extension for
+`deep-space' satellites (orbital periods greater than 225 minutes) in 1979.
+The SGP8/SDP8 models were developed in 1980 to address defficiencies in the
+previous versions but ultimately, they did not become widely used.  Today
+SGP4/SDP4 are the dominant models.  Since there is a clear distinction between
+when SGP4 and SDP4 should be used, they are collectively referred to as just
+\textit{SGP4}. Since the original report \cite{hoots_spacetrack_1980}, changes
+have not been made to the theory but rather the code implementations.
+
+In this thesis, we will not go into the specifics of the \gls{spg4} propagator,
+but we will touch on some important details. Firstly, \glspl{tle} to around a
+kilometer 
 
 
 
