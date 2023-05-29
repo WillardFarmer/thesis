@@ -1,19 +1,27 @@
 \glsresetall{} 
+
 \chapter{Software Architecture}\label{chap:architecture}
 
+\lettrine[lines=2, findent=0pt, nindent=5pt]{T}{}he \gls{pops} is made up of
+several distinct components separated into services.  The reason it has been
+separated in this way, is to allow for separation of concerns. That being, each
+functional unit of the tool is separated with limited overlap. Developing in
+this way allows for a great deal of freedom when developing the different
+services of the tool. Each service will be completely unaffected by the
+implementation of another service. In addition, some of the functionality of
+\gls{pops} has functionality that is useful outside of the tool itself. Through
+this architecture, the services may be used elsewhere, without any need for
+further development for the services.  
 
-\section{Payload Operations Planning Software Architecture}
-
-The \gls{pops} is made up of several distinct components separated into
-services.  Each service has its own Docker5 container. Containers are similar
-to virtual machines in that they simulate an operating system but, unlike
-virtual machines, they do not simulate the underlying hardware. This makes
-containers much more lightweight, while also retaining the benefits of having a
+Each service has its own Docker container. Containers are similar to virtual
+machines in that they simulate an operating system but, unlike virtual
+machines, they do not simulate the underlying hardware. This makes containers
+much more lightweight, while also retaining the benefits of having a
 standardized environment where dependencies are packaged with their source
 code. Containers make deploying and maintaining \gls{pops} much easier since
 installation does not require managing dependencies and tweaking environment
 variables. In this way, a \gls{pops} user does not need to be as familiar with
-the software as a developer to run it. Each service is its own Python web
+the software as a developer to run it.  Each service is its own Python web
 server. In this way, they may be interacted with via a RESTful API. That being,
 HTTP requests can be made to retrieve information or perform calculations. Each
 service also provides its own automatically generated documentation that can be
@@ -21,7 +29,7 @@ accessed through a web browser. This documentation outlines possible API calls
 as well as their input and output data formats.  This allows a user to quickly
 see the capabilities of a service without accessing the source code. Currently,
 \gls{pops} has 4 main services; they are the: Mission Model, Propagator,
-Database, and Access Time Utilities,  Mission Model.
+Database, and Access Time Utilities.
 
 %% ======================================================================== %%
 %%			    General Architecture
@@ -31,70 +39,80 @@ Database, and Access Time Utilities,  Mission Model.
 
 Every service contains the same basic components so it is worth discussing
 services generally and then going into specifics in subsequent sections. These
-components are: the dockerfile, a main Python script, a models file, service
-specific scripts.
+components are: the Dockerfile, a main Python script, a models file, and
+service specific scripts.
 
 To review, a docker container is a virtual environment, which is a simulated
-operating system. A container can be created from an image and an image canbe
-built from a Dockerfile. As such, the Dockerfile is the fundamental text
-document that is used to assemble an image. It specifies: the operating system
-that should be used, what files should be included in the container, and what
-commands should be run upon container creation. By specifying an operating
-system, we can tailor a service to any environment that best suits the service's
-needs. They can use windows, the latest version of Ubuntu, or a lightweight
-tailored linux distrubution that only contains the tools a service needs. In
-this way, one service can be running Ubuntu 20.04 for ease of development, and
-another service can be running Windows 10. In this way, \gls{pops} is not
-limited by the operating system it is developed in. Files may  be added to a
+operating system. A container can be hosted on any operating system that
+supports docker. Images are the templates that can be used to create
+containers. They can either be built on the user's machine or they may be built
+elsewhere and then copied onto the user's machine. Dockerfiles are the
+configuration files that are used to assemble an image. They specify: the
+operating system that should be used, what files should be included in the
+container, and what commands should be run upon container creation. By
+specifying an operating system, we can tailor a service to any environment that
+best suits the service's needs.  They can use windows, the latest version of
+Ubuntu, or a lightweight tailored Linux distribution that only contains the
+tools a service needs. In this way, one service can be running Ubuntu 20.04
+and another service can be running Windows 10. In this way, \gls{pops} is not
+limited by the operating system it is developed in.  Files may be added to a
 container simply by pointing to their location in the host's file system upon
-image creation. Finally, when a container is first created from an image, a
-conatiner will need to install all of the necessary dependencies. In general,
+image creation.  Finally, when a container is first created from an image, a
+container will need to install all of the necessary dependencies. In general,
 this will either be Ubuntu packages, a version of Python, and Python libraries.
-In this way, dependencies can easily be tracked. The last command that is
-executed is the command that starts a service's main script.
+In this way, dependencies can easily be tracked. 
 
 Theoretically, all of the code for a service could live in the main Python file
-but, if this were the case, it would quickly balloon and become unwieldy to work
-with so functionality is split into multiple scripts. The main script serves a
-number of functions. Its purpose is to handle all of the web-server aspects of
-the service. Functions such as: creating the web-server, setting server
-parameters, setting up environment variables, and handling API calls. Setting up
+but, if this were the case, it would quickly balloon and become unwieldy to
+work with so functionality is split into multiple scripts. The main script's
+purpose is to handle all of the webserver aspects of the service. It is a
+collection of functions that handle: creating the web-server, setting server
+parameters, setting up environment variables, and \gls{api} calls.  Setting up
 the webserver is fairly straightforward since open source libraries are used to
 handle all of the low-level functionality and implementation. What is most
-important is specifying potential HTTP requests. These requests are how a
+important is specifying potential \gls{http} requests. These requests are how a
 service may be interacted with by a user, their browser, or by other services.
-The parts that must be specified are the: 
+The parts of an HTTP request that must be specified are the: 
 
 \begin{itemize}
-    \item Request type (GET, POST, PUT, etc.), 
+    \item Request type (GET, POST, DELETE, PUT, etc.), 
     \item Path to the request, 
-    \item Response type (JSON, Plain Text, HTML, etc.), 
-    \item Input variables if applicable, and the 
+    \item Response type (JSON, Plain Text, HTML, None, etc.), 
+    \item Input variables (if applicable), and the 
     \item Function that is called when a request is received.
 \end{itemize}
 
-For GET requests, the input variables are generally straightforward since the
-only input variables that can be used must be explicitly stated in the request
-itself. But, for POST requests or other requests that contain information in
-the body of the request, the format of the input data must be defined or else
-the web server will fail the request as being unprocessable. These input
-definitions are stored in the models file. Python is a dynamically typed
-language so variables do not need to be assigned a type upon creation. To
-ensure input data conforms with what is expected by the api, the Python library
-\texttt{Pydantic} is used to enforce data types at runtime. These Pydantic
-input definitions are contained in the models file. The remainder of the files
-in a service are specific to the service itself.
+\gls{http} supports 5 main types of request: GET, POST, DELETE, PUT, and PATCH.
+\gls{http} does not for the most part impose restrictions on what a request can
+do. These types are useful for organizational purposes but do not need to be
+strictly conformed with. For large applications they are useful, but \gls{pops}
+generally only makes use of the first 3.  For GET requests, there is no payload
+so the only information that is transferred is the link itself or any query
+parameters.  These requests are used to read information from the webserver
+such as a webpage or some specific data. DELETE requests are equivalent to GET
+requests but they are used when information must be deleted from \gls{pops}.
+Given how important potential data loss is, deletions are treated separately.
+POST requests contain information in the body of the request.  The format of
+the input data must be defined or else the web server will fail the request as
+being unprocessable.  These input definitions are stored in the models file.
+Python is a dynamically typed language so variables do not need to be assigned
+a type upon creation. To ensure input data conforms with what is expected by
+the \gls{api}, the Python library \texttt{Pydantic} is used to enforce data
+types at runtime.  These Pydantic input definitions are contained in the models
+file.  The remainder of the files in a service are specific to the service
+itself.
 
 Having multiple Docker containers becomes cumbersome when a user or a developer
 wishes to build new images or run new containers from their images. To manage
 all of the different services, another tool is used called "Docker Compose".
-From a single configuration file, mutliple services may be started, stopped, or
+From a single configuration file, multiple services may be started, stopped, or
 built from their source code. Services may also have their image name,
 container name, and port number set through the configuration file. This vastly
-simplies configuration for \gls{pops} as a whole. Another benefit of using
-Docker Compose is that it also creates a bridget network for the containers
+simplifies configuration for \gls{pops} as a whole. Another benefit of using
+Docker Compose is that it also creates a bride network for the containers
 Docker Compose creates. Containers are intended to be standalone units but a
-bridge network allows containers to communicate with each other directly.
+bridge network allows containers to communicate with each other directly
+without them needing to keep track of the IP they are hosted on.
 
 %% ======================================================================== %%
 %%			    Propagator
@@ -108,12 +126,14 @@ planning process so it is essential that they are well formed. Consolidating
 ephemeris generation for the entire tool ensures that only one area of the code
 needs to be developed and validated.
 
-Currently, the main method of orbital propagation for \gls{pops} is with the
-\gls{sgp} model series of algorithms, specifically SGP4/SDP4 referred to as
-just ‘SGP4’. SGP4 is an analytical method of approximating orbital state
-vectors at corresponding epochs in the \gls{teme} \gls{eci} coordinate frame,
-given a NORAD \gls{tle}.  \gls{tle}s are readily provided by the United States
-Space Force through Space-Track6 or CelesTrak7. The \gls{teme} coordinate frame
+As discussed in Chapter~\ref{chap:ops}, the main method of orbital propagation
+for \gls{pops} is with the \gls{sgp} model series of algorithms, specifically
+SGP4/SDP4 referred to as just ‘SGP4’.  \gls{sgp4} is an analytical method of
+approximating orbital state vectors at corresponding epochs in the \gls{teme}
+\gls{eci} coordinate frame, given a NORAD \gls{tle}.  \gls{tle}s are readily
+provided by the United States Space Force through Space-Track.  Alternatively,
+\glspl{tle} may also be taken from CelesTrak which gets \glspl{tle} from
+Space-Track and applies its own modifications.  The \gls{teme} coordinate frame
 is not particularly useful so part of the Propagator service’s purpose is
 transforming the orbit vectors into a coordinate system required by other parts
 of \gls{pops}.  Currently, the two possible output reference frames are the
@@ -128,8 +148,8 @@ There are two scripts that handle all of the functionality for the Propagator
 service. The first is the main script which, as discussed previously, takes
 requests, organizes the input data, and formats the output data. The actual
 propagation and coordinate change logic is stored in the propagation script.
-Open source libraries are used to perform the SGP4 and coordinate change
-algorithm so the main focus of the script is to ensure the input data conforms
+Open source libraries are used to perform the SGP4 and coordinate transform
+algorithms so the main focus of the script is to ensure the input data conforms
 with the expected format.  
 
 \begin{figure}[h]
@@ -143,29 +163,31 @@ It is very easy to generate Ephemeris data. What is difficult is validating it.
 The benchmark for validation is \gls{stk} since it has its own SGP4 ephemeris
 generation capabilities. If operators did not use POPS, their best alternative
 would be to set up scenarios manually in \gls{stk}. As such, using it as ground
-truth is valid in this case. Both \gls{stk} and the \gls{pops} implementation
-of SGP4 us the same source8: Revisiting Spacetrack Report \#39. As such, they
-should provide the same results. One difference to note is that \gls{stk} uses
-the \gls{icrf} \gls{eci} coordinate system but the propagator service uses
-\gls{gcrf}.  This difference is acceptable since these reference frames are
-approximately identical10. The procedure for validating the Propagator service
+truth is valid in this case. Both \gls{stk} \cite{kelso_celestrak_2022} and the
+\gls{pops} implementation of SGP4 use the same source
+\cite{vallado_revisiting_2006}.  As such, they should provide the same results.
+One difference to note is that \gls{stk} uses the \gls{icrf} \gls{eci}
+coordinate system but the propagator service uses \gls{gcrf}.  This difference
+is acceptable since these reference frames are approximately identical
+\cite{kaplan_iau_2006}.  The procedure for validating the Propagator service
 was first to select a \gls{tle}, a time range, a time step, and a coordinate
 system.  Next was to generate Ephemerides from \gls{stk} and the propagation
 service.  Finally, the results were compared. One such comparison can be seen
-in Figure~\ref{fig:stk_py}. Here, the peak position residual was 0.37mm for the position along
-the x-axis. The main purpose of this exercise is to ensure that the Python
-libraries are being used correctly and that their output data is acceptable.
-From this result, it is clear that the methods are identical and the difference
-was most likely due to slight implementation differences. 
+in Figure~\ref{fig:stk_py}. Here, the peak position residual was 0.37mm for the
+position along the x-axis. The main purpose of this exercise is to ensure that
+the Python libraries are being used correctly and that their output data is
+acceptable.  From this result, it is clear that the methods are identical and
+the difference was most likely due to slight implementation differences. 
 
 Another responsibility of the Propagator service is to determine a list of
 passes for a given ephemeris. Having an entire ephemeris may be cumbersome for
 some calculations so it makes sense to split a whole ephemeris into multiple
-components. A `pass' is of course a completely general term so in this context
-it is defined as the period between south-to-north hemisphere crossings as this
-definition was chosen because it is easy to calculate an equator crossing. This
-is where the z-position of a spacecraft goes from negative to positive.
-\hl{See algorithm ?? for a discussion on how crossings are found}.
+components. A `pass' is a arbitrary term so in this context it is defined as
+the period between south-to-north hemisphere crossings. This definition was
+chosen because it is easy to calculate when a spacecraft crosses the equator as
+this is where the z-position of a spacecraft, in \gls{ecef} coordinates, goes
+from negative to positive.  See Algorithm~\ref{alg:crossover} for a discussion
+on how crossings are found.
 
 Part of the benefit of having the Propagator as its own service is that if a
 more accurate algorithm is desired for orbital propagation, only the Propagator
