@@ -208,26 +208,26 @@ for \gls{pops} to function. This includes but is not limited to satellite
 information, \glspl{tle}, current and previous plans, ephemeris data,
 observation opportunity data, and planned observations. 
 
-An \acrshort{sql} database is a type of database management system that uses
-the \gls{sql}. It is commonly used where data needs to be organized and
-accessed in a structured and efficient way. \gls{sql} is a programming language
-used to manage and make changes to a \gls{rdbms}. In an \gls{rdbms}, data is
-stored in tables with rows and columns. Using an SQL database allows for
-effective data storage and access. Relationships may also be made with data in
-an \gls{rdbms}. There are no read or write restrictions on an SQL database so
-data can be accessed simultaneously by multiple users or services.
+A \gls{sql} database is a type of database management system that is used when
+data needs to be organized and accessed in a structured and efficient way.
+\gls{sql} is a programming language used to manage and make changes to a
+\gls{rdbms}. In an \gls{rdbms}, data is stored in tables with rows and columns.
+SQL allows for effective data storage and access. Relationships may also be
+made with data in an \gls{rdbms}. There are no read or write restrictions on an
+SQL database so data can be accessed simultaneously by multiple users or
+services.
 
 When a Docker container is deleted, all of the information stored in the
 container is lost. To retain information between restarts, all of the data in
 the database is stored in a Docker Volume. There are two ways information may
 be persistently stored with Docker, either through bind-mounts or with Docker
 volumes. Bind-mounts are simply just a directory on the host's system mounted
-to the docker container. This is the simplest solution but it may be slow and
-unreliable. Alternatively, with Docker volumes, the data is stored in Docker
-itself. If Docker is deleted, so to is the volume. The benefit is that volumes
-can be backed up and shared.
+to the docker container. This is the simplest solution to persistent storage
+but it may be slow and unreliable. Alternatively, with Docker volumes, the data
+is stored in Docker itself. If Docker is deleted, so too is the volume. The
+benefit of this is that volumes can be backed up and shared.
 
-\begin{figure}
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.8\textwidth]{database.png} 
     \caption{High Level Overview of the Database}
@@ -236,17 +236,17 @@ can be backed up and shared.
 
 Figure~\ref{fig:database} shows a high-level overview of the structure of the
 \gls{pops} database. The figure is not an exhaustive reference as some tables
-have been omitted in favor of clarity. The entries in each table have also been
+have been omitted for clarity. The entries in each table have also been
 omitted for the same reason. While the figure may lack detail, it does give an
 accurate qualitative description of the database's structure. 
 
 Each box in the diagram represents a single table. Red boxes contain
 `primitive' data. That is, data that has not been derived from any other
-element. The blue boxes represent user-created data, or data that has been
-created from user inputs. The green boxes represent raw data that has been
-generated from \gls{pops}'s algorithms. Arrows indicate that there is a
-relationship between two tables, including 1-to-1, 1-to-many, and many-to-many
-relationships
+element and exists outside of \gls{pops}. The blue boxes represent user-created
+data, or data that has been created from user inputs. The green boxes represent
+raw data that has been generated from \gls{pops}'s algorithms. Arrows indicate
+that there is a relationship between two tables, including 1-to-1, 1-to-many,
+and many-to-many relationships
 
 Starting from the top, the base table for most \gls{pops} data is the
 \textbf{Missions} table. \gls{pops} may be configured for other missions which
@@ -257,17 +257,16 @@ generated. They must be manually entered upon the creation of a new mission.
 Each satellite will have multiple \glspl{tle}, stored in the \textbf{TLEs}
 table. These may be pulled from online or custom generated.
 
-Next is the most fundemental unit of mission planning, the \textbf{Plans}
+Next is the most fundamental unit of mission planning, the \textbf{Plans}
 table. A plan is derived from a mission and is associated with one \gls{tle}
 for each satellite. Currently, plans are restricted to one set of \glspl{tle}.
-If new \glspl{tle} are available, a new plan will need to be created. 
-
-From a plan and its corresponding \glspl{tle} ephemerides are generated which
-are stored in the \textbf{Ephemerides} table. This table only stores
-information about the ephemeris, such as time range and step size. The actual
-data is stored in the \textbf{Ephemeris Data}. The reason this information is
-divided is such that information about an ephemeris can be queried without
-having to load the entire table of data.
+If new \glspl{tle} are available, a new plan will need to be created.  From a
+plan and its corresponding \glspl{tle} ephemerides are generated which are
+stored in the \textbf{Ephemerides} table. This table only stores information
+about the ephemeris, such as time range and step size. The actual data is
+stored in the \textbf{Ephemeris Data}. The reason this information is divided
+is such that information about an ephemeris can be queried without having to
+load the entire table of data.
 
 Another primitive table is the \textbf{Ground Stations} table. Here information
 is stored for each ground station, such as Latitude, Longitude, Altitude,
@@ -276,24 +275,20 @@ Access Times} using the Ground Access Utility from the \glspl{atu}.
 
 Areas of Interest may be stored in the \textbf{AOIs} table. These may be
 generated from a file or drawn by a User. The data for each \gls{aoi}, is
-generally stored as a JSON string, which can be parsed when requested.
-
+generally stored as a \gls{json} string, which can be parsed when requested.
 From a plan and an \gls{aoi} we may search for opportunities through a
 \textbf{Search Scenario}.  This table contains information about what kind of
 search was performed, as well as what configuration parameters were included.
-
 Not all satellites may be included in a search scenario. To capture this
 information, there is a \textbf{Search Satellites} table which links search
-scenarios with satellites and search data.
-
-Depending on the type of search, raw search data may be stored in the,
-\textbf{Access Times}, \textbf{Swaths}, and \textbf{Intersection Polygons}
-tables. Each data point is associated with a search satellite. 
-
-Lastly, at the end of the search hierarchy is the \textbf{Opportunities} table.
-This table is simply a list of references to raw search data. With just the raw
-search data, determining what constitutes an `opportunity' may indeterminable.
-So when the search data is generated, so to is the corresponding opportunity
+scenarios with satellites and search data.  Depending on the type of search,
+raw search data may be stored in the, \textbf{Access Times}, \textbf{Swaths},
+and \textbf{Intersection Polygons} tables. Each data point is associated with a
+search satellite. Lastly, at the end of the search hierarchy is the
+\textbf{Opportunities} table.  This table is simply a list of references to raw
+search data. With just the raw search data, determining what constitutes an
+`opportunity' may indeterminable.  So, when the search data is generated, so to
+is the corresponding opportunity
 
 Separate from the rest of the tables discussed so far is the \textbf{Schedule}
 table. Here Events are stored. Each Event is linked to a satellite, and may
@@ -301,7 +296,8 @@ also be linked to a plan.
 
 It should be noted that the Database service only hosts the \gls{sql} database.
 To interact with the data, either the \acrshort{orm} in the Mission Model
-service must be used or a separate database viewer.
+service (discussed in Section~\ref{sec:orm}) must be used or a separate
+database viewer.
 
 
 
@@ -311,36 +307,34 @@ service must be used or a separate database viewer.
 
 \section{Access Time Utilities}\label{sec:atu}
 
-The ATU service provides the basic building blocks for
-constraining observation opportunities. These can be added to depending on a
-mission’s need. Some utilities the \gls{atu} service currently supports are
-calculating: ground station access times, swath generation, and polygon
-intersection with a swath. We will not go too much into detail on how some of
-these are calculated but rather we will discuss how they are used at a
-\gls{pops} level.
+The \gls{atu} service provides the basic building blocks for constraining
+observation opportunities. These can be added to depending on a mission’s need.
+Some utilities the \gls{atu} service currently supports are calculating: ground
+station access times, swath generation, and polygon intersection with a swath.
+This thesis will not go into detail on how some of these are calculated but
+rather we will discuss how they are used at a systems level.
 
 \subsection{Ground Access Utility}
 
-A \textit{ground access} is defined as the time interval during which a
-satellite can establish contact with a ground station. A \textit{ground
-station} is a point on the Earth’s surface, identified with geodetic
-Latitude-Longitude-Altitude coordinates and an elevation mask. An
-\textit{elevation mask} is the angle above the horizon, at the ground station’s
-position, at which the satellite can be considered visible by the ground
-station. Calculating the ground access for satellites on a mission is a
-fundamental task in operations planning. These time intervals dictate the
-opportunities for data downlink, command uplink, and any other communication
-between the ground segment and satellite.
+A ground access is defined as the time interval during which a satellite can
+establish contact with a ground station. A ground station is a point on the
+Earth’s surface, identified with geodetic Latitude-Longitude-Altitude
+coordinates and an elevation mask. An elevation mask is the angle above the
+horizon, at the ground station’s position, at which the satellite can be
+considered visible by the ground station. Calculating the ground access for
+satellites on a mission is a fundamental task in operations planning. These
+time intervals dictate the opportunities for data downlink, command uplink, and
+any other communication between the ground segment and satellite.
 
 The simplest way to compute ground access involves propagating the orbit of a
 satellite and checking, at every time step, the position of the satellite
 relative to the ground station and testing whether the relative position is
 above the elevation mask. While this method is trustworthy and capable of
-returning accurate results, its reliance on iterating over an entire satellite
-orbit input typically yields a long runtime. This is particularly evident in
-the case where a mission has multiple ground stations, multiple satellites, or
-a short propagator timestep. The computation time drawback motivates the use of
-other algorithms that can determine ground access more efficiently.
+returning accurate results, it is a brute force approach which is inefficient.
+This is particularly evident in the case where a mission has multiple ground
+stations, multiple satellites, or a short propagator timestep. The computation
+time drawback motivates the use of other algorithms that can determine ground
+access more efficiently.
 
 \begin{figure}[h]
     \centering
@@ -350,7 +344,7 @@ other algorithms that can determine ground access more efficiently.
 \end{figure}
 
 So, from a satellite ephemeris and some ground station information, the access
-time utilities will generate a list of Access Times. That is the \textit{time}
+time utilities will generate a list of Access Times. That is, the \textit{time}
 of an access and the \textit{type} (access enter or access leave) of an access
 will be specified. This is illustrated in Figure~\ref{fig:atu-1}.
 
@@ -366,17 +360,17 @@ will be specified. This is illustrated in Figure~\ref{fig:atu-1}.
 As discussed in the Terminology section, the concept of an access swath is
 defined as a time-series of access regions as a satellite orbits the Earth.
 Within \gls{pops}, a swath is represented through a closed curve that describes
-the boundary of the cumulative access region of a sensor’s \gls{for} over a
-time interval. The process for calculating a swath boundary from an input
-ephemeris is described here.  
+the boundary of the cumulative footprint/access region of a sensor’s
+\gls{fov}/\gls{for} over a time interval. The process for calculating a swath
+boundary from an input ephemeris is described here.  
 
 \newcommand{\Fo}{$\vec{\mathcal{F}}_o$} 
 \newcommand{\Fe}{$\vec{\mathcal{F}}_E$}
 
 Let us first define the orbital reference frame of the satellite, \Fo, with
-respect to an ECEF fixed coordinate system, \Fe,  Then, let us take the
+respect to an \gls{ecef} fixed coordinate system, \Fe,  Then, let us take the
 satellites position, $\sev{r}$, and velocity, $\sev{v}$, with respect to \Fe.
-These two vectors are given for a single epoch in an ephemeris file. \Fo ~is
+These two vectors are given for a single epoch in an ephemeris file.  \Fo ~is
 then defined as $ \vec{\mathcal{F}}_o = \left[ \sev{x}, \, \sev{y}, \, \sev{z}
 \, \right]^T$, where:
 
@@ -386,10 +380,10 @@ then defined as $ \vec{\mathcal{F}}_o = \left[ \sev{x}, \, \sev{y}, \, \sev{z}
     \sev{z} = \frac{\sev{r}\times\sev{v}}{\norm{\sev{r}\times\sev{v}}}
 \end{equation}
 
-And lastly $\sev{y} = \sev{z} \times \sev{x}$ to form an orthonormal set, but
-this is not important for our purposes. We shall then take two vectors,
-$\sesv{s}{1}$ and $\sesv{s}{2}$, that form the boundary of our conical FOR and
-lie within the x-z plane of \Fo,  These are defined as,
+And lastly $\sev{y} = \sev{z} \times \sev{x}$ to form an orthonormal set. We
+shall then take two vectors, $\sesv{s}{1}$ and $\sesv{s}{2}$, that form the
+boundary of our conical FOR and lie within the x-z plane of \Fo,  These are
+defined as,
 
 \begin{align}
     \sesv{s}{1} &= \vec{\mathcal{F}}_o^T \left[ \, -\cos\theta, \quad 0, \quad -\sin\theta \right]^T \\
@@ -402,14 +396,14 @@ service are the swath’s bounds for that time instant. If this calculation is
 performed multiple times and the boundary points are connected, two lines are
 formed on the Earth’s surface. These lines are the satellite’s swath boundary
 for that time range.  This process is illustrated in
-Figure~\ref{fig:swath-boundary}.
+Figure~\ref{fig:swath-bound}.
 
-Using the same process, we may also find the ground track of the satellite by
-using the nadir vector, $\sesv{s}{n}$, which is defined as:
-
-\begin{align}
-    \sesv{s}{n} &= \vec{\mathcal{F}}_o^T \left[ 1, \quad 0, \quad 0 \right]^T
-\end{align}
+%Using the same process, we may also find the ground track of the satellite by
+%using the nadir vector, $\sesv{s}{n}$, which is defined as:
+%
+%\begin{align}
+%    \sesv{s}{n} &= \vec{\mathcal{F}}_o^T \left[ 1, \quad 0, \quad 0 \right]^T
+%\end{align}
 
 \newcommand{\Cx}[1]{\ses{C}{x}\!\!\left(#1 \right)}
 
@@ -435,7 +429,7 @@ We may then generate the set of vectors, $S$, that describe the \gls{for} for
 that time instant:
 
 \begin{equation}
-    S = \in  \left\{ \Cx{2\pi/n} \sesv{s}{1} \, \vert \, n = 1, 2, \ldots N \right\}
+    S = \left\{ \Cx{2\pi/n} \sesv{s}{1} \, \vert \, n = 1, 2, \ldots N \right\}
 \end{equation}
 Typically, access regions are described with 8 points but more can be added if
 necessary. 
@@ -448,12 +442,12 @@ necessary.
     \label{fig:atu-2} 
 \end{figure}
 
-In summary, for every ephemeris point, a swath boundary is calculated, a a
-ground track is calculated, and a list of ellipses (access regions) are
-provided. This can be seen in Figure~\ref{atu-2}
+In summary, for every ephemeris point, a swath boundary, a ground track, and a
+list of ellipses (access regions) are calculated. This can be seen in
+Figure~\ref{fig:atu-2}
 
 
-\subsection{ Swath Intersection Utility }
+\subsection{Swath Intersection Utility}
 
 Swath intersection is an important operation for determining what part of a
 specified region is observable by a satellite sensor during some time interval.
@@ -468,14 +462,14 @@ swath and a polygon. First, the swath and polygon vertices are transformed into
 2D coordinates. The 2D projection used involves defining a plane that is
 tangent to some point on the Earth’s surface.  To project a point on the
 Earth’s surface to this plane, a vector is drawn from the centre of the Earth
-towards the point (its ECEF coordinates), and the vector is extended towards
-the point of intersection of the plane. This type of projection is commonly
-known as the Gnonomic projection; its advantage with respect to the polygon
-clipping operation is that great ellipse arcs are projected as straight lines.
-This means classical 2D polygon clipping techniques can be applied to polygons
-drawn on the Earth’s surface. So long as the swath and polygon occupy one
-hemisphere of the Earth’s surface, the projection will accurately represent the
-points of intersection of the swath and polygon, and any polygon clipping
+towards the point (its \gls{ecef} coordinates), and the vector is extended
+towards the point of intersection of the plane. This type of projection is
+commonly known as the Gnonomic projection; its advantage with respect to the
+polygon clipping operation is that great ellipse arcs are projected as straight
+lines.  This means classical 2D polygon clipping techniques can be applied to
+polygons drawn on the Earth’s surface. So long as the swath and polygon occupy
+one hemisphere of the Earth’s surface, the projection will accurately represent
+the points of intersection of the swath and polygon, and any polygon clipping
 technique can be applied.
 
 
@@ -519,52 +513,54 @@ it is quite large and has a number of responsibilities. Some of them are:
 \end{figure}
 
 A high-level overview of the Mission Model service can be seen in
-Figure~\ref{fig:mission_model}. There are many components but we will go
-through them one by one.
+Figure~\ref{fig:mission_model}. There are many components but this thesis will
+go through them one by one.
 
 \subsection{Main} 
 
 The main Python script acts as the base for the entire Mission Model service.
-Its purpose is to, among other things, set up the web server, load environment
+Its purpose is, among other things, to: set up the web server, load environment
 variables, instantiate the handler classes, and associate API calls with their
 callback functions. Setting up the web server is the same as with any other
 service. The environment variables range from server metadata to addresses of
 other containers. There are a number of utility classes that handle various
 aspects of \gls{pops}. These are the: scheduler, \gls{atu} handler, data
 handler, and opportunity filter classes. They will be discussed in the
-following sections. The most important part of the main service is defining API
-calls. If a user wishes to interact with \gls{pops}, they must enter a link on
-the their browser, that information is then sent to the web server, and a
+following sections.  The most important part of the main service is defining
+API calls. If a user wishes to interact with \gls{pops}, they must enter a link
+on the their browser, that information is then sent to the web server, and a
 callback function in the Mission Model service is called. It is the Mission
 Models responsibility to consolidate information, whether that be from the
 database, through HTML templates, or new information that must be calculated.
-The Mission Model service does very few actual calcualtions, its only purpose
+The Mission Model service does very few actual calculations, its only purpose
 is to organize information and call functions as necessary to serve a request.
 Currently, the main service is large and difficult to navigate because of its
 size. In the future, it will be refactored to a number of sub-scripts that
 handle specific functionality in the service.
 
-\subsection{Object Relationship Mapping}
+\subsection{Object Relationship Mapping}\label{sec:orm}
 
 The Database is its own service but the Mission Model is currently the only
 service that interacts with it. It does so by using an \gls{orm}. An \gls{orm}
 is a method of modeling a relational database through an object-oriented
-language. For our purposes, the \gls{orm} serves two functions, it describes
-how the data is being stored in the database and it describes how we can
-interact with the database programmatically. For \gls{pops}, we are using an
+language. For \gls{pops}'s purposes, the \gls{orm} serves two functions, it
+describes how the data is being stored in the database and it describes how the
+database can be interacted with the programmatically. \gls{pops} uses an
 open-source \gls{orm} library. It handles the low-level functionality and
-allows us to focus on what is unique about \gls{pops} rather than databases in
-general. For example, there is no need to develop our own methods of
-formulating \gls{sql} queries or parsing the ouptut data once it is retrieved. 
+allows a developer to focus on what is unique about \gls{pops} rather than
+databases in general. For example, there is no need to develop our own methods
+of formulating \gls{sql} queries or parsing the output data once it is
+retrieved. This has already been implemented many times over in a multitude of
+open-source libraries. 
 
 To set up the \gls{orm} for \gls{pops} we need at least two scrips, a models
-file and a \gls{crud} file. The models file defines explicitely how tables are
-layed out in the database through Python classes. Information such as: what
+file and a \gls{crud} file. The models file defines explicitly how tables are
+laid out in the database through Python classes. Information such as: what
 tables there are, what columns are in each table, what keys are included with a
 table, and what relationships there are between tables. If a change is made to
-the database, it must be reflected manually in the models file and vice-versa.
-The \gls{crud} file, as its name suggests, allows us to interact the database.
-It is a library of functions that allows a developer to formulate \gls{sql}
+the database, it must be reflected in the models file and vice-versa.  The
+\gls{crud} file, as its name suggests, allows us to interact the database.  It
+is a library of functions that allows a developer to formulate \gls{sql}
 queries at a high level with Python syntax. The \gls{crud} file also relies on
 the classes from the models file to refer to tables. For example, if we wished
 to retrieve a satellite with a particular id from the \texttt{Satellites}
@@ -590,7 +586,7 @@ or, they are assembled from HTML templates and configured depending on input
 parameters given by the user or by what data is available at that time. Writing
 out the HTML for a webpage in its entirety is acceptable for situations where
 nothing changes on the webpage and everything should be left as is. This is the
-case for high-level menus and settings pages. If anyhting else is required,
+case for high-level menus and settings pages. If anything else is required,
 \gls{html} templates should be used. HTML templates allow for a great deal of
 configurability when loading webpages. They can range from simple text
 replacement to loading other templates. Some template engines even allow for
@@ -599,29 +595,29 @@ statements, or even custom functions.
 
 Generally, as a design decision, as much of the underlying logic for \gls{pops}
 has been limited to Python. The main reason for this is to consolidate the
-logic to one language. Unfortunately for web development, Javascript and
-\gls{css} are unavoidable and must be used as necessary. When they are used
-they can be added directly to an HTML document or template but this is
-generally not the best way. Having different scripts or different styles placed
-haphazardly in the codebase gets messy quickly and may lead to code duplication
-or even conflicting functions. To combat this, JavaScript and \gls{css} files
-are stored separately and then statically referenced in the \gls{html} file
-they apply to. By consolidating these files, it is much easier to organize and
-reference them as necessary. 
+logic to one language. Unfortunately for web development, JavaScript and
+\gls{css} are unavoidable and must be used. When they are used they can be
+added directly to an HTML document or template but this is generally not the
+best way. Having different scripts or different styles placed haphazardly in
+the codebase gets messy quickly and may lead to code duplication or even
+conflicts. To address this, JavaScript and \gls{css} files are stored
+separately and then statically referenced in the \gls{html} file they apply to.
+By consolidating these files, it is much easier to organize and reference them
+as necessary. 
 
 
 \subsection{Data Handlers}\label{sec:data_handler}
 
-For \gls{pops}, there is a great deal of data and many different ways that the
-data can be formatted in. In an attempt to generalize the data and make it
-easier for a developer to work with, several Data Handler classes have been
-created to handle data format conversions and to provide helper functions. The
-differences in data formats can be as simple as differences in what keys are
-used in dictionaries of key-value pairs. For example, the Propagator service
-uses the key \texttt{`position'} and the \glspl{atu} use the key
-\texttt{`pos'}.  This is a small discrepency and if all the differences were
-this simple, then we would just set some standard data format and be done with
-it.  Unfortunately, there are larger differences that require conversion. When
+For \gls{pops}, there is a great deal of data and there are many different ways
+that the data can be formatted in. In an attempt to generalize the data and
+make it easier for a developer to work with, several Data Handler classes have
+been created to handle data format conversions and to provide helper functions.
+The differences in data formats can be as simple as differences in what keys
+are used in dictionaries of key-value pairs. For example, the Propagator
+service uses the key \texttt{`position'} and the \glspl{atu} use the key
+\texttt{`pos'}.  This is a small discrepancy and if all the differences were
+this simple, then some standard data format would just be adopted.
+Unfortunately, there are larger differences that require conversion.  When
 describing lists of points there are currently 3 different formats. The
 Propagator service generates a list of points, $P_1$, as a list of the x, y,
 and z components for all $N$ points. 
@@ -652,8 +648,8 @@ is the list of components for all $N$ points.
     \right.
 \end{equation*}
 
-Lastly, the graphical Earth Visualization tool Cesium expects lists of
-points,$P_3$, to just be a single list, where the components of each point are
+Lastly, the graphical Earth Visualization tool, Cesium, expects lists of
+points, $P_3$, to be a single list, where the components of each point are
 ordered one after the other.
 
 \begin{equation*}
@@ -661,14 +657,14 @@ ordered one after the other.
 \end{equation*}
 
 All of these formats contain the same information but organized in different
-ways.  A developer should not have to write conversions everywhere whenever
-they wish to use a data type.  They should only have to worry about the data
-itself and not how it needs to conform with whatever format. It is for this
-reason we must consolidate these conversions in separate data handler classes.
-Of course, there is much more data and many more data formats that must be
-supported, but these three examples are sufficient to give the reader an idea
-about the nuances involved. There are many Data Handler classes but the
-following are some of the larger more important ones.
+ways.  A developer should not have to write conversions whenever they wish to
+use a data type.  They should only have to worry about the data itself and not
+how it needs to conform with whatever format. It is for this reason we must
+consolidate these conversions in separate data handler classes.  Of course,
+there is much more data and many more data formats that must be supported, but
+these three examples are sufficient to give the reader an idea about the
+nuances involved. There are many Data Handler classes but the following are
+some of the larger more important ones.
 
 
 \subsubsection{Ephemeris Data Handler}
@@ -702,10 +698,10 @@ An Ephemeris object can either be created by sending a request to the
 Propagator service or it can be loaded from the Database. For the case where we
 generate a new ephemeris from the Propagator service, the Ephemeris class
 handles communication with the Propagation service and directly saves the
-ouputted ephemeris data into a private variable. The propagator ephemeris data
+outputted ephemeris data into a private variable. The propagator ephemeris data
 format serves as the base format from which we can convert to other formats as
 necessary. For example, there are member functions that take the saved
-ephemeris data and converts it into the format expceted by the \glspl{atu} or
+ephemeris data and converts it into the format expected by the \glspl{atu} or
 into a format expected by Cesium. Alternatively, if an ephemeris is loaded from
 the database, each row must be sorted, processed, and converted to the base
 format. 
@@ -714,7 +710,7 @@ In some scenarios we do not wish to work with an entire Ephemeris for a large
 scenario, rather we may wish to only consider a subset of a larger Ephemeris
 object. When we take a subset of a larger Ephemeris, we refer to this process
 as `constraining' the Ephemeris. For this, a helper function has been added
-which accepts a time range that lies within the time range the Ephemreis object
+which accepts a time range that lies within the time range the Ephemeris object
 is defined for. This helper function then generates a new Ephemeris object
 which only contains the ephemeris data that lies in the desired time range.  
 
@@ -731,10 +727,11 @@ access swath and a ground swath. Both are generated in the same way, stored in
 the same way, and displayed in the same way. Whether they are defined based on
 a \gls{fov} or \gls{for} is immaterial and not relevant in this context. 
 
-The data a Swath object stores is similar to an Ephemeris object. It
-also has an epoch and a seconds array. These match the epoch and seconds array
-of the Ephemeris object the Swath object was generated from. It also contains
-data that is unique to Swaths:
+The data a Swath object stores is similar to an Ephemeris object. It has an
+epoch and a seconds array. These match the epoch and seconds array of the
+Ephemeris object the Swath object was generated from. Swath objects may also be
+constrained in the same way Ephemeris objects may be. In summary, a swath
+object contains the following data:
 
 \begin{description} 
 
@@ -748,8 +745,8 @@ data that is unique to Swaths:
 	ground track of the satellite generating the Swath Object so this
 	information is stored as a list of points.
 
-    \item[Ellipse List] Each swath timestep in a Swath Object is also given an
-	Ellipse. See section\ref{sec:atu-ellipse}.
+    \item[Ellipse List] Each timestep in a Swath Object is also given an
+	Ellipse which represents the footprint/access region. 
 
 \end{description}
 
@@ -760,17 +757,17 @@ The Polygon Data Handler is the last data handler class of note. It is used to
 represent area target \glspl{aoi} or intersection polygons. The core data a
 Polygon object contains is simply just a single list of points.  As with the
 Ephemeris and Swath data handlers, there is a small sweet of data format
-conversions.  But, for the Polygon Data Handler, much of the funcitonality lies
+conversions.  But, for the Polygon Data Handler, much of the functionality lies
 in its utility functions.
 
 The first utility function is simple; it merely transforms all of the points in
-the Polygon from \acrfull{ecef} cartesian-xyz coordinates to
+the Polygon from \acrfull{ecef} Cartesian-xyz coordinates to
 Latitude-Longitude-Altitude coordinates and vice-versa.  Generally, with other
-objects such as Ephemeris objects or Swath objects, their underlying datawill
+objects such as Ephemeris objects or Swath objects, their underlying data will
 never be explicitly displayed to the user. For this reason, points in those
-objects can be left as cartesian coordinates. But, when a user creates a
+objects can be left as Cartesian coordinates. But, when a user creates a
 Polygon object or if the coordinates of the vertices need to be displayed to
-the user, Latitude and Longitude is much more human readable than cartesian
+the user, Latitude and Longitude is much more human readable than Cartesian
 coordinates. 
 
 Early on in development, there were some restrictions placed on the types of
@@ -778,13 +775,15 @@ polygons that the \glspl{atu} could accept. One restriction was that polygons
 must be convex. That is for the set of all points that lie within a polygon,
 there do not exist two points such that if a line is drawn between the points,
 that line intersects with an edge of the polygon. At first, it seemed as though
-this only limited the types of area-targets that could be specified but through
-developing the opportunity filter class there arose some scenarios where
+this only limited the types of area-targets that could be specified. Through
+developing the opportunity filter class, there arose some scenarios where
 concave polygons were generated that needed to be inputted into the
 \glspl{atu}. For this reason, a simple algorithm was implemented that removes
-vertices to force a poygon to be convex. The implementation for this is
-discussed in Algorithm~\ref{alg:force-convex}. Thankfully, this restriction has
-been lifted but the implementation is interesting nonetheless.
+vertices to force a polygon to be convex.  
+
+%The implementation for this is
+%discussed in Algorithm~\ref{alg:force-convex}.  Thankfully, this restriction
+%has been lifted but the implementation is interesting nonetheless.
 
 Another restriction placed on polygons is that their vertices must be ordered
 counter-clockwise (the motivation for this is discussed in
@@ -793,16 +792,15 @@ this may lead to garbled results from the \glspl{atu} or Cesium viewer. If
 necessary, when generating a Polygon object and a developer suspects that the
 source data may be un-ordered, they may set an option to \textit{force} a
 polygon to be counter-clockwise. Re-ordering is not always perfect, though, and
-that is why this is an option and not always done. The implementation for this
-can be found in Algorithm~\ref{alg:ccw}.
+that is why this is an option and not always done. 
 
+%The implementation for this can be found in Algorithm~\ref{alg:ccw}.
 
- 
 
 \subsubsection{Other Data Handlers}
 
 There are a number of other data handler classes that are used but don't have
-as noteable functionality. Some of these are:
+as much notable functionality. Some of these are:
 
 \begin{itemize} 
     
@@ -812,21 +810,21 @@ as noteable functionality. Some of these are:
 
 \end{itemize}
 
-For the Access Times Data Handler, there exists one utility function. There are
-some situations where a developer may need to determine what access times, if
-any, lie within some defined period of time. For this the Single Access
-Intersection algorithm was developed which is discussed in
-Algorithm~\ref{alg:contains}.
+%For the Access Times Data Handler, there exists one utility function. There are
+%some situations where a developer may need to determine what access times, if
+%any, lie within some defined period of time. For this the Single Access
+%Intersection algorithm was developed which is discussed in
+%Algorithm~\ref{alg:contains}.
 
 
 \subsection{Access Time Utilities Handler}
 
 In order to abstract the communication between the Mission Model service and
 the \gls{atu} service, an \gls{atu} handler class has been developed. Its
-purpose is simple, from input data data, it sends requests to the \gls{atu}
+purpose is simple, from input data, it sends requests to the \gls{atu}
 service and formats the result. A developer shouldn't need to create a POST
-request every time they wish to utilitize some \gls{atu} functionality. They
-may make a mistake that wastes development. 
+request every time they wish to utilize some \gls{atu} functionality. They
+may make a mistake and debugging wastes development time. 
 
 Every \gls{api} call provided by the \gls{atu} service has a corresponding
 method in the \gls{atu} handler. For ease of use, the inputs and outputs of
@@ -942,22 +940,22 @@ every ground station provided.
 After this, instead of calculating all of intersection polygons for the tip
 swath and the \gls{aoi}, only the list of access times are recorded, $A_A$.
 This has two purposes.  First, it is faster to just calculate the access times
-for the Intersection Polygon Utilty. Second, this gives us a list of access
+for the Intersection Polygon Utility. Second, this gives us a list of access
 times that can be iterated over to find opportunities. The significance of this
-is that there may exist \glspl{aoi} where Sat-A has mutliple accesses within a
+is that there may exist \glspl{aoi} where Sat-A has multiple accesses within a
 single pass. By iterating over each access we create an opportunity for every
 access in a pass.  The alternative would be to iterate over every pass. This
 method would either require taking only the first access in the tip pass as an
-opportunity or specialized logic would be needed that would overcomplicate the
+opportunity or specialized logic would be needed that would over complicate the
 filter.
 
 With an access list for Sat-A, we can iterate over every individual access,
 $a_A$. The first operation in each iteration is to calculate the Intersection
 Polygon of Sat-A and the \gls{aoi} during that access. Note the notation used,
 $S_A(a_A)$ indicates that the swath is constrained to only the time range
-within the parantheses. Next we find the pass, $p$, the access lies in.  This
+within the parentheses. Next we find the pass, $p$, the access lies in.  This
 is done with a built-in helper function in the Ephemeris Data Handler Class.
-From this pass we can constrain the Cue swath to only the next pass and perform
+From this pass index we can constrain the Cue swath to only the next pass and perform
 Polygon Intersection with it and the intersection polygon from the previous
 step. This outputs the access time for Sat-B, $a_B$ and the Intersection
 Polygon for Sat-A, Sat-B, and the \gls{aoi}, $g_{A \wedge B}$. Before adding an
@@ -982,19 +980,13 @@ It goes without saying that having a spatial understanding of a mission is
 absolutely necessary when performing mission planning. Only so much information
 can be imparted through text.
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.9\textwidth]{Cesium_Example_Image.png} 
-    \caption{Cesium Example Scenario with Example Entities}
-    \label{fig:example_cesium}
-\end{figure}
 
 To support this functionality, \gls{pops} makes use of the open-source CesiumJS
 library. CesiumJS can display time-dynamic, geospatial information on a
 webpage. CesiumJS itself is free to use and provides all of the core
 functionality that is necessary for \gls{pops}. There also exists a proprietary
 library, CesiumION, which provides out-of-the-box 3D terrain data and
-proprietary Earth imagery. Thankfully this kind of information is superflous
+proprietary Earth imagery. Thankfully this kind of information is superfluous
 for orbit operations planning. At most, all that is needed is a rough
 understanding of the Earth's geography and that is sufficient. For this reason,
 \gls{pops} does not provide terrain information and uses a free tile map
@@ -1002,12 +994,19 @@ provider. Since \gls{pops} is only using the free version, we will refer to
 CesiumJS as just Cesium for brevity. 
 
 It should be noted that Cesium is only meant to display information to the user
-and intended to be a tool that performs any calculations. All data is generated
+and not intended to be a tool that performs any calculations. All data is generated
 through other means and then converted into a format that Cesium can display.
 The reason for this is that, since Cesium is such a large tool, it is difficult
 to validate in great depth because it is not clear what assumptions are being
 made at what level. So, as long as the entities being displayed by Cesium are
 qualitatively correct then that is sufficient.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Cesium_Example_Image.png} 
+    \caption{Cesium Example Scenario with Example Entities}
+    \label{fig:example_cesium}
+\end{figure}
 
 An example scenario generated by \gls{pops} can be seen in
 Figure~\ref{fig:example_cesium}. There, a few key elements of a Cesium viewer
@@ -1036,7 +1035,7 @@ generated from data rather than from custom code. Most of the underlying data
 is calculated through Python scripts so it is more appealing to have an
 interface that generates \gls{czml} data rather than having additional
 JavaScript. Also, by generating \gls{czml}, logic is not split between the
-backend Python code and front-end Javascript. In this way, the Python drives
+backend Python code and front-end JavaScript. In this way, the Python drives
 what is being shown in the Cesium viewer. \gls{czml} also allows for
 incrementally streaming data to a client. That is, not all of a scenario needs
 to be available immediately once a scenario is loaded. Rather, \gls{czml} data
@@ -1054,9 +1053,9 @@ created as they allow for bi-directional communication.
 \subsection{Cesium Models}\label{sec:cesium-models}
 
 Even though we are using Cesium as our 3D Earth visualization tool, a
-substantial amound of development must be done to properly configure and manage
+substantial amount of development must be done to properly configure and manage
 what is being shown on the viewer. Before discussing how a Cesium viewer is
-managed, it would be useful to first go over what can be displayed currenlty
+managed, it would be useful to first go over what can be displayed currently
 with \gls{pops}, the Cesium Models. These model classes are not like the ones
 made for \gls{orm}, rather these models have two responsibilities. They must
 keep some metadata about a Cesium object and they must contain a method that
@@ -1104,14 +1103,15 @@ are as follows:
 	time should be changed.
 
     \item[Satellite] Satellites are represented through a small \gls{png} image
-	called a `billboard'. They are given a descriptive label that maintains
-	a fixed position with respect to the satellites position. To have the
-	satellite move over time within the scenario, an ephemeris must be
-	included in the object. This ephemeris must conform to a particular
-	format and this conversion is handled by the Ephemeris data handler
-	discussed in Section \ref{sec:data_handler}. Lastly, a satellite is
-	given a path to visualize to the user, where the satellite will and has
-	been for some period in the future and the past.
+	called a `billboard'. In the future, 3D models may be used instead but
+	images are sufficient for now. A satellite is also given a descriptive
+	label that maintains a fixed position with respect to its position. To
+	have the satellite move over time within the scenario, an ephemeris
+	must be included in the object.  This ephemeris must conform to a
+	particular format and this conversion is handled by the Ephemeris data
+	handler discussed in Section~\ref{sec:data_handler}.  Lastly, a
+	satellite is given a path to visualize to the user, where the satellite
+	will be and has been for some period in the future and the past.
 
     \item[Ground Target] Ground Targets are essentially the same as Satellite
 	objects but, in this case, they are given only one position for the
@@ -1119,33 +1119,16 @@ are as follows:
 	stations or any other stationary ground object.
 
     \item[Access Object] It is useful to display when a satellite has access to
-	a ground target. This is accomplished through drawing a polylline
-	between the satellite and the ground target for times where they have
-	access to each other. One useful feature of \gls{czml} is that we can
-	reference the position of other object by reference to their ID. This
-	saves us from having to load a satellite ephemeris into the object to
-	describe the position of the satellite. \gls{czml} also allows us to
-	specify when an object should or should not be visible by specifying
-	intervals of visibility. When an \texttt{Access Object} is created we
-	must pass a list of access times such that we may define these
-	intervals in the object.
-
-\begin{figure}
-    \begin{minipage}[c]{0.45\textwidth}
-	\centering
-	\includegraphics[width=1\textwidth]{inside-outside-2.png} 
-	\caption{Smaller Area}
-	\label{fig:inside_polygon_1}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[c]{0.45\textwidth}
-	\centering
-	\includegraphics[width=1\textwidth]{inside-outside-1.png} 
-	\caption{Wider Area}
-	\label{fig:inside_polygon_2}
-    \end{minipage} 
-\end{figure}
-
+	a ground target. This is accomplished through drawing a line between
+	the satellite and the ground target for times where they have access to
+	each other. One useful feature of \gls{czml} is that we can reference
+	the position of other object by reference to their ID. This saves us
+	from having to load a satellite ephemeris into the object to describe
+	the position of the satellite. \gls{czml} also allows us to specify
+	when an object should or should not be visible by specifying intervals
+	of visibility. When an \texttt{Access Object} is created we must pass a
+	list of access times such that we may define these intervals in the
+	object.
 
     \item[Polygon] As mentioned earlier, Cesium has the ability to display
 	polygons in any number of ways but, for our purposes, we are mainly
@@ -1160,7 +1143,7 @@ are as follows:
 	list of points, Cesium will guess the `inside' of the polygon. Note
 	that since we are drawing shapes on an Ellipsoid, the geometry is
 	non-Euclidean. The inside of a polygon on a 2D plane is clear for
-	polygons that do not self-intersect; it is simply the the region that
+	polygons that do not self-intersect; it is simply the region that
 	is enclosed by all of the sides of the polygon. For an Ellipse any
 	point can be enclosed. See an example of this in Figures
 	\ref{fig:inside_polygon_1} and \ref{fig:inside_polygon_2}. Both have
@@ -1183,32 +1166,49 @@ are as follows:
 	scenarios, a large polygon must be sub-divided into sections that
 	Cesium can process.
 
+\begin{figure}
+    \begin{minipage}[c]{0.45\textwidth}
+	\centering
+	\includegraphics[width=1\textwidth]{inside-outside-2.png} 
+	\caption{Smaller Area}
+	\label{fig:inside_polygon_1}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[c]{0.45\textwidth}
+	\centering
+	\includegraphics[width=1\textwidth]{inside-outside-1.png} 
+	\caption{Wider Area}
+	\label{fig:inside_polygon_2}
+    \end{minipage} 
+\end{figure}
+
+
 
     \item[Swath] The last Cesium object that is currently handled are ground or
 	access swaths. The distinction here between \gls{fov} and \gls{for} is
 	unimportant since both are displayed in the same way. Swaths are
 	displayed with polygons but how this data is generated can be tricky.
-	From the \glspl{atu}, swaths are represented through two polylines that
-	loop around the Earth $L_1$ and $L_2$. These represent the left and
-	right boundary of the swath with respect to the velocity vector (See
-	section~\ref{sec:atu}).  Typically, to display a swath all that we must
-	do is reverse $L_1$ and append it to $L_2$. In this way, we create a
-	counter-clockwise ordered polygon that can be displayed on Cesium.
+	From the \glspl{atu}, swaths are represented through two boundary lines
+	that loop around the Earth $L_1$ and $L_2$. These represent the left
+	and right boundary of the swath with respect to the velocity vector
+	(See section~\ref{sec:atu}).  Typically, to display a swath all that we
+	must do is reverse $L_1$ and append it to $L_2$. In this way, we create
+	a counter-clockwise ordered polygon that can be displayed on Cesium.
 	But, if we do this for a swath that is defined for greater than one
-	half-orbit Cesium will no longer be able to display the polygon because
-	it cannot determine what the inside of the polygon is. Thankfully,
-	swaths generally only need to displayed for times where a satellite has
-	access to an \gls{aoi}. Automatically sub-dividing swaths for longer
-	time ranges will be handled in future iterations of \gls{pops}.
-	Combining the two swaths boundaries is mostly sufficient for display
-	purposes but at the beginning and end of a constrained swath, we may
-	wish to show the footprint or access region of the satellite at the
-	beginning and end of the constrained swath. To do this, the \glspl{atu}
-	also provide ellipse representations of the footprint/access region for
-	each point in an Ephemeris.  From this list, we can take the ellipsoids
-	at the beginning and end of the constrained swath, take only the points
-	that lie outside of the swath area, and append them to the boundary
-	lists.  That is, 
+	half-orbit, Cesium will no longer be able to display the polygon
+	because it cannot determine what the inside of the polygon is.
+	Thankfully, swaths generally only need to be displayed for times where
+	a satellite has access to an \gls{aoi}. Automatically sub-dividing
+	swaths for longer time ranges will be handled in future iterations of
+	\gls{pops}.  Combining the two swaths boundaries is mostly sufficient
+	for display purposes but at the beginning and end of a constrained
+	swath, we may wish to show the footprint or access region of the
+	satellite at the beginning and end of the constrained swath. To do
+	this, the \glspl{atu} also provide ellipse representations of the
+	footprint/access region for each point in an Ephemeris.  From this
+	list, we can take the ellipsoids at the beginning and end of the
+	constrained swath, take only the points that lie outside of the swath
+	area, and append them to the boundary lists.  That is, 
 
 	\begin{equation*} 
 	    P_{swath} = L_1' + E_{start} + L_2 + E_{end} 
@@ -1216,7 +1216,8 @@ are as follows:
 
 	where $P_{swath}$ is the swath polygon, $L_1'$
 	is $L_1$ reversed, and $E_{start}/E_{end}$ are the ellipse points at
-	the beginning and end of the constrained swath.  Calculating
+	the beginning and end of the constrained swath. Note that the $+$
+	symbols here infer list concatenation rather than addition. Calculating
 	$E_{start}/E_{end}$ is somewhat involved and is discussed in
 	Algorithm~\ref{alg:ellipse}.
 	
@@ -1249,21 +1250,23 @@ are as follows:
     \label{fig:swath-steps}
 \end{figure}
 
-To illustrate this process, see Figure~\ref{fig:swath-steps}.
-In~\ref{fig:swath-1}, we begin a with a simple swath which is just described by
-the two boundaries. For each timestep in the swath, the corresponding
-footprint/access regions are provided, which can be seen in~\ref{fig:swath-2}.
-From this list, only the start and end ellipses are selected,
-\ref{fig:swath-3}. Finally, these are inputted into Algorithm~\ref{alg:ellipse}
-and the results are outputted to Cesium. An example of a swath being displayed
-in cesium can be seen in Figure~\ref{fig:cesium_swath}.
 
-\begin{figure}
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.9\textwidth]{Cesium_Example_Swath.png} 
     \caption{Example of a 30$^\circ$ Ground Swath}
     \label{fig:cesium_swath}
-\end{figure}
+\end{figure} 
+
+To illustrate this process, see Figure~\ref{fig:swath-steps}.  In
+Figure~\ref{fig:swath-1}, we begin a with a simple swath which is just
+described by the two boundaries. For each timestep in the swath, the
+corresponding footprint/access regions are provided, which can be seen in
+Figure~\ref{fig:swath-2}.  From this list, only the start and end ellipses are
+selected, Figure~\ref{fig:swath-3}. Finally, these are inputted into
+Algorithm~\ref{alg:ellipse} and the results are combined and outputted to
+Cesium. An example of a swath being displayed in cesium can be seen in
+Figure~\ref{fig:cesium_swath}. 
 
 \end{description}
 
@@ -1279,7 +1282,7 @@ currently in the Cesium viewer, keeps track of what entities have been changed
 or that need to be updated, and generates new \gls{czml} data to be sent to the
 viewer. When the \texttt{main} script is first run, it creates an instance of
 the Cesium Handler class as a global variable. In this way it can be referenced
-as needed by any api call. Some libraries do exist that perform this
+as needed by any \gls{api} call. Some libraries do exist that perform this
 functionality but \gls{pops} has enough custom entities that an equivalent
 amount of development would need to be done to support them anyway.
 
@@ -1292,19 +1295,18 @@ metadata can be stored and referenced for every object. This metadata tracks
 the status of Cesium objects and determines whether any changes need to be made
 in the viewer. 
 
-Objects can be added or removed with helper funcitons in the Cesium Handler
-class. Either objects can be added directly, by creating an instance of a
-Cesium Model class, then adding them to the list of objects in the Cesium
-Handler or a developer can use one of the helper methods. Some situations may
-require specific logic to set up a scenario. This is the case for displaying
-search scenarios or adding opportunities to a viewer. Currently, there is no
-way to generally display the results of a search scenario. A developer must
-explicitly define what swaths, intersection polygons, or \glspl{aoi} to add. In
-the future this may bemade completely general through some sophisticated but
-the current method is sufficient. As with the database, opportunities are also
-linked in the Cesium Handler class so that they can be referenced and enabled
-or disabled as desired. This makes visualizing search scenarios much more
-clear. 
+Objects can be added or removed with helper functions in the Cesium Handler
+class. Either objects can be added directly by creating an instance of a Cesium
+Model class, then appending them to the list of objects in the Cesium Handler
+or a developer can use one of the helper methods. Some situations may require
+specific logic to set up a scenario. This is the case for displaying search
+scenarios or adding opportunities to a viewer. Currently, there is no way to
+generally display the results of a search scenario. A developer must explicitly
+define what swaths, intersection polygons, or \glspl{aoi} to add. In the future
+this may bemade completely general through some sophisticated but the current
+method is sufficient. As with the database, opportunities are also linked in
+the Cesium Handler class so that they can be referenced and enabled or disabled
+as desired. This makes visualizing search scenarios much more clear. 
 
 To actual effect changes to the Cesium viewer, the Cesium Handler makes use of
 an asynchronous approach. A user may make a change to the Viewer at any time or
