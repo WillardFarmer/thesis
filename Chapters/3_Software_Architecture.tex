@@ -1302,33 +1302,36 @@ or a developer can use one of the helper methods. Some situations may require
 specific logic to set up a scenario. This is the case for displaying search
 scenarios or adding opportunities to a viewer. Currently, there is no way to
 generally display the results of a search scenario. A developer must explicitly
-define what swaths, intersection polygons, or \glspl{aoi} to add. In the future
-this may bemade completely general through some sophisticated but the current
-method is sufficient. As with the database, opportunities are also linked in
-the Cesium Handler class so that they can be referenced and enabled or disabled
-as desired. This makes visualizing search scenarios much more clear. 
+define what swaths, intersection polygons, or \glspl{aoi} to add. In the
+future, this may be made completely general through some sophisticated
+implementation but the current method is sufficient. As with the database,
+opportunities are also linked in the Cesium Handler class so that they can be
+referenced and enabled or disabled as desired. This makes visualizing search
+scenarios much more clear. 
 
 To actual effect changes to the Cesium viewer, the Cesium Handler makes use of
-an asynchronous approach. A user may make a change to the Viewer at any time or
-they may even make many changes in quick succession and the Viewer must be able
+an asynchronous approach. A user may make a change to the viewer at any time or
+they may even make many changes in quick succession and the viewer must be able
 to update correctly. Whenever a change is made to the objects list, first,
-\gls{czml} packets are generated for each object whose\texttt{changed} flag is
-raised. In this way czml is only sent when necessary and the viewer is not
-bombarded duplicate data. These packets are then added to a queue. Then, a flag
-is raised in the Cesium Handler class to signal that packets are ready to be
-sent to the Cesium Viewer. Within the \texttt{main} script there is a loop that
-checks for this flag. Once it is raised, the \texttt{main} service sends every
-\gls{czml} packet to the viewer then verifies that the correct number of
-packets were received in a return message. If the validation passes, then the
-changed flag is reset for all of the objects that were processed. The reason
-for using a queue is that it allows for many requests to be processed quickly
-without it potentially jumbling the viewer.
+\gls{czml} packets are generated for each object whose \texttt{changed} flag is
+raised. In this way \gls{czml} is only sent when necessary and the viewer is
+not bombarded with duplicate data. These packets are then added to a queue and
+a flag is raised in the Cesium Handler class to signal that packets are ready
+to be sent to the Cesium viewer. Within the Mission Model's main script there
+is a loop that checks for this flag. Once it is raised, the main script sends
+every \gls{czml} packet in the queue to the viewer and then verifies that the
+correct number of packets were received in a return message. If the validation
+passes, then the changed flag is reset for all of the objects that were
+processed; otherwise, the requests are sent again. The reason for using a queue
+is that it allows for many requests to be processed in the order that they are
+added.  Not controlling this may lead to undefined behavior if the rate at
+which changes are made faster than they can be effected in the viewer.
 
 
 \subsection{Scheduler}
 
 The last component of the Mission Model that should be discussed is the
-Scheduler Class. The purpose of this class is to keep track of what
+Scheduler class. The purpose of this class is to keep track of what
 observations are planned for all the satellites that are being tracked by
 \gls{pops}. The class should be able to: store satellite events, validate
 schedules based on some ruleset, and must be able to display all events in a
@@ -1336,57 +1339,56 @@ timeline to the user.
 
 The base unit for the schedule class are Events. An Event is a general object
 that can be used to describe anything. Every Event contains two categories of
-data. They have data that is universal to all Events and a payload. The
-universal data describes information about the object itself, such as:
+data. They have data that is universal to all Events and a payload which is
+Event specific.  The universal data describes information about the object
+itself, such as:
 
 \begin{description} 
 
-    \item[ID] The ID of an event which is either a serial number or an
+    \item[ID] The ID of an Event which is either a serial number or an
 	enumerated descriptive name.
 
     \item[Name] This is what is actually displayed to the user and may have
 	more information than just an ID.
 
-    \item[Type] Is the event a station keeping maneuver, a planned observation,
-	a ground contact, etc. The type is arbitrary but it allows events to be
-	filtered or treated in different ways.
+    \item[Type] Is the Event a station keeping maneuver, a planned observation,
+	a ground contact, etc. The type is arbitrary but it allows Events to be
+	filtered or treated in different ways based on this value.
 
-    \item[Satellite] Each event must be associated with a single satellite. If
-	multiple satellites are undergoing an event, each must have their own
-	event.
+    \item[Satellite] Each Event must be associated with a single satellite. If
+	multiple satellites are undergoing the same event, each will have their
+	own Event object.
 
     \item[Time Data] Information such as the start, stop, and epoch of an
-	event. An epoch can mostly be ignored but it is important for when
+	Event. An epoch can mostly be ignored but it is important for when
 	\glspl{ttc} are created. This is discussed in the \gls{ttc} generation
 	section, Section~\ref{sec:ttc-gen}.
 
-    \item[Linked Events] For the case where multiple events are related in some
-	way, they may be linked together such that if one is deleted, all other
-	linked event may be deleted.
+    \item[Linked Events] For the case where multiple Events are related in some
+	way, they may be linked together. One use for this is if one Event is
+	deleted, all other linked Events are deleted as well.
 
 \end{description} 
 
-Along with each event is a Payload. The Payloads allow for specific information
+Along with each Event is a payload. The payloads allow for specific information
 to be stored in an Event without the Scheduler class being aware of what's
 there. This functionality will primary be used to contain observation-specific
 information such that \glspl{ttc} can be generated from lists of Events without
 having the Scheduler class be aware of what observations are possible.
-Observations are just one example of how an Events make Events completely
-generalizable. In the future, there may be some other type of Event a developer
-may wish to store information in. It should be noted that the Scheduler class
-will never access or manipulate an Event's payload except to display the
-information to a user.
+Observations are just one example of an Event. In the future, there may be some
+other type of Event a developer may wish to store information in.  It should be
+noted that the Scheduler class will never access or manipulate an Event's
+payload except to display the information to a user.
 
 A `schedule' is a universal concept. A satellite has one and only one timeline.
 This means that, the scheduler class exists outside off plans or observation
-configuration. A plan may add events to a schedule or certain events may be
+configuration. A plan may add Events to a schedule or certain Events may be
 relevant in a plan but ultimately Events and the timeline exist outside of any
 given plan. This is all to say that when a timeline is displayed to a user,
 only the parts of the schedule that are relevant to the plan are visible.
 Events are filtered by satellites, time ranges, or type. If Events are added to
-the schedule by a plan, those events now exist universally for any plan. In
-other words, there does not exist one schedule for one plan, it is all the same
-schedule.
+the schedule by a plan, those Events now exist universally for any plan. There
+does not exist one schedule for one plan, it is all the same schedule.
 
 With this universality in mind, it follows that the Scheduler class has a
 1-to-1 relationship with the database. Within the database there is a table of
@@ -1401,45 +1403,47 @@ Scheduler class differs from the Database.
 The Scheduler class also has the ability to validate schedules based on a
 library of rulesets. These rulesets are separate add-ons to the Scheduler
 class. Within the class, their is a \texttt{validate\_schedule()} method, which
-passes the list of events to every ruleset. These rulesets then return lists of
+passes the list of Events to every ruleset. These rulesets then return lists of
 conflicts. These conflicts are stored and displayed to the user graphically and
 in a list. The reason why rulests are treated in this way, is that it allows
 the Scheduler class to be expandable. Currently, there is only one ruleset and
-it checks for time conflicts. For a satellite, do there exist times where 2 or
-more Events are scheduled to happen at the same time.  This is a very basic
-rule, and it stems from the fact that a satellite cannot be told to do more
-than one thing at once. In the future, there will be more rulesets. For
-example: the schedule must not exceed a satellite's data budget, the schedule
-must conform with a satellite's attitude control constraints, check if Events
-are possible with updated weather reports, etc.
+it checks for time conflicts. For a satellite, it checks whether there exist
+instances where 2 or more Events are scheduled to happen at the same time.
+This is a very basic rule, and it stems from the fact that a satellite cannot
+be commanded to do more than one thing at once (at least at this early stage of
+development).  In the future, there will be more rulesets.  For example the
+schedule: must not exceed a satellite's data budget, must conform with a
+satellite's attitude control constraints, check if Events are possible with
+updated weather reports, etc.
 
 Though not currently supported, it is planned that an interface will be
-developed that allows events to be generated from ground software. From a list
+developed that allows Events to be generated from ground software. From a list
 of \glspl{ttc} that have been uploaded to a satellite, Events will be generated
 in the schedule to represent them. In this way, a \gls{pops} user will be able
 to see what \glspl{ttc} are already planned for a given satellite. This will
-help them develop an operations strategy. This funcitonality will also expand
+help them develop an operations strategy. This functionality will also expand
 the usefulness of \gls{pops} beyond just planning.
 
 %% TODO: Add observations to timeline
 \begin{figure}
     \centering
-    \includegraphics[width=1\textwidth]{timeline-example.png} 
+    \includegraphics[width=1\textwidth]{timeline-example-2.png} 
     \caption{\hl{Example of a Timeline}}
     \label{fig:scheduler-timeline}
 \end{figure}
 
 The last functionality of the Scheduler class is visualizing a schedule in a
-timeline. To do this, the Schedleer class will take a list of Events, filter
+timeline. To do this, the Scheduler class will take a list of Events, filter
 them based on the visualization request, format them into a large data packet,
 and pass that packet to the webpage. On the webpage, an open-source library is
 used to format the timeline. An example of a timeline can be seen in
 Figure~\ref{fig:scheduler-timeline}. Observations for each satellite are split
-into diffent rows. To give more information to the user, the pass boundaries
-are displayed as blue vertical lines. The red vertical line corresponds to the
-current time in the Cesium viewer. The shaded regions specify when a satellite
-has access to a ground station. Currently, this is all that is displayed is
-subject to change based on feedback from operators using the tool.
+into rows. Events are displayed as blue boxes with descriptive names.
+Conflicting Events are shaded in red. To give more information to the user, the
+pass boundaries are displayed as blue vertical lines. The shaded regions
+specify when a satellite has access to a ground station.  Currently, this is
+all that is displayed is subject to change based on feedback from operators
+using the tool.
 
 
 
