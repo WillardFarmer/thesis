@@ -4,100 +4,99 @@
 
 \lettrine[lines=2, findent=0pt, nindent=5pt]{A}{}t the time of writing this
 thesis, the \gls{pops} is still very much in development. The project began in
-2021 and has undergone continued work since then. When designing something that
+2021 and has undergone continuous work since then. When designing something that
 is completely unique and as ambitious as a mission planning tool, it is
-difficult to guage the work required to meet its requirements. Before,
+difficult to gauge the work required to meet its requirements. Before,
 discussing future directions for the tool, it would be helpful to first go over
 how \gls{pops} became what it is. 
 
 \section{Research and the Development Process}
 
 Early on in development, much effort was put into exploring possible tools,
-languages, and frameworks to build off of. Intitially, before the creation of
-the Propagator service, the intention was to rely on an open-source tool
-developed by NASA called the \gls{gmat}. \gls{gmat} is well made and designed
-to model, optimise, and estimate spacecraft trajectories. Originally, it was
-thought that it could act as a replacement for \gls{stk}. It could be used to
-take \glspl{tle} and generate ephemerides. \gls{gmat} comes with its own
-propagators and the software can be run from the command line. Given a script
-representation of a mission, ephemeris data could be generated in the form of a
-report. Unfortunately not one among thewas SGP4 which made \glspl{tle} unusable
-given this approach. \gls{gmat} can be expanded and has a very well set up
-plugin interface with the rest of the software. Theoretically, an open-source
-implementation of an SGP4 propagator could be implemented into the software and
-it could have been used. Then the question arose, if we were adding in our own
-propagator, what was \gls{gmat} providing. The answer, of course, was that it
-created a great deal of work with no benefit. Some issues were: \gls{gmat} was
-developed for a windows environment, data needed to be transfered through a
-\gls{tcp} connection, generating mission scripts was convoluted, and several
-more. This is not to say that this time was wasted; rather, this was time spent
-exploring a, what seemed to be, useful tool that ended up being inadequate for
-\gls{sfl}'s purposes. It was, for all intents and purposes, research.
+languages, and frameworks to build off of. Initially, before the creation of
+the Propagator service, the intention was to rely on an open-source tool,
+developed by NASA, called the \gls{gmat}. \gls{gmat} is well made and designed
+to model, optimize, and estimate spacecraft trajectories
+\cite{hughes_using_2017}.  Originally, it was thought that it could act as a
+replacement for the \gls{stk}. It could be used to take \glspl{tle} and
+generate ephemerides.  \gls{gmat} comes with its own propagators and the
+software could be run from the command line. Given a script representation of a
+mission, ephemeris data could be generated in the form of a report.
+Unfortunately, SGP4 was not supported by the software (though this was added in
+a 2022 release) which made \glspl{tle} unusable given this approach.
+\gls{gmat} could be expanded and has a very well set up plugin interface.
+Theoretically, an open-source implementation of an SGP4 propagator could have
+been implemented into \gls{gmat}.  Then the question arose, if a propagator
+needed to be added, what was \gls{gmat} providing?  Upon evaluating this
+approach, it was determined that using \gls{gmat} in this way added a great
+deal of work. As well, some issues were: \gls{gmat} was restricted to a windows
+environment, data needed to be transferred through a \gls{tcp} connection, and
+generating mission scripts was convoluted. This is not to say that this time
+was wasted; rather, this was time spent exploring a, what seemed to be, useful
+tool that ended up being inadequate for \gls{sfl}'s purposes. 
 
 %https://gmat.atlassian.net/wiki/spaces/GW/overview
 %https://core.ac.uk/download/pdf/80605179.pdf
 
 Similar work was done for another NASA tool called, OpenSPIFe. Its purpose was
-to handle scheduling and planning. Very similar \gls{gmat}, it provided a great
-deal of functionality that could be updated and developed. Similarly, this tool
-would have increased the amount of work for any developer working on the
-project. For any tool that is used, developers must take responsibility for it
-to at least understand how to use the tool but also make changes if bugs
+to handle scheduling and planning. Very similar to \gls{gmat}, it provided a
+great deal of functionality that could be updated and developed. Similarly,
+this tool would have increased the amount of work for any developer working on
+the project. For any tool that is used, developers must take responsibility for
+it to at least understand how to use the tool but also make changes if bugs
 appear. For both \gls{gmat} and OpenSPIFe, it was determined that the
 development overhead for developing the tools from scratch would be far less
 than having to maintain two tools which are fully fledged projects in their own
 rights, developed by teams of professional software engineers.
 
-Since the decision was made to move to develop the tool from scrath,
-development became more productive than exploratory. The first service
-developed was the Propagator service. Ephemeris data is fundemantal to every
+Since the decision was made to move to develop a mission planning tool from
+scratch, development became more productive than exploratory. The first service
+developed was the Propagator service. Ephemeris data is fundamental to every
 aspect of \gls{pops} so it was the top priority. Here was a situation where an
-open-source library was more helpful than it was burdensome. Implementations in
-many languages (including Excel) of the SGP4 algorithm are available along with
-its source document, \hl{Revisiting Spacetrack Report \#3}. These
+open-source library was more helpful than it was burdensome. Well tested
+implementations in many languages (including Excel) of the SGP4 algorithm are
+made available along with \cite{vallado_revisiting_2006}. These
 implementations, though, are only of the algorithm itself and not any
 surrounding functionality such as coordinate frame transforms or generating an
-entire ephemeris. All of the heavy lifting was already done but the surrounding
-implementation was missing. This is where a separate open-source implementation
-of SGP4 came in very helpful. It was based on the same source implementation
-and it provided a library of helper functions that enabled all of the
-surrounding functionality. This allowed efforts to be focused on validation and
-on actually using the ephemeris data rather than generating it.
-
-\hl{cite all this}
+ephemeris. This is where a separate open-source Python implementation of SGP4
+came was found. It was based on the same source code from
+\cite{vallado_revisiting_2006} and it provided a library of helper functions
+that enabled all of the surrounding functionality.  This allowed efforts to be
+focused on validation and on using the ephemeris data rather than generating
+it.
 
 A quick note on licensing. It is of the utmost importance that a developer
 conforms with the license associated with a library lest they become exposed to
-litigation if caught. This boils down to whether a library requires that the
-source code of the software that makes use of it must be disclosed to the
-public. A `copyleft' license requires that derivative works must disclose their
-source code. The \gls{gpl} license is a very common copyleft license.
-Conversly, a `permissive' license makes no obligations to derivative works. The
-\gls{mit} license and Apache License are very common examples of permissive
-licenses. With this in mind, much time was spent ensuring that all of the open
-source tools used by \gls{pops} fell under the permissive category.  
+litigation. Most important is whether a library requires that the source code
+of the software that makes use of library must be disclosed to the public. A
+`copyleft' license requires that derivative works must disclose their source
+code. The \gls{gpl} license is a very common copyleft license.  Conversly, a
+`permissive' license makes no obligations to derivative works. The \gls{mit}
+license and Apache License are very common examples of permissive licenses.
+With this in mind, much time was spent ensuring that all of the open source
+tools used by \gls{pops} fell under the permissive category.  
 
 This was especially a challenge for Cesium. Other libraries existed that
 supported a 3D Earth visualization. These were very bare-bones and would
 require a great deal of work to become usable. Cesium provided the most
 functionality with the best \gls{api}. As such, it was worth investing time in.
 Recall that CesiumJS is the open source library that most of the functionality
-of the tool is built on and CesiumION is the proprietary version.  CesiumION
-uses the library as a foundation and provides its own 3D geospatial data which
-includes world maps, terrain data, and specialized objects within the viewer.
-For the world map, as long as the it is cartographically accurate, that is
-sufficient for a space application.  There is no need for high resolution
-imagery of downtown Toronto.  Similarly, there is no need for terrain data for
-a space application. Time was spent looking for free alternatives, which were
-found.  With this in mind, there was no reason to pay for a license to
-CesiumION when free alternatives existed.
+of the tool is built on. CesiumION is the proprietary version and provides 3D
+geospatial data which includes world maps, terrain data, and specialized
+objects within the viewer.  For the world map, as long as the it is
+cartographically accurate, it is sufficient for \gls{sfl}'s purposes. For
+example, as part of \gls{pops} there is no need for high resolution imagery of
+downtown Toronto.  Similarly, there is no need for terrain data for a space
+application.  Time was spent looking for free alternatives, which were found.
+As such, there was no reason to pay for a license to CesiumION when free
+alternatives existed.
 
-After Cesium was made usable, all of the tools were in place to begin full
+After Cesium was made usable, most of the tools were in place to begin full
 development of \gls{pops}. This began with foundational work setting up a basic
-website that could be interacted with. Intitially, it was very simple and had a
+website that could be interacted with. Initially, it was very simple and had a
 number of menus that could be used to create missions, add satellites, add
 ground stations, and configure a plan. From this began work on the observation
-configuration bage which was the most complicated aspect of \gls{pops} yet
+configuration page which was the most complicated aspect of \gls{pops} yet
 developed. It needed to interact with all the tools that had been introduced.
 Not only that but it also needed to search for opportunities.
 
@@ -106,20 +105,20 @@ completely unique, in that there existed no open-source tool that could be
 configured to find remote sensing opportunities given some constraints. Of
 course, \gls{stk} could be used, but it would require a license and would need
 to be automated in some way. Other tools like \gls{cpaw} could be used but
-again they provided superflous functionality and required licenses. This
+again they provided superfluous functionality and required licenses. This
 process would need to be done from scratch. Before beginning development, a
 document was written that fully defined all of the initial observation modes
-that were desired as part of \gls{pops}. Information like: what satellites are
+that were desired as part of \gls{pops}. Information like: what satellites were
 necessary for a particular observation; can one, some, or all be used;
-explicitly defining what constraints are necesssary; defining what terminology
-is being used; etc. This document was then reviewed by senior staff to ensure
-that there was a correct understanding of what was required.
+explicitly defining what constraints were necessary; defining what terminology
+was being used; etc. This document was then reviewed to ensure that there was a
+correct understanding of what was required.
 
-Originally, just the \glspl{atu} were thought to be sufficient for opportunity
+Originally, just the \gls{atu} were thought to be sufficient for opportunity
 filtering. Through, the creation of this reference document, it became clear
-that in, isolation, the \glspl{atu} could not fully constrain the observation
-modes as described in the document. But, strung together, they could do so.
-This is how the flow-charts similar to Figures~\ref{fig:filter-1} and
+that in isolation, the \glspl{atu} could not fully constrain the observation
+modes as described in the document. Strung together, they could do so.  This is
+how the flow-charts similar to Figures~\ref{fig:filter-1} and
 \ref{fig:filter-2} from Chapter~\ref{chap:intro} were created. They summarized,
 at high level, how the \glspl{atu} could be used to fully constrain an
 observation. They were easy to understand and make changes to. It followed that
@@ -143,34 +142,35 @@ between Sat-A and the \gls{aoi}. Then we calculate an access between Sat-B and
 the intersection polygon from the Sat-A \gls{aoi} access. Then if that access
 exists and if there is a ground contact, all the information is stored as an
 opportunity. This is essentially what is currently being done as outlined in
-Algorithm~\ref{alg:tip-and-cue} in Chapter~\ref{chap:architecture}. This
-solution is technically valid, but what if there are multiple Sat-A \gls{aoi}
-accesses in a single pass? Or, what if there are multiple Sat-B intersection
-polygon accesses? Then this process of iterating over passes may miss potential
-opportunities. Now we need to iterate on the solution and instead of looping
-over every pass, instead we iterate over every Sat-A \gls{aoi} access. In this
-way we never miss a tip opportunity. Then we intersect this with the first
-Sat-B intersection polygon access. This is just one example of how the process
-needs to be iterated. Other sources were effectively managing the data in a
-scenario. Specifically how should it be stored such that it can be used as
-needed throughtout the filtering process, how to prevent copying the data
-unnecessarily, or also how to provide data to the \glspl{atu} effectively such
-that we weren't slowing down the filter unnecessarily by performing repeat or
-superflous calculations.  
+Algorithm~\ref{alg:tip-and-cue} in Chapter~\ref{chap:architecture}.  
 
-The last area that slows down development, is bugfixing and stability
-improvements. Of course any part of a development workflow will require ironing
-out bugs, this nothing special. Given the scale of the tool, part of the
-attitude when developing has been, making things perfect takes a lot of time so
-make it good enough to work for now. This is perfectly valid, and makes sense.
-There is neither the time nor the resources to support optimizing every aspect
-of the tool. That being said, expanding the tool requires building on itself.
-Much of the functionality is inter-reliant and very little can be done in
-isolation. If we fully followed a ``get it done'' mentality, the tool would
-quickly fall in on itself. For this reason, a great deal of time has been spent
-iterating on every aspect of the tool to make it more robust, such that when
-new functionality is added, it is not limited artificially or it does not cause
-the tool to collapse in on itself.
+This solution is technically valid, but what if there are multiple Sat-A
+\gls{aoi} accesses in a single pass? Or, what if there are multiple Sat-B
+intersection polygon accesses? Then, this process of iterating over passes may
+miss potential opportunities. Now, we need to improve the solution and instead
+of looping over every pass, we iterate over every Sat-A \gls{aoi} access.  In
+this way, we never miss a tip opportunity. Then, we intersect the tip
+intersection polygon with the first Sat-B intersection polygon on the next
+pass.  This is just one example of how the process needs to be iterated.  Other
+sources were effectively managing the data in a scenario.  Specifically how
+should data be stored such that it can be used as needed throughout the
+filtering process, how to prevent copying the data unnecessarily, or also how
+to provide data to the \glspl{atu} effectively such that the filter wasn't
+slowed down unnecessarily by performing repeated or superfluous calculations.  
+
+%The last area that slows down development is bug fixing and stability
+%improvements. This nothing special; any part of a development workflow will
+%require ironing out bugs. Given the scale of the tool, part of the attitude
+%when developing has been making things perfect takes a lot of time so make it
+%good enough to work for now. This is perfectly valid, and makes sense.  There
+%is neither the time nor the resources to support optimizing every aspect of
+%the tool. That being said, expanding the tool requires building on itself.
+%Much of the functionality is inter-reliant and very little can be done in
+%isolation. If we fully followed a ``get it done'' mentality, the tool would
+%quickly fall in on itself. For this reason, a great deal of time has been
+%spent iterating on every aspect of the tool to make it more robust, such that
+%when new functionality is added, it is not limited artificially or it does not
+%cause the tool to collapse in on itself.
 
 
 
