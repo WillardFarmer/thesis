@@ -183,11 +183,11 @@ important for the general health and functionality of the tool.
 
 \subsection{Time Tag Command Generation}
 
-The number 1 most critical aspect of \gls{pops} that must be developed is the
+The number one most critical aspect of \gls{pops} that must be developed is the
 \gls{ttc} generation functionality of \gls{pops}. It is an essential component
-of the tool and cannot be omitted. There are two aspects to this, first, the
-functionality must be developed and, second, the necessary \glspl{ttc} for each
-observation mode must be determined.
+of the tool and cannot be omitted. There are two aspects to this. First, the
+functionality for generating \gslpl{ttc} must be developed and, second, the
+necessary \glspl{ttc} for each observation mode must be determined.
 
 Work has been done to implement \gls{ttc} generation. There exists a library
 developed by \gls{sfl}, written in Python, that handles the logic for creating
@@ -197,20 +197,28 @@ re-tooled library to generate list of \glspl{ttc} for each observation mode.
 The intention for this service was to be expandable and easy to use for future
 developers since what \glspl{ttc} are used for each observation mode will
 change from mission to mission. This where the intricacies discussed in
-Section~\ref{sec:ttc-gen} where discovered. Unfortunately, it was decided that
-using Python scripting to generate \glspl{ttc} may be too complicated or
-cumbersome for future developers. In addition, the \gls{nsp} library did not
-explicitly track the data payloads of the \gls{nsp} commands. That is, the
-library could construct valid commands but they did not track mission-specific
-information. Typically, for ground software at \gls{sfl} this is handled by
-\gls{xml} configuration files that need to be configured for each new mission.
-The \gls{nsp} library did not make use of these configuration files because it
-was made for testing and not necessarily for nominal operations. So, when using
-the Python \gls{nsp} library, individual data bits would need to be specified
-in Hexadecimal. Despite the amount of work put into this new service, it was
+Section~\ref{sec:ttc-gen} where discovered.  
+
+Unfortunately, it was decided that using Python scripting to generate
+\glspl{ttc} may be too complicated or cumbersome for future developers. In
+addition, the \gls{nsp} library did not explicitly track the data payloads of
+the \gls{nsp} commands. That is, the library could construct valid commands but
+they did not track mission-specific information. For example, if a command were
+to be sent to the \gls{hkc} on the satellite and the \gls{hkc}'s address was
+\texttt{0x06}, the developer would have to write the address itself within the
+code. This makes development more difficult since a developer would need to
+have an understanding of the commands themselves, rather than having that
+functionality be handled by the software. 
+
+Typically, for ground software at \gls{sfl} this is handled by \gls{xml}
+configuration files that are configured for each new mission.  The \gls{nsp}
+library did not make use of these configuration files because it was made for
+testing and not necessarily for nominal operations. So, when using the Python
+\gls{nsp} library, individual data bits would need to be specified in
+Hexadecimal.  Despite the amount of work put into this new service, it was
 decided that these issues were irreconcilable with the future needs of
 \gls{pops}. So the service was replaced by a new tool that builds off of
-\gls{xml} configuration files as the foundation for \gls{ttc} generation. This
+\gls{xml} configuration files as the foundation for \gls{ttc} generation.  This
 tool is still in development.
 
 Determining what commands are necessary for each observation mode is difficult.
@@ -221,11 +229,11 @@ specifying attitude modes, etc.  There does not exist a single reference for
 what commands are necessary and what must be done for an observation mode. This
 information can only be gained through discussion with operators and with
 software engineers developing the firmware.  Even after extensive consultation,
-steps may be missed. It is only through testing, do we determine all of the
-necessary commands for an observation mode.  Thankfully, much of this testing
+steps may be missed. It is only through testing, are all of the necessary
+commands for an observation mode determined.  Thankfully, much of this testing
 can be done during \gls{tvac} testing campaigns. It is here, were spacecraft
 may be commanded to perform observations, or at least their ground analogues,
-through \glspl{ttc}. This gives a great deal of information about what exactly
+through \glspl{ttc}.  This gives a great deal of information about what exactly
 needs to be performed for each observation. It also provides some means of
 validating \gls{ttc} generation.
 
@@ -238,20 +246,20 @@ acceptable and accurate results. System level validation can be accomplished
 through service-level verification. This has been touched on throughout the
 thesis. Specifically, the Propagator service was validated through comparing
 ephemeris data with results from \gls{stk}. \gls{ttc} generation validation may
-be accomplished through \gls{tvac} testing. After this validation becomes
+be accomplished through \gls{tvac} testing. After this, validation becomes
 difficult. The \glspl{atu} may must be individually validated either through
-known test cases or through comparissons with \gls{stk}. This process has been
+known test cases or through comparisons with \gls{stk}. This process has been
 handled separately. Opportunity filtering is especially difficult to validate
-since there does readily exist an alternative that can act a benchmark. In the
-future, what may be done is when the filtering process heas reached maturity,
-simple test scenarios will be constructed for each observation mode. \gls{stk}
-and \gls{pops} will separately be used to search for opportunities and these
-results will be compared. Thankfully, there is not a requirement for some of
-the components. For example, a high accuracy with respect to access times is
-not necessary. Even if the access time calculation were made very accurate,
-there are inherent uncertainties in the ephemeris data that may render such
-accuracy useless. This all being said, validation strategies is an ongoing
-process.
+since there does not readily exist an alternative that can act a benchmark. In
+the future, what may be done is when the filtering process has reached
+maturity, simple test scenarios will be constructed for each observation mode.
+\gls{stk} and \gls{pops} will separately be used to search for opportunities
+and these results will be compared. Thankfully, there is not a requirement for
+some of the components. For example, a high accuracy with respect to access
+times is not necessary. Even if the access time calculation were made very
+accurate, there are inherent uncertainties in the ephemeris data that may
+render such accuracy useless. This all being said, developing validation
+strategies is an ongoing process.
  
 %\subsection{Addition of More Observation Modes}
 %
@@ -309,11 +317,11 @@ generation Intel Core i7-1165G7 CPU running at 2.80 GHz.
 
 The results of this test can be seen in Figure~\ref{fig:performance-benchmark}.
 As can be seen from the plot, 8 scenarios were generated. Scenarios less than 4
-days are reasonably quick, taking less than \~5 minutes. But, as we approach a
-13-14 day scenario filtering takes more than half an hour. It could be argued
-that this is tolerable for an \gls{mvp} but it is certainly not ideal.  Note,
-this test was only for a 2-satellite scenario. Every satellite added increases
-the running time exponentially. 
+days are reasonably quick, taking less than $\sim5$ minutes. But, as we
+approach a 13-14 day scenario filtering takes more than half an hour. It could
+be argued that this is tolerable for an \gls{mvp} but it is certainly not
+ideal.  Note, this test was only for a 2-satellite scenario. Every satellite
+added increases the running time exponentially. 
 
 To address this, there are a number of areas for improvement.  These range from
 simple algorithmic changes to heavily involved architectural changes. For each
@@ -343,7 +351,7 @@ is wasted. If a user is concerned with an \gls{aoi} in the Northern Hemisphere,
 they will not need a high accuracy ephemeris for times where the spacecraft is
 in the southern hemisphere. Of course, if the user is concerned with a very
 large \gls{aoi} that the spacecraft more often than not has access to, then
-nothing can be done but this is an outlier case.
+nothing can be done. This, though, is an outlier case.
 
 This touches on potential improvements for how ephemerides can be better
 handled.  Instead of initially making a large, small timestep, ephemeris, a
@@ -357,9 +365,9 @@ development time to plan out and troubleshoot any pitfalls.
 
 In terms of difficulty, this would require a re-work of a large portion of
 \gls{pops}.  Thankfully, through abstracting how ephemeris data is handled
-through the Data handler class, \gls{pops} is well situated for this change.
-Overall, this is a change that should likely be made anyway. Having ephemeris
-data be static artificially limits \gls{pops}'s functionality.
+through the Data Handler classes, \gls{pops} is well situated for this change.
+Overall, this is a change that will likely be made later on in development.
+Having ephemeris data be static artificially limits \gls{pops}'s functionality.
 
 
 \subsubsection{2. Splitting up data in the filtering process}
@@ -372,13 +380,13 @@ for a 14 day scenario, instead of loading in all 14 days of data, this could be
 split up into 2 day chunks. This will likely not reduce the processing time but
 it may reduce the time spent indexing and accessing the data. In terms of
 difficulty, this would be an easy modification but time would need to be spent
-determining whether this actually addresses a problem in the software.
+determining whether this change is worthwhile.
 
 
 \subsubsection{3. Utilizing parallel computation}
 
 Moving from single-threaded processing to multi-threaded processing begins to
-stray from algorithmic changes to changes in how the host PC's is utilized.
+stray from algorithmic changes to a change in how the host PC is utilized.
 These solutions, while most likely effective, increase the complexity of
 \gls{pops} and should be pursued if there are no other alternatives.
 
@@ -391,11 +399,11 @@ number of processes, each handling sub-components of the filtering process.
 This would be a difficult solution to implement. Multi-threaded programming is
 not necessarily complicated in Python, but asynchronous processes are almost
 always much more complicated that asynchronous process. Synchronous processes
-are predictable, straightforward, and easy to debug. Asynchronous processes
-introduce a multitude of challenges. For example: race conditions, memory
-management, locking out resources, unpredictable behavior, error handling, etc.
-There are many benefits to parallel computing, but such a change should not be
-undertaken lightly.
+are predictable, straightforward, and easy to debug. Asynchronous processes are
+none of these and introduce a multitude of challenges. For example: race
+conditions, memory management, locking out resources, unpredictable behavior,
+error handling, etc.  There are many benefits to parallel computing, but such a
+change should not be undertaken lightly.
 
 
 \subsubsection{4. Offloading computation to a dedicated server}
@@ -404,12 +412,12 @@ When performing opportunity filtering, or any other function of \gls{pops}, if
 other software is being run on a user's computer, that may negatively impact
 the tool's performance. Or, if the user's computer is not particularly
 powerful, that may limit \gls{pops}'s usefulness. Instead, a dedicated server
-could be constructed that is optimized to perform calculations for \gls{pops},
-such as ephemeris generation, the \glspl{atu}, database management, and
-opportunity filtering. In this way, all that a user's computer will run is what
-they need to display the information or construct requests. Or alternatively,
-all of \gls{pops} could be hosted on a server, and a user just sends requests
-to it. 
+could be constructed that is optimized to perform calculations for \gls{pops}.
+Some calculations may be: ephemeris generation, the \glspl{atu}, database
+management, and opportunity filtering. In this way, all that a user's computer
+will run is what they need to display the information or construct requests.
+Alternatively, all of \gls{pops} could be hosted on a server, and a user could
+access it completely remotely. 
 
 There are potential benefits to this approach, but it would vastly increase the
 complexity of \gls{pops}, especially for the front-end user interface. Some
@@ -421,12 +429,14 @@ the webserver. But, if the server is hosted remotely, then the webserver needs
 to track both what requests are being sent to it as well as from what source.
 For example, let us say there are two users who wish to work with two different
 plans. User 1 will open Plan A and the webserver will display Plan A. User 2
-will open Plan B and Plan B will be displayed. But now there are two instances
-of the Cesium viewer. Which one should the server send data to? The behavior is
-undefined and both User 1 and User 2 will have unstable sessions. In this way,
-sessions should be split somehow, such that one user's inputs cannot affect
-another user. This problem has many solutions but is non-trivial and strays
-into professional web development which is not the priority for \gls{pops}. 
+will open Plan B and Plan B will be displayed. Suppose then User 1 makes a
+change to Plan A, the webserver will receive the request but, since it isn't
+tracking from what source are the requests coming from, it will make changes to
+Plan B since that was the last plan displayed.  The behavior is undefined and
+both User 1 and User 2 will have unstable sessions.  In this way, sessions
+should be split somehow, such that one user's inputs cannot affect another
+user. This problem has many solutions but is non-trivial and strays into
+professional web development which is not the priority for \gls{pops}. 
 
 
 \subsubsection{5. Leveraging the GPU}
@@ -439,18 +449,16 @@ algebra. Historically, \glspl{gpu} were only meant to be used for computer
 graphics but in recent decades, they have become much more general purpose. By
 leveraging the \gls{gpu}, computation times may be decreased by orders of
 magnitude. Some precedent does exist for this by accelerating SGP4 calculation
-\hl{cite}.
-
-% https://core.ac.uk/download/pdf/301091034.pdf
-% https://amostech.com/TechnicalPapers/2016/SSA-Algorithms/Moeckel.pdf
+\cite{moeckel_high_2016} \cite{fraire_opencl-accelerated_2013} and it is
+reasonable to assume this can be expanded further.
 
 Using a \gls{gpu} would be the most rewarding but also most difficult and
 complicated improvement to \gls{pops} that could be made. Writing code for a
 \gls{gpu} is to some extent specific to the manufacturer and age of the
-\gls{gpu}. Some computers that may run \gls{pops} may not even have one that
-supports this functionality. So in addition to creating the custom shaders for
-\gls{pops}, work would need to be done to ensure that they can be used at all
-by users at \gls{sfl}.
+\gls{gpu}. Some computers that may run \gls{pops} may not even have a \gls{gpu}
+that supports this functionality. So in addition to creating the custom shaders
+for \gls{pops}, work would need to be done to ensure that they can be used at
+all by users at \gls{sfl}.
  
 
 \subsubsection{Miscellaneous Improvements}
@@ -458,28 +466,29 @@ by users at \gls{sfl}.
 In addition to any large improvements, there exists many smaller changes that
 can have a positive effect on \gls{pops}'s performance. Small changes such as:
 dynamically loading data from the database, sending multiple batches of data to
-the \glspl{atu} in a single HTTP request rather than multiple HTTP requests,
-or.
+the \glspl{atu} in a single HTTP request rather than multiple HTTP requests, or
+optimizing data formats based on need.
 
 
 \subsection{Updating Plans}
 
 Another area that must be improved is the ability to update plans in
 \gls{pops}. Currently, once \glspl{tle} are set for a plan, they cannot be
-changed. This was done to reduce the complexity of the tool. This is not ideal
-though. Suppose a plan has been made and observations have been scheduled, but
-then suppose after some time a new \gls{tle} is generated that invalidates the
-observations made with the older \gls{tle}. This is a reasonable scenario that
-could very well occur but currently there is no way to handle this in
-\gls{pops} aside from creating a new plan and rescheduling observations.
+changed. This was done to reduce the complexity of the tool but this is not an
+ideal solution.  Suppose a plan has been made and observations have been
+scheduled, but then suppose after some time a new \gls{tle} is generated that
+invalidates the observations made with the older \gls{tle}. This is a
+reasonable scenario that could very well occur but currently there is no way to
+handle this in \gls{pops} aside from creating a new plan and rescheduling
+observations.
 
 This is a multi-faceted problem that must be addressed in a number of areas.
 First, we must at least determine if a new \gls{tle} invalidates observations
 from a plan with a previous \gls{tle}. Next, there must be a way to edit
-observations in an old plan, or there must be a way to migrate those old
+observations in an old plan or there must be a way to migrate those old
 observations to a new plan with updated timings. Lastly, if a change is made to
 an observation, \glspl{ttc} that have already been generated must be updated in
-some way to reflect the changes. This problem has not yet been approached and
+some way to reflect those changes. This problem has not yet been approached and
 is an on-going limitation of the tool.
 
 
@@ -504,8 +513,8 @@ is here uploaded \glspl{ttc} will be read and added onto the schedule.
 
 The last task that must be performed before \gls{pops} has reached the
 \gls{mvp} is user testing. Quite simply, this is where operators begin to use
-the tool and give feedback. This information is critical since it gives
-information: bugs, user interface problems, and what parts of the tool can be
+the tool and give feedback. This information is critical since it gives insight
+into: bugs, user interface problems, and what parts of the tool can be
 improved.  This then begins the process of iterating in their feedback,
 improving the tool, receiving further feedback and so on.
 

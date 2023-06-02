@@ -9,23 +9,26 @@ planning capabilities for the operations at \gls{sfl}. It is not intended to
 fully automate an operator's workflow but rather its purpose is to streamline
 some of their day to day activities. The main design direction for this tool
 has been to keep it easy use and easy to develop. Many tools have been
-developed at \gls{sfl} that have fallen into obscurity. Even if the tool is
+developed at \gls{sfl} that have fallen into obscurity. Even if a tool is
 very efficient, this is less valuable than a tool that can be expanded into the
 future. 
 
 Existing software solutions to mission planning that are currently available
-have been introduced. Their strengths as well as their weeknesses have been
-discussed. After this some terminology was introduced as well as some
+have been introduced. Their strengths as well as their weaknesses have been
+discussed. After, this some terminology was introduced as well as some
 operations related concepts. Since it is not the desire of the author to expose
 the operations strategies of \gls{sfl} customers, an example scenario was
-defined, EG-SAT, to illustrate the usefullness of \gls{pops}.
+defined, EG-SAT, to illustrate the usefulness of \gls{pops}.
 
 After this, the architecture of \gls{pops} was discussed. Starting with the
 general architecture of the software. Then going into the specifics of each
-service, those being the: Propagator, Database, Access Time Utilities, NSP
-service, and Mission Model. Each has its own purpose and the largest is the
-Mission Model. It handles the front-end user interface, communication with the
-database, opportunity filtering, data handling, and event scheduling.
+service, those being the: Propagator, Database, Access Time Utilities, and
+Mission Model. The propagator generates validated ephemeris data. The Database
+persistently stores mission and search data. The Access Time Utilities serve as
+the basic building blocks from which opportunities may be filtered from search
+data. Lastly, the Mission Model is the heart of the tool.  It handles the
+front-end user interface, communication with the database, opportunity
+filtering, data handling, and event scheduling.
 
 Just discussing the architecture does not fully explain the purpose of
 \gls{pops}. To help aid in this process, a workflow was discussed for the
@@ -35,6 +38,11 @@ period. There, opportunities were searched for given EG-SAT's two operations
 modes, Coarse Imaging and Tip-and-Cue Imaging. From these opportunities,
 observations were created and added to the schedule. The schedule was then
 validated and displayed.  
+
+Lastly, the research and development process was discussed. What tools were
+originally used and what they were replaced by. As well, the process for
+developing the opportunity filter was discussed. After this some avenues for
+improvement were explored for \gls{pops}. 
 
 A great deal of work lies ahead for \gls{pops} but this is only a testament to
 the amount of work that has already been accomplished. Hopefully, this tool
