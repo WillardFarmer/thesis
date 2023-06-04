@@ -70,7 +70,7 @@ conforms with the license associated with a library lest they become exposed to
 litigation. Most important is whether a library requires that the source code
 of the software that makes use of library must be disclosed to the public. A
 `copyleft' license requires that derivative works must disclose their source
-code. The \gls{gpl} license is a very common copyleft license.  Conversly, a
+code. The \gls{gpl} license is a very common copyleft license.  Conversely, a
 `permissive' license makes no obligations to derivative works. The \gls{mit}
 license and Apache License are very common examples of permissive licenses.
 With this in mind, much time was spent ensuring that all of the open source
@@ -127,13 +127,13 @@ level diagrams. In response, the filter was split into a number of classes that
 emulated the flow-diagrams. The Data Handler classes represented the data at
 varying stages, such as the: Ephemeris, \gls{aoi}, Swaths, Polygons, and Access
 Times. The \gls{atu} Handler, could use the data handler classes as inputs and
-outputs. Finally the Opportunity Filter class would use the other two classes
+outputs. Finally, the Opportunity Filter class would use the other two classes
 to fully implement a filter.  
 
 Implementing these filters required iteration. Not just for efficiency but also
 because each version made assumptions about the filters that artificially
 limited the filter's capabilities.  It is very difficult to plan and account
-for each aspect of the filters before hand.  For example, the temporal
+for each aspect of the filters before-hand.  For example, the temporal
 properties of the Tip-and-Cue Imaging observation had some hidden challenges.
 From a high level, it is very simple: (1) first pass tip access, (2) ground
 contact, and (3) next pass cue access. The initial solution may be to iterate
@@ -207,8 +207,8 @@ they did not track mission-specific information. For example, if a command were
 to be sent to the \gls{hkc} on the satellite and the \gls{hkc}'s address was
 \texttt{0x06}, the developer would have to write the address itself within the
 code. This makes development more difficult since a developer would need to
-have an understanding of the commands themselves, rather than having that
-functionality be handled by the software. 
+understand the commands themselves, rather than having that functionality be
+handled by the software. 
 
 Typically, for ground software at \gls{sfl} this is handled by \gls{xml}
 configuration files that are configured for each new mission.  The \gls{nsp}

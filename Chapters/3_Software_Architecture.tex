@@ -97,7 +97,7 @@ the input data must be defined or else the web server will fail the request as
 being unprocessable.  These input definitions are stored in the models file.
 Python is a dynamically typed language so variables do not need to be assigned
 a type upon creation. To ensure input data conforms with what is expected by
-the \gls{api}, the Python library \texttt{Pydantic} is used to enforce data
+the \gls{api}, the Python library, \texttt{Pydantic}, is used to enforce data
 types at runtime.  These Pydantic input definitions are contained in the models
 file.  The remainder of the files in a service are specific to the service
 itself.
@@ -271,7 +271,7 @@ load the entire table of data.
 Another primitive table is the \textbf{Ground Stations} table. Here information
 is stored for each ground station, such as Latitude, Longitude, Altitude,
 Elevation Mask, etc. From satellite ephemerides, we can generate \textbf{Ground
-Access Times} using the Ground Access Utility from the \glspl{atu}.
+Access Times} using the Ground Access Utility from the \gls{atu}.
 
 Areas of Interest may be stored in the \textbf{AOIs} table. These may be
 generated from a file or drawn by a User. The data for each \gls{aoi}, is
@@ -339,7 +339,7 @@ access more efficiently.
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{ATU-1.png} 
-    \caption{Input Output Diagram for Ground Access Utiltiy}
+    \caption{Input Output Diagram for Ground Access Utilitiy}
     \label{fig:atu-1} 
 \end{figure}
 
@@ -464,7 +464,7 @@ tangent to some point on the Earth’s surface.  To project a point on the
 Earth’s surface to this plane, a vector is drawn from the centre of the Earth
 towards the point (its \gls{ecef} coordinates), and the vector is extended
 towards the point of intersection of the plane. This type of projection is
-commonly known as the Gnonomic projection; its advantage with respect to the
+commonly known as the Gnomonic projection; its advantage with respect to the
 polygon clipping operation is that great ellipse arcs are projected as straight
 lines.  This means classical 2D polygon clipping techniques can be applied to
 polygons drawn on the Earth’s surface. So long as the swath and polygon occupy
@@ -1405,7 +1405,7 @@ library of rulesets. These rulesets are separate add-ons to the Scheduler
 class. Within the class, their is a \texttt{validate\_schedule()} method, which
 passes the list of Events to every ruleset. These rulesets then return lists of
 conflicts. These conflicts are stored and displayed to the user graphically and
-in a list. The reason why rulests are treated in this way, is that it allows
+in a list. The reason why rulesets are treated in this way, is that it allows
 the Scheduler class to be expandable. Currently, there is only one ruleset and
 it checks for time conflicts. For a satellite, it checks whether there exist
 instances where 2 or more Events are scheduled to happen at the same time.

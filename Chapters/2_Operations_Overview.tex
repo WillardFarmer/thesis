@@ -31,7 +31,7 @@ that is covered by the footprint is a sensor’s \textbf{ground swath}. The area
 covered by the access region over time is the sensor’s potential \textbf{access
 swath}.  The access swath can be intuitively thought of as the area on Earth
 that can possibly be observed by a spacecraft’s sensor over some time interval.
-If a point or region lies within the access swath, there exists a subinterval
+If a point or region lies within the access swath, there exists a sub-interval
 where the spacecraft could observe that point or region. This time period is
 referred to as an \textbf{access time}. Similarly, when the spacecraft can
 observe that point or region, we say that that spacecraft has \textbf{access}.
@@ -387,8 +387,8 @@ regarding the exact process to generate \glspl{tle}. This is essential because
 the assumptions made in the creation of a \gls{tle} must be accounted for to
 produce accurate propagation results. There are, though, a few publications of
 note on this subject. Originally the source code for the `simplified
-perturbation models' family of algorithms was defined explictly in
-\cite{hoots_spacetrack_1980}.  After some years, many purpose built versions of
+perturbation models' family of algorithms was defined explicitly in
+\cite{hoots_spacetrack_1980}.  After some years, many purpose-built versions of
 \gls{sgp4} were developed, each with their own assumptions and implementation
 details. These were consolidated together in \cite{vallado_revisiting_2006},
 which provided a number of tested implementations of \gls{sgp4} in a variety of
@@ -412,11 +412,11 @@ well as derivation examples.
 \end{figure}
 
 An example of a \gls{tle} can be seen in Figure~\ref{fig:tle-ex} taken from
-\cite{vallado_fundamentals_2001}.  As the name implies, there are two 69
-character lines of data. Occaisionally, a title is added for reference but this
-is not required as part of the \gls{tle} definition. The data allocations can
-be seen in Figure~\ref{fig:tle-legend}. The corresponding allocations for each
-reference number can be seen in Table~\ref{tab:tle-line-1} and
+\cite{vallado_fundamentals_2001}.  As the name implies, there are two
+69-character lines of data. Occasionally, a title is added for reference but
+this is not required as part of the \gls{tle} definition. The data allocations
+can be seen in Figure~\ref{fig:tle-legend}. The corresponding allocations for
+each reference number can be seen in Table~\ref{tab:tle-line-1} and
 Table~\ref{tab:tle-line-2} for lines 1 and 2 respectively.
 
 \begin{figure}[h]
@@ -513,17 +513,17 @@ a numerical integrator) will result in degraded predictions. \cite{hoots_spacetr
 \subsection{Propagator}
 
 Within the simplified general perturbations family of algorithms there are 5
-oribital propagation models: SGP, SGP4, SDP4, SGP8, and SDP8. These are
+orbital propagation models: SGP, SGP4, SDP4, SGP8, and SDP8. These are
 analytical methods of approximating orbital state vectors at corresponding
-epochs. SGP (Simplified General Perturbations) was originally developed in 1966 for near-Earth satellites (orbital
-periods less than 225 minutes). It was then replaced by SGP4 and SDP4.  SGP4
-was originally developed in 1970 for near Earth Satellites and SDP4 was an
-extension for `deep-space' satellites (orbital periods greater than 225
-minutes) in 1979.  The SGP8/SDP8 models were developed in 1980 to address
-deficiencies in the previous versions but ultimately, they did not become
-widely used.  Today SGP4/SDP4 are the dominant models.  Since there is a clear
-distinction between when SGP4 and SDP4 should be used, they are collectively
-referred to as just `SGP4'. Since the original report
+epochs. SGP (Simplified General Perturbations) was originally developed in 1966
+for near-Earth satellites (orbital periods less than 225 minutes). It was then
+replaced by SGP4 and SDP4.  SGP4 was originally developed in 1970 for near
+Earth Satellites and SDP4 was an extension for `deep-space' satellites (orbital
+periods greater than 225 minutes) in 1979.  The SGP8/SDP8 models were developed
+in 1980 to address deficiencies in the previous versions but ultimately, they
+did not become widely used.  Today SGP4/SDP4 are the dominant models.  Since
+there is a clear distinction between when SGP4 and SDP4 should be used, they
+are collectively referred to as just `SGP4'. Since the original report
 \cite{hoots_spacetrack_1980}, changes have not been made to the theory but
 rather the code implementations.  It should be noted that \glspl{tle} are
 accurate to around a kilometer at epoch and degrade rapidly

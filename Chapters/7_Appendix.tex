@@ -70,7 +70,7 @@ smaller than the total number of timesteps.
 For all satellite access lists we are considering, let us combine them into two
 $1\times nm$ arrays. The first `timestamp' array, $\se{b}$, contains a sorted
 list of all of the boundary timestamps in ascending order. The second `index'
-array, $\se{s}$, contains a list of satellite indeces in the same order as the
+array, $\se{s}$, contains a list of satellite indices in the same order as the
 timestamp array. For example,
 
 \begin{equation*}
@@ -108,7 +108,7 @@ dimensional logic array, we can produce a 1 dimensional array, that is the
 result of AND'ing all of the elements in each column. These allow us to perform
 logical operations very quickly for many elements. From the index array let us
 construct an $n\times nm$ boolean array, $\se{A}$, that describes our scenario.
-The rows of matrix, $\se{A}$, correspond to the indeces of each satellite.  For
+The rows of matrix, $\se{A}$, correspond to the indices of each satellite.  For
 example row 0 is satellite 0, row $m$ is satellite $m$, etc. The columns
 correspond to elements in the index array, $\se{s}$.
 
@@ -120,7 +120,7 @@ repeated for all columns in $\se{A}$. There is one small catch, if we are
 transitioning a 1 to a 0 or a True to a False, this should be done on the
 following iteration. This essentially means that we are treating accesses in in
 access boundaries as inclusive. Even if the satellite is leaving an access, we
-say that it has access until the timestep imediately after the boundary. As an
+say that it has access until the timestep immediately after the boundary. As an
 example, let us construct $\se{A}$ from $\se{s}$ for all of Figure
 \ref{fig:access_intersect},
 
@@ -152,7 +152,7 @@ Then, if we AND all of the rows in $\se{A}$ we get,
     \end{array}
     \right]
 \end{equation*}
-Now it is clear to see that this matrix gives us the indeces where there is an
+Now it is clear to see that this matrix gives us the indices where there is an
 intersection between all satellites. If we take all values of $\se{b}$ where
 $\se{A}'$ is True, we are left with,
 \begin{equation*} 
@@ -164,7 +164,7 @@ $\se{A}'$ is True, we are left with,
     \right]
 \end{equation*}
 Which is our expected result. This was just a walkthrough but the explicit
-alogrithm definition is as follows,
+algorithm definition is as follows,
 
 \begin{algorithm}[h] 
     \caption{Access Intersection} 
@@ -203,7 +203,7 @@ alogrithm definition is as follows,
 
 	    \Let{$\se{a}'$}{\Call{ColumnsAND}{$\se{A}$}}
 
-	    \Let{$\se{b}'$}{$\se{b}[\se{a}']$} \Comment{Select indeces based on logical value}
+	    \Let{$\se{b}'$}{$\se{b}[\se{a}']$} \Comment{Select indices based on logical value}
 
 	\State \Return $\se{b}'$
 	\EndFunction
@@ -391,7 +391,7 @@ will have negative y-components. To determine this, we can project each point
 in the ellipse onto the x-y plane of \Fs~and then take the dot product of the
 projected point with $\sev{y}$. To order the edge points such that they
 correctly form the boundary, we can take the dot product of the projected point
-and $\sev{x}$ and then store them in ascending order. This procedures yields
+and $\sev{x}$ and then store them in ascending order. This procedure yields
 the algorithm in Algorithm~\ref{alg:swath-edge}.
 
 %% NOTE: this is not how it's defined in the code. Here it's been reversed for clarity
@@ -430,8 +430,6 @@ the swath.  To find the edge for the end, we can use the same algorithm but
 switch $L_1$ and $L_2$, and pass the Ellipse at the end of the swath. In so
 doing, we have flipped $L_1$ to be the right side of the swath instead of the
 left and vice-versa for $L_2$. 
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
