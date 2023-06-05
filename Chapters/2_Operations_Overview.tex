@@ -3,14 +3,15 @@
 
 \lettrine[lines=2, findent=0pt, nindent=5pt]{B}{}efore discussing the
 \gls{pops} it is necessary to go over some basic concepts that influence the
-design of the tool. We will also define an example scenario which will be used
-to demonstrate the capabilities of the software.
+design of the tool. This chapter will also define an example scenario which
+will be used to demonstrate the capabilities of the software later on in the
+thesis.
 
 \section{General Definitions}
 
-First, we must go over some basic terminology.  Without doing so, it may become very easy for descriptions
-to become unclear or imprecise. Some of these terms have been illustrated in
-Figure~\ref{fig:terminology}
+First, some basic terminology must be defined.  Without doing so, it may become
+very easy for descriptions to become unclear or imprecise. Some of these terms
+have been illustrated in Figure~\ref{fig:terminology}
 
 An \textbf{Ephemeris} is a time series of orbital state vectors in a given
 coordinate system. Ephemerides are calculated numerically and can be used to
@@ -135,9 +136,9 @@ access, this is referred to as \textbf{leaving} an access.
 
 \section{Operations Scenario}
 
-\gls{pops} is being developed to plan operations for missions at \gls{sfl} but,
-to maintain the privacy of their customers' operations strategies, we shall
-examine an imaginary scenario that is realistic but hypothetical. Given that
+\gls{pops} is being developed to plan operations for missions at \gls{sfl}. To
+maintain the privacy of their customers' operations strategies, an imaginary
+scenario shall be introduced that is realistic but hypothetical. Given that
 \gls{pops} is meant to be a general mission planning software, a hypothetical
 mission scenario is still a valid example. Throughout this thesis, references
 and examples will be made with this mission scenario in mind.
@@ -168,7 +169,7 @@ changing the spacecraft’s attitude.  It should be noted that since Sat-A’s
 sensor is never pointed away from the nadir during payload operations, its
 \gls{fov} is equivalent to its \gls{for}. Figure~\ref{fig:eg-sat-1} illustrates
 the configuration of the EG-SAT mission.  The solid green lines under Sat-A
-describe the $60^\circ$ \gls{fov} and footprint on the Earth. It's solid
+describe the $60^\circ$ \gls{fov} and footprint on the Earth. It is solid
 because the \gls{fov} is equivalent to the \gls{for}. The dashed green lines
 under Sat-B indicate the $20^\circ$ \gls{for} and access region. The red lines
 indicate Sat-B's \gls{fov}. Notice how the \gls{fov} can be pointed in any
@@ -190,6 +191,7 @@ direction within the \gls{for}. This mission has two operations modes:
 	\label{fig:eg-sat-3} 
     \end{minipage} 
 \end{figure}
+
 
 \begin{description} 
 
@@ -216,14 +218,13 @@ which is represented in magenta.
 The first pass of the Tip-and-Cue Imaging mode is equivalent to course imaging
 and can still be seen in Figure~\ref{fig:eg-sat-2}. The next pass component
 Tip-and-Cue Imaging mode is illustrated in Figure~\ref{fig:eg-sat-3}. It is
-assumed that between the first and next pass a ground contact has occurred and
-Sat-B has been given fine imaging targets. Since, we cannot know where
-potential targets will be on the next pass a priori, we must rely on Sat-B's
-\gls{for}.  This access region of Sat-B is represented by the green region. For
-this mode, the intersection polygon is not with the entire \gls{aoi}, rather it
-is the Intersection Polygon from the previous pass. This is the area that
-intersects both the \gls{aoi}, first pass ground swath, and next pass access
-swath.  
+assumed that between the first and next pass, a ground contact has occurred and
+Sat-B has been given fine imaging targets. Since, the location of potential
+targets cannot be known a priori, we must rely on Sat-B's \gls{for}.  This
+access region of Sat-B is represented by the green region. For this mode, the
+intersection polygon is not with the entire \gls{aoi}, rather it is the
+Intersection Polygon from the previous pass. This is the area that intersects
+both the \gls{aoi}, first pass ground swath, and next pass access swath.  
 
 
 \section{Opportunity Filtering} \label{sec:opp-filtering}
@@ -235,24 +236,24 @@ mode can be performed on an \gls{aoi}. \gls{pops} is intended to be a
 generalizable and easily expandable tool but the process of filtering for
 observation opportunities is inherently specific to a mission’s operation’s
 strategy.  For this reason, opportunity filtering functionality must be
-developed individually for each operations mode.  Filtering, may be done by
+developed individually for each operations mode.  Filtering may be done by
 stringing together primitive utilities and saving the result. 
 
 The inputs to the opportunity filtering process are: satellite ephemerides and
 an \gls{aoi}. An opportunity filter may need to consider multiple satellites,
 hence multiple ephemerides. These ephemerides form the basic component from
-which all other search data is calculated. It is from this search data that we
-`filter' for opportunities. We must provide also an \gls{aoi}.  Without it, no
-opportunities can be found as an opportunity cannot exist without an area to
-observe.
+which all other search data is calculated. It is from this search data that
+\gls{pops} `filters' for opportunities. An \gls{aoi} must also be provided.
+Without it, no opportunities can be found as an opportunity cannot exist
+without an area to observe.
 
 Let us now introduce our primitive utilities. By primitive utilities, it is not
 implied that they are in any way simple or trivial to implement but, rather,
 they form the most basic operations and cannot be simplified to another, more
 basic, form.  These primitive utilities are implemented by the \gls{atu}
-service which is discussed in Section~\ref{sec:atu} but for now we will be
-discussing them at a high level. For the EG-SAT mission, we will only need
-three utilities.
+service which is discussed in Section~\ref{sec:atu} but for now they will be
+discussed at a high level. For the EG-SAT mission, only three utilities will be
+needed.
 
 The first primitive utility is the \textbf{Swath Utility}. From a satellite
 Ephemeris and the swath half-angle, the Swath Utility calculates the
@@ -260,7 +261,7 @@ corresponding swath over that time range. The swath that is generated by this
 utility not only contains the bounded region of the swath but also the
 footprint or access region at each time instant. Note, it has not been
 specified whether the generated swath is an access swath or ground swath.  The
-process for calculating either is equivalent so a distinction is not made.  It
+process for calculating either is equivalent, so a distinction is not made.  It
 is up to the developer using the service to understand whether the outputted
 swath is one or the other.
 
@@ -280,12 +281,12 @@ a point cannot be sub-divided).
 From these primitives, opportunity filtering will only output access times,
 intersection polygons, or swaths. The concept of an `opportunity' is, to some
 extent, completely arbitrary and not concretely defined. For \gls{pops}, an
-opportunity may be represented through two components, \textit{when} and
-\textit{where}. That is, what is the area that may be observed and when can one
+opportunity may be represented through two components, \textit{where} and
+\textit{when}. That is, what is the area that may be observed and when can one
 or more spacecraft observe it. 
 
 With a basic understanding of opportunity filtering, let us now walk through
-defining filters for the two EG-SAT modes. For each filter, it is helpful to
+defining filters for the two EG-SAT modes. For each filter it is helpful to
 define: the inputs, required constraints, and what constitutes an opportunity.
 
 \subsection{Course Imaging Filter}
@@ -309,14 +310,14 @@ define: the inputs, required constraints, and what constitutes an opportunity.
 
 It is useful to display the filtering process graphically at a high level.
 This can be seen in Figure~\ref{fig:filter-1}. First, from Sat-A's ephemeris,
-it's coarse imaging swath is generated using the Swath Utility. Then, the swath
+its coarse imaging swath is generated using the Swath Utility. Then, the swath
 is intersected with the \gls{aoi} through the Polygon Intersection Utility. The
 output of which generates some access times and intersection polygons. When
 these are generated, they are each linked together as opportunities. The
-outputs of the filter are firstly the opportunities, the access times,
-intersection polygons, and swath data. All of this search data is recorded
-since it may be referenced at a later point for displaying the results or for
-further filtering.
+outputs of the filter are the opportunities, the access times, intersection
+polygons, and swath data. All of this search data is recorded since it may be
+referenced at a later point for displaying the results or for further
+filtering.
 
 \subsection{Tip-and-Cue Imaging Filter}
 
@@ -358,9 +359,9 @@ chapter.
 
 \section{Orbit Propagation}
 
-For \gls{pops} it is essential that there is some way of propagating a
-satellite's orbit. That is, we must have a way of estimating a satellites
-position at a given time. Very accurate methods of propagation do exist, but
+For \gls{pops}, it is essential that there is some way of propagating a
+satellite's orbit. That is, there must be a way of estimating a satellites
+position at a given time.  Very accurate methods of propagation do exist, but
 these are involved and may be time consuming to implement. The desire for
 \gls{pops} currently is to have \textit{some} method of propagation that is
 suitably accurate rather than a very accurate method that would take a great
@@ -490,15 +491,14 @@ b  & Checksum   &  \\
 It is not essential to have a complete understanding of every term in a
 \gls{tle}. Generally, they are meant to be consumed by an algorithm and are not
 human readable. Despite this, it is good to have a general understanding of the
-terms.  Elements 1-3 and 11 give us information about the satellite the
-\gls{tle} has been generated for. Elements 4 and 5 give us the \gls{tle} epoch.
-Elements 12-17 give us the independent orbit elements that can be used to
-describe a satellite's orbit. Elements 6-8 describe the effects of
-perturbations on that orbit. Lastly, Elements a, b, 9, and 10 give us
-meta-information about the \gls{tle} itself. Even though the orbital elements
-of a satellite can be extracted from a \gls{tle} and can then be used as inputs
-for another propagator, this would be a mis-step and would produce erroneous
-results. 
+terms.  Elements 1-3 and 11 give information about the satellite the \gls{tle}
+has been generated for. Elements 4 and 5 give the \gls{tle} epoch.  Elements
+12-17 give the independent orbit elements that can be used to describe a
+satellite's orbit. Elements 6-8 describe the effects of perturbations on that
+orbit. Lastly, Elements a, b, 9, and 10 give meta-information about the
+\gls{tle} itself. Even though the orbital elements of a satellite can be
+extracted from a \gls{tle} and can then be used as inputs for another
+propagator, this would be a mis-step and would produce erroneous results. 
 
 \begin{quote}
 [\glspl{tle}] are `mean' values obtained by removing
@@ -529,10 +529,10 @@ rather the code implementations.  It should be noted that \glspl{tle} are
 accurate to around a kilometer at epoch and degrade rapidly
 \cite{vallado_revisiting_2006}. The actual error of an individual \gls{tle}
 varies on a case by case basis. One source of error is that maneuvers cannot be
-taken into account when generating \glspl{tle}. So, if some thrusting is done
-by a spacecraft to maintain a formation for example, \glspl{tle} generated
-before the maneuver will not be accurate after the thrust has occurred. After
-this thrust, new \glspl{tle} will need to be generated. 
+taken into account when generating \glspl{tle}. If some thrusting is done by a
+spacecraft to maintain a formation, for example, \glspl{tle} generated before
+the maneuver will not be accurate after the thrust has occurred. After this
+thrust, new \glspl{tle} will need to be generated. 
 
 
 
@@ -540,14 +540,14 @@ this thrust, new \glspl{tle} will need to be generated.
 
 When using Earth-centric coordinate systems, there are generally two types:
 \gls{eci} and \gls{ecef}. These are not reference frames themselves but only
-refer to families or reference frames. They vary based on the exact definitions
+refer to families of reference frames. They vary based on the exact definitions
 for each axis.  \gls{eci} frames do move with the Earth's rotation; they
 remain, as the name implies, inertially fixed and their axis are defined with
 respect to celestial bodies. \gls{ecef} frames do move with the Earth's
 rotation. As such, they are useful for Earth-sensing satellite operations since
 coordinates in an \gls{ecef} frame can be directly converted into
 Latitude-Longitude-Altitude coordinates, whereas with an \gls{eci} frame this
-process is much more involved. The outputs of the \gls{sgp4} propagator, are in
+process is much more involved. The outputs of the \gls{sgp4} propagator are in
 the \gls{teme} coordinate reference frame which is an \gls{eci} reference
 frame. \gls{teme} is not particularly useful and must be transformed. This
 process is discussed later.

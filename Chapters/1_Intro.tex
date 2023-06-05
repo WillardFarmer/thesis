@@ -28,14 +28,14 @@ meant to handle the deterministic aspects of mission planning.  Given an
 \gls{aoi} and a method of remote sensing, \gls{pops} presents possible
 observation opportunities to the operator and creates sets of commands to be
 uploaded to a spacecraft in orbit.  Ideally, \gls{pops} should prevent an
-operator from having to do any calculations themselves manually. Not only is
+operator from having to do any manual calculations themselves. Not only is
 \gls{pops} meant to be a tool used by \gls{sfl} operators but one of the goals
 of this project is to reduce the barrier to development as much as possible.
 The easier the underlying code is to work with, the more likely it is that
 future developers work on it and the tool grows. For this reason, most of the
 underlying code for \gls{pops} has been written in Python and leverages several
 open-source libraries.  Extending this principle, \gls{pops} uses a
-browser-based \gls{gui} rather than as an executable desktop application. As a
+browser-based \gls{gui} rather than an executable desktop application. As a
 browser-based application, \gls{pops} can leverage an extensive set of existing
 libraries for building functionality.  For example, CesiumJS may be used for
 graphical Earth visualizations.  \gls{pops}’s architecture is containerized for
@@ -54,7 +54,7 @@ use of open-source Python implementations of the \gls{sgp4} algorithm.
 Mission planning is not unique to \gls{sfl}. Leveraging software automation
 should be done for any mission with sufficiently complicated operations.  As
 such, existing mission planning solutions already exist. For these existing
-solutions though, we should keep in mind the microspace design approach. Even
+solutions though, the microspace design approach should be kept in mind. Even
 though there may exist software that finds the best possible solutions with the
 best algorithms and interface, can the same results be achieved through a more
 limited but still satisfactory solution? 
@@ -74,18 +74,18 @@ sent to the spacecraft. Planning may either be done manually or automatically.
 
 This is a very appealing solution but it has some limitations. Firstly,
 \gls{cpaw} is expensive and licensing the software would require yearly
-payments per mission. License fees does not necessarily preclude the use of
+payments per mission. License fees do not necessarily preclude the use of
 \gls{cpaw}, rather it is the fact that not all of \gls{cpaw}'s capabilities are
-necessary.  \gls{sfl} does not require a tool that fully automates satellite
-operations, rather it needs a tool that automates repetitive calculations.
-Operators will still need to be actively setting plans for satellites.
-\gls{cpaw} also provides a suite of proprietary algorithms that produce an
-optimized operations schedule.  While this would be nice to have, an optimal
-schedule is equivalent to a satisfactory schedule if both meet their
+necessary. Secondly, \gls{sfl} does not require a tool that fully automates
+satellite operations, rather it needs a tool that automates repetitive
+calculations.  Operators will still need to be actively setting plans for
+satellites.  \gls{cpaw} also provides a suite of proprietary algorithms that
+produce an optimized operations schedule.  While this would be nice to have, an
+optimal schedule is equivalent to a satisfactory schedule if both meet their
 operational requirements. Time and money spent towards approaching optimality
 may be wasted. In addition, out of the box, \gls{cpaw} does not provide support
 for all of the operations modes performed at \gls{sfl}. These modes would need
-to be developed and integrated into the software which adds development costs
+to be developed and integrated into the software, which adds development costs
 on top of the licensing costs. A further limitation is that the use of
 \gls{cpaw} is restricted to only the mission that it is licensed for and cannot
 be extended to future missions without new licensing.
@@ -97,14 +97,14 @@ STK Scheduler is an extension to the Ansys \acrlong{stk} developed by orbit
 logic. It provides the scheduling utility of \gls{cpaw} but utilizes the tools
 provided by \gls{stk}. That is, the scheduling algorithms build off of the
 orbit dynamics from \gls{stk} to generate optimal schedules. Operators at
-\gls{sfl} are already very experienced with \gls{stk} so utilizing a plugin
+\gls{sfl} are already very experienced with \gls{stk}, so utilizing a plugin
 that supports schedule creation is appealing.
 
-Similar to \gls{cpaw}, \gls{stk} Scheduler also requires a license fee payed
-yearly. If mission planning only needs to be done for a single mission, this
-would be a good cost-effective solution. But, for multiple missions, they must
-either use the same license, which may become challenging logistically, or
-multiple licenses would need to be procured.
+Similar to \gls{cpaw}, \gls{stk} Scheduler also requires an annual license fee.
+If mission planning only needs to be done for a single mission, this would be a
+good cost-effective solution. But, for multiple missions, they must either use
+the same license, which may become challenging logistically, or multiple
+licenses would need to be procured.
 
 
 \subsection{Mission Planning and Scheduling Software}
@@ -115,7 +115,7 @@ planning for Earth observation missions at \gls{sfl}. It was designed with the
 NEMO-AM mission in mind and incorporated: orbit visualization, attitude control
 algorithms, star tracker data, \gls{gps} data, orbit propagation, and
 spacecraft command generation.  Having an already built in-house solution would
-be an ideal foundation to build a new tool off of. 
+be an ideal foundation to build a new software from. 
 
 There are a number of drawbacks to using the \gls{mpss}, though. The first
 issue is that the software was developed in 2013 and built to run on the
@@ -123,12 +123,12 @@ issue is that the software was developed in 2013 and built to run on the
 specific requirement from the customer and is not used or supported by
 \gls{sfl}. At the very least using the tool would require updating all of the
 libraries to newer versions. Some libraries may not even be supported 9 years
-later. Building off of the \gls{mpss} also locks development to decisions made
+later. Building off the \gls{mpss} also locks development to decisions made
 that were reasonable in 2013, but may note be valid for \gls{sfl}'s current
 purposes.  For example, should the new software be a desktop application using
 Qt for its \gls{gui}, or should the new software directly handle attitude
 control sensor data? These are very mission specific and potentially limit the
-software extensibility. Lastly, the \gls{mpss} was designed with a single
+software's extensibility. Lastly, the \gls{mpss} was designed with a single
 operation mode in mind, ground target tracking. In this mode, the satellite
 would point its imager at a single ground target while it is visible to the
 satellite. This is not sufficient for \gls{sfl}'s purposes as the new software
@@ -139,8 +139,9 @@ solution should be able to be extensible to different operations modes.
 
 Now that some existing solutions have been discussed, it is worth laying out
 the objectives for creating an operations planning tool. Specifically, what
-features are required for \gls{pops}. First, let us go over the intended
-workflow for the tool.
+features are required for \gls{pops}? 
+
+%First, let us go over the intended workflow for the tool.
 
 Suppose a customer comes to \gls{sfl} and describes an area on Earth they
 wish to be observed through remote sensing. An operator must then construct a
@@ -167,7 +168,7 @@ opportunities and create commands to be sent to the satellites. The purpose of
 Ideally, \gls{pops} should remove the manual calculation from the operator's
 workflow. It should be noted that \gls{pops} will not fully automate operations
 and is not meant to be a real time software. Rather, it must plan the
-\textit{deterministic} aspects of a mission 1-2 weeks in the future. The reason
+\textit{deterministic} aspects of a mission one to two weeks in the future. The reason
 for this is that full automation is much more difficult and the validation
 requirements are much more stringent. This scenario has greater risks
 associated with it since it would be a shift to relying on software to operate
@@ -178,7 +179,7 @@ a satellite rather than a human operator.
 \begin{table}[h]
     \centering
     \caption{Summary of key Objective for \gls{pops}}
-    \label{objectives}
+    \label{tab:objectives}
     \begin{tabular}{|P{0.11\textwidth}|p{0.8\textwidth}|}
 \hline
     \textbf{Objective} & \textbf{Description} \\ \hline
@@ -193,12 +194,12 @@ a satellite rather than a human operator.
 \end{table}
 
 The objectives for \gls{pops} have been more clearly listed in
-Table~\ref{tab:objectives}. Of course, this is not an exhaustive list of all of
-the desired features for \gls{pops} but they do touch on the key objectives for
-the tool. These objectives are not only limited to the desired inputs and
-outputs of the tool but also how the tool must be displayed. \gls{pops} must
-have the ability to effectively display information to the user. Specifically,
-it must have a graphical Earth display as well as timeline capabilities.
+Table~\ref{tab:objectives}. This is not an exhaustive list of all of the
+desired features for \gls{pops} but they do touch on the key objectives. These
+are not only limited to the desired inputs and outputs of the tool but also how
+the tool must display information. \gls{pops} must have the ability to
+effectively display information to the user. Specifically, it must have a
+graphical Earth display as well as timeline capabilities.
 
 
 \section{Thesis Outline} 
@@ -219,6 +220,53 @@ discussion and the future work for \gls{pops} is laid out. Finally, the thesis
 is concluded in Chapter~\ref{chap:conclusion}.  After the conclusion, some
 algorithms of note are discussed in the appendix.
 
+%\newpage
+%
+%%On my first day of undergraduate studies, the Dean of Engineering at my
+%%university gave a speech welcoming us. His one piece of advice was to 
+%
+%There are too many people to name that have either directly or indirectly
+%contributed to this thesis. 
+%
+%First, I would like to extend my deepest thanks to my supervisor, Dr. Robert
+%Zee. It is through both his direct and indirect leadership that has pushed me
+%to become a better engineer. His advice and guidance has helped me expand my
+%perspective on what constitutes a good engineering solution to a problem. I am
+%fortunate to be part the environment that he has created at the Space Flight
+%Laboratory which serves as an incubator for next generation of space engineers.
+%Thank you for seeing my potential and giving me the opportunity to push my
+%boundaries and thrive.
+%
+%I would next like to thank my mission manager Nathan Cole. I always felt as
+%though Nathan made myself and the other students working under him a priority.
+%He would always have time to discuss any problem and ensured that my work was
+%not only productive and useful to the mission but also thoroughly enriching.
+%With Nathan, I would also like to thank the other members of the POPS team:
+%Matt, Lukasz, and Erica. This thesis was made possible through your
+%collaboration, patience, and advice.  
+%
+%To my friends, you have made this master's program not only possible but two of
+%the best years of my life. To my cohort: Diana, Andreas, Lukasz, Djordje, Kim,
+%Connor, Hooman, Arjun, Eric, and Jacob, I have enjoyed every moment learning
+%and sharing this experience with you. I know you will all excel wherever you
+%go. To Jordy, since we met on the first day of second year of undergrad, you
+%have been a constant companion. Thank you for your patience, support, and
+%friendship. To Mia, thank you for showing me what is possible through talent,
+%grit, and determination. Your example has pushed me work harder and be better.
+%To my friends from home: Momo, Saymon, Gurjeet, Julie, Ethan, and Daylen, thank
+%you for helping me keep my sense of community. Your friendship has served as my
+%bedrock. 
+%
+%Oftentimes omitted in academics is physical exercise. Coming to the Space
+%Flight Laboratory, has helped me transition from a post-Covid sedentary
+%lifestyle to a more healthy and active one. For this, I would like to thank the
+%members of the Swole Patrol: Nathan, Rami, Suraj, and Matt. Through mentorship
+%and example, they have taught me how to make very heavy things feel less heavy.
+%
+%Lastly and the most importantly of all, I would like to thank Mum and Dad. I
+%find it difficult to put into words the appreciation I have for your
+%unconditional support. It feels as though you're always there, always know
+%what's best and always know what to do. Team Farmer.
 
 
 

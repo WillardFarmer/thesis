@@ -4,19 +4,19 @@
 \chapter{Software Workflow}\label{chap:workflow}
 
 \lettrine[lines=2, findent=0pt, nindent=5pt]{T}{}o demonstrate how \gls{pops}
-may be used, let us walk through setting up \gls{pops} for the EG-SAT mission.
-Suppose the customer defines an Area Target AOI in the Norwegian Sea where they
-wish Coarse Imaging and Tip-and-Cue Imaging to be performed. The \gls{aoi} is
-defined by the points  in Table~\ref{tab:norway-aoi}. It is the operator’s
-responsibility to construct an operations plan for the next week. To do this,
-they may use \gls{pops} to aid them in laying out the deterministic aspects of
-an operations plan.  That being, determining remote-sensing opportunities,
-creating a schedule of observations, validating that schedule, and creating
-\glspl{ttc} to be uploaded to the spacecraft. It should be noted that the
-real-time ground processing of the data and the generation of new \glspl{ttc}
-for the next pass of the Tip-and-Cue Mode are beyond the capabilities of
-\gls{pops} and this is handled by separate, mission-specific automatic ground
-processing.
+may be used, this thesis will walk through setting up \gls{pops} for the EG-SAT
+mission. Suppose the customer defines an Area Target \gls{aoi} in the Norwegian
+Sea where they wish Coarse Imaging and Tip-and-Cue Imaging to be performed. The
+\gls{aoi} is defined by the points  in Table~\ref{tab:norway-aoi}. It is the
+operator’s responsibility to construct an operations plan for the next week. To
+do this, they may use \gls{pops} to aid them in laying out the deterministic
+aspects of an operations plan.  That being, determining remote-sensing
+opportunities, creating a schedule of observations, validating that schedule,
+and creating \glspl{ttc} to be uploaded to the spacecraft. It should be noted
+that the real-time ground processing of the data and the generation of new
+\glspl{ttc} for the next pass of the Tip-and-Cue Mode are beyond the
+capabilities of \gls{pops} and this is handled by separate, mission-specific
+automatic ground processing.
 
 \begin{table}[h] 
     \centering
@@ -42,12 +42,12 @@ through screenshots of the menus.
 First, \gls{pops} must be configured for a particular mission. The operator
 must specify the mission, its satellites, satellite sensor parameters, and its
 available ground stations. This will only need to be set once per mission. For
-our example scenario, the mission is EG-SAT, the satellites are Sat-A and
+this example scenario, the mission is EG-SAT, the satellites are Sat-A and
 Sat-B, and the ground station is the \gls{sfl} in Toronto. The relevant payload
 sensors must be specified for each satellite. These are the sensors that affect
 payload observations and are referenced by the Opportunity Filter. Currently,
-the sensor information is very simple but, in the future, this system will be
-more developed as \gls{pops}'s modeling capabilities are improved. The sensor
+the sensor information is basic but, in the future, this system will be more
+developed as \gls{pops}'s modeling capabilities are improved. The sensor
 information for Sat-A and Sat-B can be seen in Table~\ref{tab:sensors}. 
 
 \begin{table}[h] 
@@ -61,15 +61,15 @@ information for Sat-A and Sat-B can be seen in Table~\ref{tab:sensors}.
     \label{tab:sensors}
 \end{table}
 
-Relevant ground stations should also be added into \gls{pops}. For each
-station the name, location, and elevation mask should be specified. The
-location is just in Latitude-Longitude-Altitude. The elevation mask specifies
-at what angle, from the horizon, does an object in space become visible; This
-is approximated as a single angle. The minimum value for the mask is $0^\circ$,
-which is when there are no obstructions at all. For larger mask values, the
-less a ground station is able to observe. For EG-SAT, only \gls{sfl} will be
-added. Its parameters can be seen in Table~\ref{tab:ground-stations}. It should
-be noted that the elevation mask is just an example value.
+Relevant ground stations should also be added into \gls{pops}. For each station
+the name, location, and elevation mask must be specified. The location is just
+in Latitude-Longitude-Altitude. The elevation mask specifies at what angle,
+from the horizon, does an object in space become visible; This is approximated
+as a single angle. The minimum value for the mask is $0^\circ$, which is when
+there are no obstructions at all. For larger mask values, the less a ground
+station is able to observe. For EG-SAT, only \gls{sfl} will be added. Its
+parameters can be seen in Table~\ref{tab:ground-stations}. It should be noted
+that the elevation mask is just an example value.
 
 \begin{table}[h] 
     \centering
@@ -92,9 +92,9 @@ Once the \glspl{tle} are selected, Ephemerides are generated for each satellite 
 stored in the database. For the EG-SAT scenario, \glspl{tle} were generated
 with the \gls{stk}. A current limitation of \gls{pops} is that once \glspl{tle}
 are selected for a plan, they cannot be changed. Allowing \glspl{tle} to be
-changeable would make far too complicated at this stage of development so this
-will be addressed in future revisions. For EG-SAT, we will use the \glspl{tle}
-in Figure~\ref{fig:tles}.
+changeable would make \gls{pops} far too complicated at this stage of
+development so this will be addressed in future revisions. For EG-SAT, we will
+use the \glspl{tle} in Figure~\ref{fig:tles}.
 
 \begin{figure}[h]
     \begin{verbatim}
@@ -118,11 +118,11 @@ follows the same approximate orbit of Sat-B but it lags behind by some period
 of time. Also of note is the reference epoch of both \glspl{tle}, ``2024-01-15
 16:00:00.000''.
 
-Once the \glspl{tle} have been selected and confirmed. Ephemerides must be
+Once the \glspl{tle} have been selected and confirmed, ephemerides must be
 generated for each satellite in the plan. To do this, the start and end epochs
-must be specified, as well as the step size of the propagation. Propagating
-\glspl{tle} is generally only accurate $\pm 2$ weeks from the reference epoch
-of the \gls{tle}. They may be accurate for more or less time on a case-by-case
+must be specified, as well as the step size of the propagation. Propagating a
+\gls{tle} is generally only accurate $\pm 2$ weeks from the reference epoch of
+the \gls{tle}. They may be accurate for more or less time on a case-by-case
 basis but, for now, \gls{pops} sets a limit of 2 weeks from the reference epoch
 for ephemerides. Any time later or earlier is likely to be inaccurate.
 Currently, the step size must be set for the entire scenario. This has become
@@ -136,11 +136,11 @@ scenarios, having a small timestep is not ideal. If a larger timestep is used,
 then the opportunity filtering may become less accurate because there is less
 information. In the future, more sophisticated methods of ephemeris generation
 that better handle data usage will be developed but for now, the step size is
-constant for a whole scenario. For EG-SAT, we will create a 3 day scenario
-starting at the reference epoch with a 10 second timestep. 
+constant for a whole scenario. For EG-SAT, a 3 day scenario starting at the
+reference epoch with a 10 second timestep will be created. 
 
-Before continuing, we must also specify what ground stations are relevant to a
-plan. Earlier, a ground station was added to \gls{pops} but here we must
+Before continuing, what ground stations are relevant to a plan must be
+specified.  Earlier, a ground station was added to \gls{pops} but here it must
 associate it with the plan. The reason for doing it in this way is that there
 may be scenarios where a mission has a constrained set of potential ground
 stations, or other ground stations may become available. Associating ground
@@ -161,43 +161,42 @@ data is stored as well.
     \label{fig:obs_fil} 
 \end{figure}
 
-Once our scenario is set up, we begin Observation Configuration. \gls{pops}
+Once our scenario is set up, Observation Configuration can begin. \gls{pops}
 must display potential observation opportunities to the user and must enable
 the user to create observations based on these potential opportunities.
 Opportunity filtering is the process of taking a large set of potential
 observations and constraining them to an \gls{aoi}. Observations can be
-performed anywhere on Earth, but we only care about those that provide useful
-data for our operations strategy.  The basic process for displaying
-opportunities to the user can be seen in Figure~\ref{fig:obs_fil}. An operator
-first creates a search scenario through the \gls{gui}.  For a given mission,
-there may be multiple observation types, multiple possible \glspl{aoi}, and a
-combination of one or more satellites that are part of the observation. All of
-this is specified by the user in the form of a search scenario. These
-parameters are fed to the Opportunity Filter which generates search data.
-Rather than having the search data displayed immediately, all of the generated
-search data is stored in the database. From here, it can be retrieved at any
-time, without needing to re-compute a search scenario. Some raw search data may
-be retrieved and displayed directly to the \gls{gui}. Mostly, these are just
-access times.  Alternatively, the raw data may undergo further processing to be
-displayed in the 3D Earth visualization. Currently, satellites, satellite
-trajectories, ground stations, ground access times, \glspl{aoi}, and swaths can
-be displayed.
+performed anywhere on Earth, but an operator will only care about those that
+provide useful data for our operations strategy.  The basic process for
+displaying opportunities to the user can be seen in Figure~\ref{fig:obs_fil}.
+An operator first creates a search scenario through the \gls{gui}.  For a given
+mission, there may be multiple observation types, multiple possible
+\glspl{aoi}, and a combination of one or more satellites that are part of the
+observation. All of this is specified by the user in the form of a search
+scenario. These parameters are fed to the Opportunity Filter which generates
+search data.  Rather than having the search data displayed immediately, all of
+the generated search data is stored in the database. From here, it can be
+retrieved at any time, without needing to re-compute a search scenario. Some
+raw search data may be retrieved and displayed directly to the \gls{gui}.
+Mostly, these are just access times.  Alternatively, the raw data may undergo
+further processing to be displayed in the 3D Earth visualization. Currently,
+satellites, satellite trajectories, ground stations, ground access times,
+\glspl{aoi}, and swaths can be displayed.
 
 
 Since an operator will spend most of their time on the Observation
-Configuration page, we shall spend some time discussing it and the utilities
-provided with the page. It should be emphasized that \gls{gui}  development is
-difficult. A good \gls{gui} and a bad \gls{gui} can functionally do the same
-thing but the good \gls{gui} will be easier to use, robust, and visually
-pleasing. What's more is that they are extremely time-consuming; hours can be
-spent on just a single button, for example. The goal for \gls{pops} is not to
-create the perfect user interface but rather the actual functionality itself,
-time spent on the webpages themselves is minimized in favor of creating a
-functional product. 
+Configuration page, it and some of the utilities provided with the page will be
+discussed.  It should be emphasized that \gls{gui}  development is difficult.
+A good \gls{gui} and a bad \gls{gui} can functionally do the same thing but the
+good \gls{gui} will be easier to use, robust, and visually pleasing. What's
+more is that \glspl{gui} are extremely time-consuming; hours can be spent on
+just a single button, for example. The goal for \gls{pops} is not to create the
+perfect user interface but rather to implement the functionality itself in a
+usable way that does not impede or distract the user.
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\textwidth]{obs-conf-base.png} 
+    \includegraphics[width=0.95\textwidth]{obs-conf-base.png} 
     \caption{Observation Configuration Webpage}
     \label{fig:obs-conf-base} 
 \end{figure}
@@ -211,7 +210,7 @@ observation opportunities. In the top right are forms that the user can fill
 out to add or make changes to the plan. Currently, that consists of forms to
 create search scenarios or to add observations to the plan. The bottom tabs are
 meant to display information to the user or allow them to interact with the
-Cesium viewer. Currently visible, in the bottom is the schedule timeline.
+Cesium viewer. The schedule timeline can be seen at the bottom of the Figure.
 Here, events are displayed to the user in an intractable viewer. Before going
 through how the page is used, the different aspects of the page will be touched
 on briefly. 
@@ -219,7 +218,7 @@ on briefly.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.8\textwidth]{obs-conf-search.png} 
+    \includegraphics[width=0.95\textwidth]{obs-conf-search.png} 
     \caption{Observation Search Tab}
     \label{fig:obs-conf-search} 
 \end{figure}
@@ -248,13 +247,13 @@ are of interest to an operator.
 
 \begin{figure}[h]
     \centering
-    \begin{subfigure}[b]{0.49\textwidth}
+    \begin{subfigure}[b]{0.70\textwidth}
 	\includegraphics[width=\textwidth]{obs-conf-ces-coarse-1.PNG} 
 	\caption{All Opportunities}
 	\label{fig:obs-conf-ci-1} 
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.49\textwidth}
+    \begin{subfigure}[b]{0.70\textwidth}
 	\includegraphics[width=\textwidth]{obs-conf-ces-coarse-2.PNG} 
 	\caption{Two Opportunities}
 	\label{fig:obs-conf-ci-2} 
@@ -264,7 +263,7 @@ are of interest to an operator.
 \end{figure}
 
 Every \gls{aoi} that is stored in \gls{pops} can be seen in the \texttt{AOI}
-tab. \glspl{aoi} May be added either through a text file that is read and
+tab. \glspl{aoi} may be added either through a text file that is read and
 loaded into \gls{pops}. Alternatively, \glspl{aoi} can be drawn directly in the
 Cesium viewer with the \texttt{AOI} button in the Cesium viewer. When it is
 clicked, the controls for the viewer change. Every time a user clicks on the
@@ -274,14 +273,21 @@ by pressing \texttt{CTRL-Z}. To give the user more information, some
 instructions are included in a text box as well as the Latitude and Longitude
 of the cursor.  Once the user is satisfied, they can right click and the
 area-target \gls{aoi} is saved to the database and can be referenced by search
-scenarios. A Partially completed \gls{aoi} can be seen in
+scenarios. A partially completed \gls{aoi} can be seen in
 Figure~\ref{fig:obs-conf-draw}. 
 
-\begin{figure}
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.8\textwidth]{obs-conf-draw.png} 
     \caption{Drawing an AOI}
     \label{fig:obs-conf-draw} 
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{obs-conf-aoi-disp.png} 
+    \caption{Displaying an AOI}
+    \label{fig:obs-conf-aoi-display} 
 \end{figure}
 
 Since there may be many \glspl{aoi} stored in \gls{pops}, a user can display
@@ -291,15 +297,9 @@ outlines and purple areas. This is to distinguish them from \glspl{aoi} that
 are displayed as part of a search scenario. A useful feature of Cesium is also
 viewable in the Figure. When an entity in Cesium is selected, an information
 box appears giving the name of the entity as well as its description. Here, the
-\gls{aoi} has no description, but from the name, we can tell it's: an \gls{aoi},
+\gls{aoi} has no description, but from the name, a user can tell it is: an \gls{aoi},
 its ID is \texttt{16}, and it is a display \gls{aoi}.
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{obs-conf-aoi-disp.png} 
-    \caption{Displaying an AOI}
-    \label{fig:obs-conf-aoi-display} 
-\end{figure}
 
 The last two tabs serve minor purposes. The \texttt{Cesium} tab lists all of
 the currently loaded objects in the Cesium Viewer. It allows a user to display
@@ -313,18 +313,19 @@ ground station accesses, with time links that change Cesium's current time.
 
 \subsection{Searching For Opportunities}
 
-Let us now create two search scenarios, one for the Coarse Imaging Operations
-mode and one for the Tip-and-Cue Imaging Mode. To do this we will use the
-\texttt{Create Search} tab. In this form, we must specify the search type, the
-\gls{aoi} the search should be conducted on, and the  satellites that should be
-considered. The search type may be selected from the dropdown. If a user
-is unsure about what ID their desired \gls{aoi} is given, they can go to the
-\texttt{AOI} tab. There, they may look at the list of \glspl{aoi} and display
-them on Cesium for their reference. Earlier in the chapter, an \gls{aoi} was
-specified by the imaginary customer in Table~\ref{tab:norway-aoi}. A text file
-for this \gls{aoi} definition was written and then uploaded to \gls{pops}. The
-ID that was generated was \texttt{16}. This \gls{aoi} can actually be seen
-displayed earlier in Figure~\ref{fig:obs-conf-aoi-display}.
+Two search scenarios will now be created, one for the Coarse Imaging Operations
+mode and one for the Tip-and-Cue Imaging Mode. To do this, the \texttt{Create
+Search} tab will be used. In this form, a user must specify the search type,
+the \gls{aoi} the search should be conducted on, and the  satellites that
+should be considered.  The search type may be selected from the dropdown. If a
+user is unsure about what ID their desired \gls{aoi} is given, they can go to
+the \texttt{AOI} tab.  There, they may look at the list of \glspl{aoi} and
+display them on Cesium for their reference. Earlier in the chapter, an
+\gls{aoi} was specified by the imaginary customer in
+Table~\ref{tab:norway-aoi}. A text file for this \gls{aoi} definition was
+written and then uploaded to \gls{pops}. The ID that was generated was
+\texttt{16}. This \gls{aoi} can actually be seen displayed earlier in
+Figure~\ref{fig:obs-conf-aoi-display}.
 
 \begin{figure}[h]
     \centering
@@ -346,24 +347,23 @@ displayed earlier in Figure~\ref{fig:obs-conf-aoi-display}.
 \end{figure}
 
 
-For Coarse Imagine the search mode is, of course, \texttt{COARSE\_IMAGING}.
-The satellites of relevance for this mode is just Sat-A, because Sat-B is not
-equipped with a Coarse Imager. In the future, only relevant satellites will be
-selectable but, for now, it is left configurable.  The search form for this
-mode can be seen in Figure~\ref{fig:obs-conf-search-1}. Similarly, for
-Tip-and-Cue imaging, the mode is \texttt{TNC\_IMAGING} the relevant satellites
-are Sat-A and Sat-B.  The mode's settings can be seen in
-Figure~\ref{fig:obs-conf-search-2}. Once the \texttt{Create Search} button is
-clicked, \gls{pops} will send the data to the Opportunity Filter and a search
-will be performed. The two searches can be seen in the \texttt{Observation
-Search} tab in Figure~\ref{fig:obs-conf-search}. In the Figure, note that: the
-swaths are displayed with green outlines and faint green areas. The \gls{aoi}
-has a red outline and a black area, and the intersection polygons have magenta
-areas. The Coarse Imaging search mode can be seen in
-Figure~\ref{fig:obs-conf-ci}. In total,
-there are 43 opportunities for this mode in a 72 hour period. The reason there
-are so many is that there are not many constraints for this kind of
-observation. All the mode is is a single access time to an area target. 
+For Coarse Imagine the search mode is \texttt{COARSE\_IMAGING}.  The satellites
+of relevance for this mode is just Sat-A, because Sat-B is not equipped with a
+Coarse Imager. In the future, only relevant satellites will be selectable but,
+for now, it is left configurable.  The search form for this mode can be seen in
+Figure~\ref{fig:obs-conf-search-1}. Similarly, for Tip-and-Cue imaging, the
+mode is \texttt{TNC\_IMAGING} the relevant satellites are Sat-A and Sat-B.  The
+mode's settings can be seen in Figure~\ref{fig:obs-conf-search-2}. Once the
+\texttt{Create Search} button is clicked, \gls{pops} will send the data to the
+Opportunity Filter and a search will be performed. The two searches can be seen
+in the \texttt{Observation Search} tab in Figure~\ref{fig:obs-conf-search}.
+Note that: the swaths are displayed with green outlines and faint green areas.
+The \gls{aoi} has a red outline and a black area, and the intersection polygons
+have magenta areas. The Coarse Imaging search mode can be seen in
+Figure~\ref{fig:obs-conf-ci}. In total, there are 43 opportunities for this
+mode in a 72 hour period. The reason there are many opportunities is that there
+are not many constraints for this kind of observation. The mode is simply a
+single access time to an area target. 
 
 \begin{figure}[h]
     \centering
@@ -373,24 +373,24 @@ observation. All the mode is is a single access time to an area target.
 \end{figure}
 
 In contrast, all the opportunities for Tip-and-Cue Imaging mode can be seen in
-Figure~\ref{fig:obs-conf-tnc-all}. This view is a bit cluttered but there are
-not many opportunities, so individual screenshots have been taken for each
-opportunity in Figure~\ref{fig:obs-conf-tnc-opps}. The way each opportunity is
-displayed is with two swaths.  The tip swath is the larger one and comes from
-Sat-A during the first pass. The cue swath is the thinner swath within the
-tip-swath. This comes from Sat-B during the next pass. Note, here the
-intersection polygon is the intersection between the tip swath, cue swath, and
-\gls{aoi}. For all these opportunities, the tip swath totally encompasses the
-cue swath but this is not always the case. In total, there are 5 opportunities
-in a 72 hour period. This is far less than there are Course Imaging
-opportunities. This is even less than there are general Tip-and-Cue
-opportunities. That is, where the cue swath intersects the tip swath and
-\gls{aoi}. The reason there are so few opportunities, is because of the ground
-station constraint. There must be a ground station contact between the first
-pass and next pass. If the satellites are moving from right to left in all of
-the views, notice that the tip swaths are all `pointed' at the \gls{sfl} which
-is the only ground station. Furthermore, \gls{sfl} is far away from the
-\gls{aoi} so opportunities are limited.
+Figure~\ref{fig:obs-conf-tnc-all}. There are not many opportunities, so
+individual screenshots have been taken for each opportunity in
+Figure~\ref{fig:obs-conf-tnc-opps}. The way each opportunity is displayed is
+with two swaths.  The tip swath is the larger one and comes from Sat-A during
+the first pass. The cue swath is the thinner swath within the tip swath. This
+comes from Sat-B during the next pass. Note, here the intersection polygon is
+the intersection between the tip swath, cue swath, and \gls{aoi}. For all these
+opportunities, the tip swath totally encompasses the cue swath but this is not
+always the case. In total, there are 5 opportunities in a 72 hour period. This
+is far less than there are Course Imaging opportunities. This is even less than
+there are general Tip-and-Cue opportunities. That is, where the cue swath
+intersects the tip swath and \gls{aoi}. The reason there are so few
+opportunities, is because of the ground station constraint. There must be a
+ground station contact between the first pass and next pass. If the satellites
+are moving from right to left in all of the views, notice that the tip swaths
+are all `pointed' at the \gls{sfl} which is the only ground station.
+Furthermore, \gls{sfl} is far away from the \gls{aoi} so opportunities are
+limited.
 
 
 \begin{figure}[h]
@@ -447,9 +447,9 @@ is the only ground station. Furthermore, \gls{sfl} is far away from the
 \end{table}
 
 As an example, let us create two more plans with different additional ground
-stations, to compare the number of opportunities we can observe. Each plan is
+stations, to compare the number of opportunities that can be observed. Each plan is
 set up identically; the only difference being the ground stations added. If the
-plan we have been working with so far is Plan 1, let us create two more plans,
+plan that has been used so far is Plan 1, let us create two more plans,
 Plan 2 and Plan 3, which have additional ground stations added.  Plan 2 has the
 \gls{sfl} and the Weilheim ground station (GSW), near Munich, in Germany. Plan
 3 has the \gls{sfl} and the Esrange Space Center Station (ESCS) in Sweden. This
@@ -459,7 +459,7 @@ placements of each ground station with respect to \gls{sfl} and the \gls{aoi}
 can be seen in Figure~\ref{fig:obs-conf-gs-placements}. Of course, these are
 just example ground stations that have been picked just for this scenario.
 Whether they support commercial missions or if they are equipped to support
-EG-SAT is not irrelevant. It should be assumed that they can. 
+EG-SAT is irrelevant.  
 
 \begin{table}[h] 
     \centering
@@ -581,7 +581,7 @@ be an easily generalizable tool, so rules may be added as necessary.
 
 An example schedule can be seen in Figure~\ref{fig:obs-conf-schedule} for
 Plan-2. Plan-2 was selected because there are more opportunities and there is
-some time between an \gls{aoi} access and a ground access. Here, there are five
+some time between an \gls{aoi} access and a ground access. There are five
 observations scheduled, 3 Tip-and-Cue Imaging observations and 2 Course Imaging
 observations. The first Tip-and-Cue observation, \texttt{TNC-1-TIP}, begins at
 10:10AM on Jan 17, in pass 7. Here, Sat-A begins its first tip pass over the
@@ -599,7 +599,7 @@ observations are defined, this is acceptable, but it may conflict with the
 mission's data budget. So, while the schedule does not report that there is a
 conflict, in the future, another rule may be added that deals with this case.
 
-Next, are the two Coarse Imaging Observations, \texttt{CI-1} and \texttt{CI-2},
+Next are the two Coarse Imaging Observations, \texttt{CI-1} and \texttt{CI-2},
 which can be seen at 2:51PM and 4:22PM\@. The first is a legal observation but
 the second conflicts with the last Tip-and-Cue observation at 4:25PM\@. The
 scheduler recognizes this time conflict and highlights both events in red,
@@ -634,8 +634,8 @@ templates.
 \begin{figure}[h] 
     \centering
     \includegraphics[width=0.7\textwidth]{timing_diagram.png} 
-    \label{fig:timing} 
     \caption{Timing Diagram}
+    \label{fig:timing-diagram} 
 \end{figure}
 
 The generation process is straightforward and specific to each observation mode
@@ -645,7 +645,7 @@ all they are concerned with.  Generally, for any observation, there are some
 preliminary and closing commands. These commands cannot happen instantaneously
 and may require some non-negligible margin. It is for this reason that each
 event is subdivided into separate timing components.  This can be seen in
-Figure~\ref{fig:timing}. The start and stop times are the same as the event’s
+Figure~\ref{fig:timing-diagram}. The start and stop times are the same as the event’s
 start and stop but they specify when the first \gls{ttc} is executed and when
 the final \gls{ttc} has concluded its execution respectively.  The epoch is the
 time when the satellite begins sensing for an observation mode and the duration

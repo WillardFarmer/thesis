@@ -7,18 +7,18 @@
 \gls{pops}, a number of algorithms have been developed to perform various
 functions. These algorithms are not necessarily ground breaking but their
 implementations are novel and worth discussing in some form. To avoid
-detracting from the main body of the thesis they have been placed here, in the
-appendices.
+detracting from the main body of the thesis they are discussed here, in the
+appendix.
 
 
 \section{Multiple Access Intersection Algorithm} \label{alg:mul-access-inter}
 
-For some search scenarios, we may need to determine for what times do all
+For some search scenarios, \gls{pops} may need to determine for what times do all
 satellites have access to a target such as an \gls{aoi} or a ground station.
-That is, if we have more than one satellite and each satellite has a list of
-access times to a target, we must generate a new list of access times where
+That is, if there are multiple satellites and each satellite has a list of
+access times to a target, \gls{pops} must generate a new list of access times where
 each access corresponds to a period where all satellites have access. An
-example scenario is illustrated in Figure \ref{fig:access_intersect}.
+example scenario is illustrated in Figure~\ref{fig:access_intersect}.
 
 
 \begin{figure}[h]
@@ -37,11 +37,12 @@ results should be $[7,10]$ and $[28,36]$. Note that between $t = 16$ and $t=22$
 there are access overlaps but since there are only overlaps between two
 satellites, they should not be returned as intersection periods.
 
-For a satellite, access times are stored as a list of timestamps. Every even
+For each satellite, access times are stored as a list of timestamps. Every even
 and odd indexed timestamp specifies when the satellite `enters' and `leaves' an
-access respectively. Access lists $\ses{a}{n}$ can be described generally for satellite $n$ as,
+access respectively. Access lists $\ses{a}{n}$ can be described generally for
+satellite $n$ as,
 
-\begin{equation} 
+\begin{equation}\label{eq:access-list} 
     \ses{a}{n} = \left[ a_{n,0}, b_{n,0}, a_{n,1}, b_{n,1}, \ldots a_{n,m}, b_{n,m} \right]
 \end{equation}
 
@@ -50,9 +51,9 @@ where $a$ is the access enter timestamp, $b$ is the access leave timestamp, and
 $m$ is the number of accesses. We also make the assumption that no accesses
 overlap for a given satellite and target; that is,
 
-\[
+\begin{equation}\label{eq:access-list-constraint}
     a_{n,0} < b_{n,0} < a_{n,1} < b_{n,1} < \ldots < a_{n,m} < b_{n,m}
-\]
+\end{equation}
 
 One simple brute force solution to this problem would be to iterate over every
 time step, $t$, and check if there exists an access region, $[a_n,b_n]$, for all
@@ -92,17 +93,17 @@ Note these are some of the values from Figure \ref{fig:access_intersect}.
 Again, in the actual implementation of the algorithm we use actual timestamps
 but here we are using integers for demonstration purposes. The timestamp array
 stores the timestamp of the access boundary for later reference and also gives
-us the order of the satellite index array. Now with the index array we can do
-something interesting. Remember that access boundaries are listed in order of
-[enter, leave, enter, leave, etc.]. Looking at the first four elements in the
-index array, $[0, 1, 2, 0]$, satellite 0 enters an access at the first element
-and leaves the access at the fourth element. So for the second and third
-element, satellite 0 still has access because it has not left yet. In essence,
-the index array encodes in what order satellites enter and leave accesses. 
+us the order of the satellite index array. Remember that access boundaries are
+listed in order of [enter, leave, enter, leave, ...]. Looking at the first four
+elements in the index array, $[0, 1, 2, 0]$, satellite 0 enters an access at
+the first element and leaves the access at the fourth element. So for the
+second and third element, satellite 0 still has access because it has not left
+yet. In essence, the index array encodes in what order satellites enter and
+leave accesses. 
 
 Now let us expand on the index array so we can perform logical operations to
 find intersections. For this the algorithm makes use of logic arrays.  These
-are arrays which contain only boolean values, True or False. With these arrays,
+are arrays which contain only Boolean values, True or False. With these arrays,
 we can also perform logical operations on any axis. For example, if we have a 2
 dimensional logic array, we can produce a 1 dimensional array, that is the
 result of AND'ing all of the elements in each column. These allow us to perform
@@ -152,7 +153,7 @@ Then, if we AND all of the rows in $\se{A}$ we get,
     \end{array}
     \right]
 \end{equation*}
-Now it is clear to see that this matrix gives us the indices where there is an
+It is clear to see that this matrix gives us the indices where there is an
 intersection between all satellites. If we take all values of $\se{b}$ where
 $\se{A}'$ is True, we are left with,
 \begin{equation*} 
@@ -163,8 +164,8 @@ $\se{A}'$ is True, we are left with,
     \end{array}
     \right]
 \end{equation*}
-Which is our expected result. This was just a walkthrough but the explicit
-algorithm definition is as follows,
+which is our expected result. This was just a walkthrough but the explicit
+algorithm definition is defined in Algorithm~\ref{alg:access-intersection}.
 
 \begin{algorithm}[h] 
     \caption{Access Intersection} 
@@ -219,114 +220,217 @@ unions by replacing \textsc{ColumnsAND} with \textsc{ColumnsOR} in line 18.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-\section{Equator Crossing Algorithm} \label{sec:equator-crossing}
-
-For a given ephemeris, it is useful to determine each `pass' of that orbit.
-That is, for each ephemeris point, an index should be assigned to it which
-indicates how many times the spacecraft has orbited the Earth. In this way, if
-we have some time range and we wish to see the next `pass,' we would simply
-take that time range's pass index and add 1.
-
-There are many ways a pass may be defined. For example, we could specify a
-latitude and longitude range and whenever the spacecraft is in this range, that
-could be considered a singular pass.  Generally, though, ephemeris data is not
-given in latitude or longitude, rather it is given in a Cartesian position in
-some \gls{eci} or \gls{ecef} coordinate reference frame. So, for each position
-in the ephemeris, the position vector will need to be converted to latitude and
-longitude. 
-
-This is a completely acceptable approach but we may also simplify the problem.
-Instead of taking a latitude and longitude range, we could instead increment
-the pass index when the spacecraft crosses the equator and goes from the
-southern to the northern hemisphere. This would be when the spacecraft's
-position goes from a negative to a positive latitude. This definition of a pass
-has a few advantages. That being, we only need to do one check to determine a
-pass boundary. It also has the benefit of indexing the entire ephemeris. Still
-for this method, we need to convert from Cartesian position to at least
-latitude.
-
-Let us make one further simplification by assuming that the x-y plane of the
-ephemeris's coordinate system is very near to the Earth's equatorial plane.
-This is not true for all coordinate systems but it is true for the \gls{ecef}
-ephemerides used by \gls{pops}. By making this assumption, we no longer need to
-calculate the latitude of the spacecraft; rather, we can instead only look at
-the spacecraft's position along the z-axis. This is useful because the
-spacecraft's z-position will oscillate between some positive and negative
-extrema, which are determined by the orbit's inclination and eccentricity. 
-
-There is a complicating factor that should be accounted for. In time, the
-spacecraft's position is periodic, but when considering only the spacecraft's
-z-position in an ephemeris, there is no guarantee that there is a constant
-timestep between position values. Additional data-points may be injected for
-periods where greater accuracy is desired and vice-versa. 
-
-We may now articulate the problem to be addressed: Given, an array of
-$z$-positions, $\se{z}$, generate a new array, $\se{p}$, that each element of
-$\se{p}$ is the index of an element in $\se{z}$ after a crossover occurs (i.e.\
-the positive value in the negative-to-positive crossing). To determine if
-elements, $n$ and $m$, of an array, $\se{z}$, form a crossover, they must
-satisfy three simple conditions:
-
-\begin{enumerate}
-    \item $\se{z}[n] < 0$
-    \item $\se{z}[m] > 0$ 
-    \item $m = n+1$
-\end{enumerate}
-
-
-A brute-force approach to finding $\se{p}$ would be to loop through all of the
-elements in $\se{z}$ and test them against the above conditions. This method,
-though, is inelegant and may be computationally intensive.  
-
-Alternatively, we can instead try and make use of 
-
-Another approach to
-this problem is outlined in Algorithm~\ref{alg:crossover}.  In essence, it
-attempts to reduce the number of comparisons made to search for crossovers. 
-
-\begin{algorithm}[h] 
-    \caption{Negative-Positive Crossing Search Algorithm} 
-    \label{alg:crossover}
-    \begin{algorithmic}[1] 
-	\Require{\se{z}is a $1\times N$ array } 
-
-	\Function{FindAllCrossovers}{$s, f, \se{z}$}
-	    \Let{$p$}{\Call{FindNextCrossover}{$0, s, f, \se{z}$}} \Comment{Start at beginning of array}
-	    \Let{$\se{p}$}{$\{ p \}$}
-
-	    \While{$p \neq -1$}
-		\Let{$p$}{\Call{FindNextCrossover}{$p, s, f, \se{z}$}}
-		\Comment{Start at beginning of array} \State
-		$\se{p}$.append($p$) \EndWhile 
-		\State \Return \se{p}
-	\EndFunction
-
-	\State
-
-	\Function{FindNextCrossover}{$i, s, f, \se{z}$} 
-	\Let{$j$}{$i+s$}
-	\If{$j > length(\se{z})$} 
-	    \State $s = \mathrm{s \times f}$  
-	\ElsIf{$j = length(\se{z})$}
-	    \State \Return $-1$	  \Comment{Search has completed}
-	\ElsIf{ $(\se{z}[i] < 0) \lor (\se{z}[j] > 0)$ }
-	    \If{$s=1$}
-	    \State \Return $i$ \Comment{Crossover index found}
-	    \Else
-		\State $s = ceil(s \times f)$
-	    \EndIf
-	\Else
-	    \State $i=j$
-	\EndIf
-	\State \Return \Call{FindNextCrossover}{$i, s, f, \se{z}$}
-	\EndFunction 
-    \end{algorithmic} 
-\end{algorithm}
+%\section{Equator Crossing Algorithm} \label{sec:equator-crossing}
+%
+%For a given ephemeris, it is useful to determine each `pass' of that orbit.
+%That is, for each ephemeris point, an index should be assigned to it which
+%indicates how many times the spacecraft has orbited the Earth. In this way, if
+%we have some time range and we wish to see the next `pass,' we would simply
+%take that time range's pass index and add 1.
+%
+%There are many ways a pass may be defined. For example, we could specify a
+%latitude and longitude range and whenever the spacecraft is in this range, that
+%could be considered a singular pass.  Generally, though, ephemeris data is not
+%given in latitude or longitude, rather it is given in a Cartesian position in
+%some \gls{eci} or \gls{ecef} coordinate reference frame. So, for each position
+%in the ephemeris, the position vector will need to be converted to latitude and
+%longitude. 
+%
+%This is a completely acceptable approach but we may also simplify the problem.
+%Instead of taking a latitude and longitude range, we could instead increment
+%the pass index when the spacecraft crosses the equator and goes from the
+%southern to the northern hemisphere. This would be when the spacecraft's
+%position goes from a negative to a positive latitude. This definition of a pass
+%has a few advantages. That being, we only need to do one check to determine a
+%pass boundary. It also has the benefit of indexing the entire ephemeris. Still
+%for this method, we need to convert from Cartesian position to at least
+%latitude.
+%
+%Let us make one further simplification by assuming that the x-y plane of the
+%ephemeris's coordinate system is very near to the Earth's equatorial plane.
+%This is not true for all coordinate systems but it is true for the \gls{ecef}
+%ephemerides used by \gls{pops}. By making this assumption, we no longer need to
+%calculate the latitude of the spacecraft; rather, we can instead only look at
+%the spacecraft's position along the z-axis. This is useful because the
+%spacecraft's z-position will oscillate between some positive and negative
+%extrema, which are determined by the orbit's inclination and eccentricity. 
+%
+%There is a complicating factor that should be accounted for. In time, the
+%spacecraft's position is periodic, but when considering only the spacecraft's
+%z-position in an ephemeris, there is no guarantee that there is a constant
+%timestep between position values. Additional data-points may be injected for
+%periods where greater accuracy is desired and vice-versa. 
+%
+%We may now articulate the problem to be addressed: Given, an array of
+%$z$-positions, $\se{z}$, generate a new array, $\se{p}$, that each element of
+%$\se{p}$ is the index of an element in $\se{z}$ after a crossover occurs (i.e.\
+%the positive value in the negative-to-positive crossing). To determine if
+%elements, $n$ and $m$, of an array, $\se{z}$, form a crossover, they must
+%satisfy three simple conditions:
+%
+%\begin{enumerate}
+%    \item $\se{z}[n] < 0$
+%    \item $\se{z}[m] > 0$ 
+%    \item $m = n+1$
+%\end{enumerate}
+%
+%
+%A brute-force approach to finding $\se{p}$ would be to loop through all of the
+%elements in $\se{z}$ and test them against the above conditions. This method,
+%though, is inelegant and may be computationally intensive.  
+%
+%Alternatively, we can instead try and make use of 
+%
+%Another approach to
+%this problem is outlined in Algorithm~\ref{alg:crossover}.  In essence, it
+%attempts to reduce the number of comparisons made to search for crossovers. 
+%
+%\begin{algorithm}[h] 
+%    \caption{Negative-Positive Crossing Search Algorithm} 
+%    \label{alg:crossover}
+%    \begin{algorithmic}[1] 
+%	\Require{\se{z}is a $1\times N$ array } 
+%
+%	\Function{FindAllCrossovers}{$s, f, \se{z}$}
+%	    \Let{$p$}{\Call{FindNextCrossover}{$0, s, f, \se{z}$}} \Comment{Start at beginning of array}
+%	    \Let{$\se{p}$}{$\{ p \}$}
+%
+%	    \While{$p \neq -1$}
+%		\Let{$p$}{\Call{FindNextCrossover}{$p, s, f, \se{z}$}}
+%		\Comment{Start at beginning of array} \State
+%		$\se{p}$.append($p$) \EndWhile 
+%		\State \Return \se{p}
+%	\EndFunction
+%
+%	\State
+%
+%	\Function{FindNextCrossover}{$i, s, f, \se{z}$} 
+%	\Let{$j$}{$i+s$}
+%	\If{$j > length(\se{z})$} 
+%	    \State $s = \mathrm{s \times f}$  
+%	\ElsIf{$j = length(\se{z})$}
+%	    \State \Return $-1$	  \Comment{Search has completed}
+%	\ElsIf{ $(\se{z}[i] < 0) \lor (\se{z}[j] > 0)$ }
+%	    \If{$s=1$}
+%	    \State \Return $i$ \Comment{Crossover index found}
+%	    \Else
+%		\State $s = ceil(s \times f)$
+%	    \EndIf
+%	\Else
+%	    \State $i=j$
+%	\EndIf
+%	\State \Return \Call{FindNextCrossover}{$i, s, f, \se{z}$}
+%	\EndFunction 
+%    \end{algorithmic} 
+%\end{algorithm}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-%\section{Single Access Intersection Algorithm} \label{alg:contains}
+\section{Single Access Intersection Algorithm} \label{alg:contains}
+
+The Single Access Intersection Algorithm is similar to the Multiple Access
+Intersection algorithm but it serves a different purposes. Given a time range,
+this algorithm is concerned with finding all of the access times in a list that
+intersect the time range. Here, the input time range will not be used as
+bounds, but only search criteria to select access times. So, for example,
+suppose we are given a list of access times for a satellite and we wish to find
+all of the access times that lie within a pass the purpose of this algorithm is
+to find these accesses. 
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Single Access.png} 
+    \caption{Illustration of a Potential Single Intersection Scenarios}
+    \label{fig:single-access-intersect}
+\end{figure}
+
+To get a better idea of the problem, let us look at some more concrete example
+scenarios. Figure~\ref{fig:single-access-intersect} illustrates an access list
+as well as three possible input time ranges, time range 1-3. For time range 1,
+the output should be merely A0. For time range 2, the output will be A0 and A1.
+Lastly, time range 3 will have outputs A1 and A2. Notice here that the limits
+of the time range may lie within or without an access. As long as the access
+intersects the time range at all, it should be included.
+
+The two inputs to this algorithm are a time region with boundaries $\alpha$ and
+$\beta$ where $\alpha < \beta$. The access list, $\se{a}$, is the same as
+described in Equation~\ref{eq:access-list} where the subscript, $n$ has been
+omitted since only one access list is to be considered. Additionally, the
+assumption in Equation~\ref{eq:access-list-constraint} still holds here. It
+should be emphasized that given an access list, every even entry is an access
+enter timestamp and every odd entry is an access leave timestamp.
+
+The main intuition for this problem is that we must first constrain the list of
+access boundaries to the those boundaries that lie within the time range.
+Then, we must assemble the access times from their boundaries and output them
+in a list.  
+
+The actual solution is quite simple. First we find two values, $i$ and $j$.
+These are the indices of the next smallest value for $\alpha$ and $\beta$ in
+the access list. For example, in time range 2, from
+Figure~\ref{fig:single-access-intersect}, $i$ and $j$ will be the indices of
+$a_0$ and $a_1$ respectively. These two values will be used to create an
+iteration range that will be used to return the list of accesses. 
+
+One problem is that, as they are, $i$ may not point to an access enter and $j$
+may not point to an access leave which is required by access lists. So, if $i$
+points to an access enter, nothing should be done but if it points to an access
+leave, it should be incremented to point to the next access enter. Similarly,
+if $j$ points to an access leave nothing should be done, but if it points to an
+access enter it should be incremented as well.  To address this, we may take
+advantage of the access list's even and oddness as mentioned earlier.  With
+modular arithmetic, we can select the correct indices,
+
+\begin{align*}
+    i' &= i + \mathrm{mod}(i,2) \\
+    j' &= j + \mathrm{mod}(j+1,2)
+\end{align*}
+
+where $i'$ and $j'$ are the shifted indices and `mod()' is the modulus
+function.  The first argument is the dividend and the second is the divisor.
+Once we have these values, the output will be the access times that lie within
+the range $[i', j']$. All together, the algorithm can be seen in
+Algorithm~\ref{alg:single-access-intersection}.
+
+
+\begin{algorithm}[h] 
+    \caption{Single Access Intersection}
+    \label{alg:single-access-intersection} 
+    \begin{algorithmic}[1]
+	%\Require{\se{z}is a $1\times N$ array } 
+	\Function{SingleAccessIntersection}{$\alpha$, $\beta$, $\se{a}$} 
+
+	\Let{$i$}{$\se{a}[-1]$}
+	\Let{$j$}{$\se{a}[-1]$} \Comment{Initialize}
+
+	\ForEach{$t$ in $\se{a}$} \Comment{Find next smallest }
+	    \If{ $t < \alpha$ }
+	    \Let{$i$}{$t$}  
+	    \EndIf
+	    \If{ $t < \beta$ }
+		\Let{$j$}{$t$}
+	    \EndIf
+	\EndFor
+
+	\Let{$i'$}{$i + \mathrm{mod}(i,2)$} 
+	\Let{$j'$}{$i + \mathrm{mod}(j+1,2)$} 
+
+	\If{$i > j$}
+	    \State \Return $[]$ \Comment{No Access Found}
+	\Else
+	    \State \Return $\se{a}[i',j']$ \Comment{Return list of access times}
+	\EndIf
+	\EndFunction
+    \end{algorithmic}
+\end{algorithm}
+
+This algorithm is very simple and straightforward but it still serves a useful
+function. Determining if ground station accesses lie between two accesses may
+be calculated hundreds of times in a single search, so it is important that
+this calculation is quick and efficient.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
@@ -368,15 +472,15 @@ rely on convention which may be broken in the future.
 \newcommand{\Fs}{$\vec{\mathcal{F}}_s$} 
 %\newcommand{\Fe}{$\vec{\mathcal{F}}_E$}
 
-This is the procedure for finding the `outside' points on one end of a swath.
-It is also illustrated in Figure~\ref{fig:swath-edge}. First, we take the two
-last points of the boundary lines, $\sev{a}$ and $\sev{b}$, defined in
-\gls{ecef} coordinates, \Fe. If we look down the length of a swath towards the
-end we are calculating ellipse points for, $\sev{a}$ is on the right and
-$\sev{b}$ is on the left.  Let us also take a third point, $\sev{c}$, which is
-the second last point on the right boundary line.  From these points, we can to
-define a coordinate reference frame, \Fs $= [\sev{x}, \sev{y}, \sev{z}]$, with
-respect to \Fe, where:
+This is the procedure for finding the `outside' points on one end of a swath as
+illustrated in Figure~\ref{fig:swath-edge}. First, we take the two last points
+of the boundary lines, $\sev{a}$ and $\sev{b}$, defined in \gls{ecef}
+coordinates, \Fe. If we look down the length of a swath towards the end we are
+calculating ellipse points for, $\sev{a}$ is on the right and $\sev{b}$ is on
+the left.  Let us also take a third point, $\sev{c}$, which is the second last
+point on the right boundary line.  From these points, we can to define a
+coordinate reference frame, \Fs $= [\sev{x}, \sev{y}, \sev{z}]$, with respect
+to \Fe, where:
 
 \begin{equation}
     \sev{x} = \frac{\sev{b}-\sev{a}}{\norm{\sev{b} - \sev{a}}}
