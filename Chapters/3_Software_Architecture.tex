@@ -22,7 +22,7 @@ installation does not require managing dependencies and tweaking environment
 variables. In this way, a \gls{pops} user does not need to be as familiar with
 the software as a developer to run it.  Each service is its own Python web
 server. In this way, they may be interacted with via a RESTful API. That being,
-HTTP requests can be made to retrieve information or perform calculations. Each
+HTTP requests can be made to retrieve information or perform actions. Each
 service also provides its own automatically generated documentation that can be
 accessed through a web browser. This documentation outlines possible API calls
 as well as their input and output data formats.  This allows a user to quickly
@@ -43,7 +43,7 @@ service specific scripts.
 
 To review, a docker container is a virtual environment, which is a simulated
 operating system. A container can be hosted on any operating system that
-supports docker. Images are the templates that can be used to create
+supports Docker. Images are the templates that can be used to create
 containers. They can either be built on the user's machine or they may be built
 elsewhere and then copied onto the user's machine. Dockerfiles are the
 configuration files that are used to assemble an image. They specify: the
@@ -85,25 +85,25 @@ The parts of an HTTP request that must be specified are the:
 \gls{http} does not impose restrictions on what a request can do. These types
 are useful for organizational purposes but do not need to be strictly conformed
 with. For large applications they are useful, but \gls{pops} generally only
-makes use of the first 3.  For GET requests, there is no payload so the only
-information that is transferred is the link itself or any query parameters.
-These requests are used to read information from the webserver, such as a
-webpage or some specific data. DELETE requests are equivalent to GET requests
-but they are used when information must be deleted from \gls{pops}.  Given how
-important potential data loss is, deletions are treated separately.  POST
-requests contain information in the body of the request.  The format of the
-input data must be defined or else the web server will fail the request as
+makes use of the first three.  For GET requests, there is no payload so the
+only information that is transferred is the link itself or any query
+parameters.  These requests are used to read information from the webserver,
+such as a webpage or some specific data. DELETE requests are equivalent to GET
+requests but they are used when information must be deleted from \gls{pops}.
+Given how important potential data loss is, deletions are treated separately.
+POST requests contain information in the body of the request.  The format of
+the input data must be defined or else the web server will fail the request as
 being unprocessable.  These input definitions are stored in the models file.
 Python is a dynamically typed language so variables do not need to be assigned
 a type upon creation. To ensure input data conforms with what is expected by
-the \gls{api}, the Python library, \texttt{Pydantic}, is used to enforce data
-types at runtime.  These Pydantic input definitions are contained in the models
+the \gls{api}, the Python library, ``Pydantic,'' is used to enforce data types
+at run-time.  These Pydantic input definitions are contained in the models
 file.  The remainder of the files in a service are specific to the service
 itself.
 
 Having multiple Docker containers becomes cumbersome when a user or a developer
 wishes to build new images or run new containers from their images. To manage
-all of the different services, another tool is used called "Docker Compose".
+all of the different services, another tool is used called ``Docker Compose''.
 From a single configuration file, multiple services may be started, stopped, or
 built from their source code. Services may also have their image name,
 container name, and port number set through the configuration file. This vastly
@@ -111,7 +111,7 @@ simplifies configuration for \gls{pops} as a whole. Another benefit of using
 Docker Compose is that it also creates a bridge network for the containers
 Docker Compose creates. Containers are intended to be standalone units but a
 bridge network allows containers to communicate with each other directly
-without them needing to keep track of the IP they are hosted on.
+without them needing to keep track of the IP of machine they are hosted on.
 
 %% ======================================================================== %%
 %%			    Propagator
@@ -162,17 +162,18 @@ It is very easy to generate Ephemeris data. Validating it is difficult.  The
 benchmark for validation is \gls{stk} since it has its own SGP4 ephemeris
 generation capabilities. If operators did not use POPS, their best alternative
 would be to set up scenarios manually in \gls{stk}. As such, using it as ground
-truth is valid in this case. Both \gls{stk} \cite{kelso_celestrak_2022} and the
-\gls{pops} implementation of SGP4 use the same source
-\cite{vallado_revisiting_2006}.  As such, they should provide the same results.
-One difference to note is that \gls{stk} uses the \gls{icrf} \gls{eci}
-coordinate system but the propagator service uses \gls{gcrf}.  This difference
-is acceptable since these reference frames are approximately identical
-\cite{kaplan_iau_2006}.  The procedure for validating the Propagator service
-was first to select a \gls{tle}, a time range, a time step, and a coordinate
-system.  Next was to generate Ephemerides from \gls{stk} and the propagation
-service.  Finally, the results were compared. One such comparison can be seen
-in Figure~\ref{fig:stk_py}. Here, the peak position residual was 0.37mm for the
+truth is valid in this case. Both \gls{stk} and the \gls{pops} implementation
+of SGP4 use the same source \cite{kelso_celestrak_2022}, ``Revisiting Space
+Track Report \#3'' \cite{vallado_revisiting_2006}.  As such, they should
+provide the same results for the same input parameters.  One difference to note
+is that \gls{stk} uses the \gls{icrf} \gls{eci} coordinate system but the
+propagator service uses \gls{gcrf}.  This difference is acceptable since these
+reference frames are approximately identical \cite{kaplan_iau_2006}.  The
+procedure for validating the Propagator service was first to select a
+\gls{tle}, a time range, a time step, and a coordinate system.  Next was to
+generate Ephemerides from \gls{stk} and the Propagator service.  Finally, the
+results were compared. One such comparison can be seen in
+Figure~\ref{fig:stk_py}. Here, the peak position residual was 0.37mm for the
 position along the x-axis. The main purpose of this exercise is to ensure that
 the Python libraries are being used correctly and that their output data is
 acceptable.  From this result, it is clear that the methods are identical and
@@ -227,19 +228,18 @@ Alternatively, with Docker volumes, the data is stored in Docker itself. If
 Docker is deleted, so too is the volume. The benefit of this is that volumes
 can be backed up and shared. \gls{pops} makes use of the latter.
 
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{database.png} 
-    \caption{High Level Overview of the Database}
-    \label{fig:database} 
-\end{figure}
-
 Figure~\ref{fig:database} shows a high-level overview of the structure of the
 \gls{pops} database. The figure is not an exhaustive reference as some tables
 have been omitted for clarity. The entries in each table have also been
 omitted for the same reason. While the figure may lack detail, it does give an
 accurate qualitative description of the database's structure. 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{database.png} 
+    \caption{High Level Overview of the Database}
+    \label{fig:database} 
+\end{figure}
 
 Each box in the diagram represents a single table. Red boxes contain
 `primitive' data. That is, data that has not been derived from any other
@@ -269,7 +269,7 @@ stored in the \textbf{Ephemeris Data}. The reason this information is divided
 is so that information about an ephemeris can be queried without having to load
 the entire table of data.
 
-Another primitive table is the \textbf{Ground Stations} table. Here information
+Another primitive table is the \textbf{Ground Stations} table. Here, information
 is stored for each ground station, such as Latitude, Longitude, Altitude,
 Elevation Mask, etc. From satellite ephemerides, \textbf{Ground Access Times}
 can be generated using the Ground Access Utility from the \gls{atu}.
@@ -289,16 +289,16 @@ search satellite.  Lastly, at the end of the search hierarchy is the
 \textbf{Opportunities} table.  This table is simply a list of references to raw
 search data. With just the raw search data, determining what constitutes an
 `opportunity' may be indeterminable.  So, when the search data is generated, so
-to is the corresponding opportunity
+too is the corresponding opportunity
 
 Separate from the rest of the tables discussed so far is the \textbf{Schedule}
-table. Here Events are stored. Each Event is linked to a satellite, and may
+table. Here, Events are stored. Each Event is linked to a satellite, and may
 also be linked to a Plan.
 
 It should be noted that the Database service only hosts the \gls{sql} database.
 To interact with the data, either the \acrshort{orm} in the Mission Model
-service (discussed in Section~\ref{sec:orm}) must be used or a separate
-database viewer.
+service (discussed in Section~\ref{sec:orm}) or a separate database viewer must
+be used.
 
 
 
@@ -333,7 +333,7 @@ relative to the ground station and testing whether the relative position is
 above the elevation mask. While this method is trustworthy and capable of
 returning accurate results, it is a brute force approach which is inefficient.
 This is particularly evident in the case where a mission has multiple ground
-stations, multiple satellites, or a short propagator timestep. The computation
+stations, multiple satellites, or a short ephemeris timestep. The computation
 time drawback motivates the use of other algorithms that can determine ground
 access more efficiently.
 
@@ -506,7 +506,7 @@ it is quite large and has a number of responsibilities. Some of them are:
 \end{outline}
 
 A high-level overview of the Mission Model service can be seen in
-Figure~\ref{fig:mission_model}. There are many components so this chapter will
+Figure~\ref{fig:mission_model}. There are many components so this section will
 go through them one by one.
 
 \begin{figure}[h]
@@ -535,11 +535,11 @@ browser, that information is then sent to the web server, and a callback
 function in the Mission Model service is called. It is the Mission Model's
 responsibility to consolidate information, whether that be from the database,
 through \gls{html} templates, or new information that must be calculated.  The
-Mission Model service does very few actual calculations, its only purpose is to
-organize information and call functions as necessary to serve a request.
-Currently, the main service is large and difficult to navigate because of its
-size. In the future, it will be refactored to a number of sub-scripts that
-handle specific functionality in the service.
+main script does very few actual calculations; its only purpose is to organize
+information and call functions as necessary to serve a request.  Currently, the
+main script is large and difficult to navigate because of its size.  In the
+future, it will be refactored to a number of sub-scripts that handle specific
+functionality in the service.
 
 \subsection{Object Relationship Mapping}\label{sec:orm}
 
@@ -548,12 +548,12 @@ service that interacts with it. It does so by using \gls{orm}. An \gls{orm} is
 a method of modeling a relational database through an object-oriented language.
 For \gls{pops}'s purposes, the \gls{orm} serves two functions, it describes how
 the data is being stored in the database and it describes how the database can
-be interacted with the programmatically. \gls{pops} uses an open-source
-\gls{orm} library. It handles the low-level functionality and allows a
-developer to focus on what is unique about \gls{pops} rather than databases in
-general. For example, there is no need to develop \gls{pops}'s own methods of
-formulating \gls{sql} queries or parsing the output data once it is retrieved.
-This has already been implemented many times over in a multitude of open-source
+be interacted with programmatically. \gls{pops} uses an open-source \gls{orm}
+library. It handles the low-level functionality and allows a developer to focus
+on what is unique about \gls{pops} rather than databases in general. For
+example, there is no need to develop \gls{pops}'s own methods of formulating
+\gls{sql} queries or parsing the output data once it is retrieved.  This has
+already been implemented many times over in a multitude of open-source
 libraries. 
 
 To set up the \gls{orm} for \gls{pops}, two scripts are needed, a models file
@@ -619,10 +619,10 @@ used in dictionaries of key-value pairs. For example, the Propagator service
 uses the key \texttt{`position'} and the \glspl{atu} use the key
 \texttt{`pos'}.  This is a small discrepancy and if all the differences were
 this simple, then some standard data format would just be adopted.
-Unfortunately, there are larger differences that require conversion.  When
-describing lists of points there are currently 3 different formats. The
-Propagator service generates a list of points, $P_1$, as a list of the x, y,
-and z components for all $N$ points. 
+Unfortunately, there are larger differences that require conversion. For
+example, when describing lists of points there are currently 3 different
+formats. The Propagator service generates a list of points, $P_1$, as a list of
+the x, y, and z components for all $N$ points. 
 
 \begin{align*}
     P_1 &= [\se{x}, \se{y}, \se{z}] 
@@ -680,8 +680,8 @@ following information:
 
 \begin{description}
 
-    \item[Epoch] An ISO 8601 Datetime string in UTC specifies the reference
-	time for the ephemeris data.
+    \item[Epoch] An ISO 8601 Datetime string in \gls{utc} specifies the
+	reference time for the ephemeris data.
 
     \item[Seconds] An array of float values that specify the offset from the
 	epoch.
@@ -874,18 +874,18 @@ are actually implemented in \gls{pops}.
 The implementation of the Coarse Filter can be seen in
 Algorithm~\ref{alg:coarse-imaging} and is very close to its high-level
 description. The inputs to the filter are the Ephemeris of Sat-A, $E_A$, and
-the Area of Interest polygon $g_{AOI}$. First the coarse imaging swath is
-generated, $S_A$. Then the swath and \gls{aoi} are passed into the Polygon
-Intersection Utility which return a list of access times, $A_{A}$, and a list
-of intersection polygons, $G_A$. Note that the length of $A_{A}$ and $G_A$ are
-the same since there cannot be an intersection polygon without an access.
-Given this property, the list of opportunities, $O$, is only the combination of
-$A_{A}$ and $G_A$. Finally, the list of opportunities is returned along with
-the coarse imaging swath. 
+the Area of Interest polygon $g_{AOI}$. First the coarse imaging ground swath
+is generated, $S_A$. Then the ground swath and \gls{aoi} are passed into the
+Polygon Intersection Utility which return a list of access times, $A_{A}$, and
+a list of intersection polygons, $G_A$. Note that the length of $A_{A}$ and
+$G_A$ are the same since there cannot be an intersection polygon without an
+access.  Given this property, the list of opportunities, $O$, is only the
+combination of $A_{A}$ and $G_A$. Finally, the list of opportunities is
+returned along with the coarse imaging ground swath. 
 
 Some details of the polygon filtering process have been omitted for clarity.
 That being, the insertion of all the data into the database. How opportunities
-are actually stored, as mention in the Section~\ref{sec:database}, is that
+are actually stored, as mentioned in the Section~\ref{sec:database}, is that
 first, the search data is generated, then it loaded into the database, and
 finally each opportunity is a list of database IDs corresponding to each search
 element. The purpose of this is to not duplicate data and to also allow an
@@ -943,7 +943,7 @@ every ground station provided.
 After this, instead of calculating all of intersection polygons for the tip
 swath and the \gls{aoi}, only the list of access times are recorded, $A_A$.
 This has two purposes.  First, it is faster to just calculate the access times
-for the Intersection Polygon Utility. Second, this gives us a list of access
+for the intersection polygon Utility. Second, this gives us a list of access
 times that can be iterated over to find opportunities. The significance of this
 is that there may exist \glspl{aoi} where Sat-A has multiple accesses within a
 single pass. By iterating over each access we create an opportunity for every
@@ -953,15 +953,15 @@ opportunity or specialized logic would be needed that would over complicate the
 filter.
 
 With an access list for Sat-A, we can iterate over every individual access,
-$a_A$. The first operation in each iteration is to calculate the Intersection
-Polygon of Sat-A and the \gls{aoi} during that access. Note the notation used,
+$a_A$. The first operation in each iteration is to calculate the intersection
+polygon of Sat-A and the \gls{aoi} during that access. Note the notation used,
 $S_A(a_A)$ indicates that the swath is constrained to only the time range
 within the parentheses. Next we find the pass, $p$, the access lies in.  This
 is done with a built-in helper function in the Ephemeris Data Handler Class.
 From this pass index we can constrain the Cue swath to only the next pass and perform
 Polygon Intersection with it and the intersection polygon from the previous
-step. This outputs the access time for Sat-B, $a_B$ and the Intersection
-Polygon for Sat-A, Sat-B, and the \gls{aoi}, $g_{A \wedge B}$. Before adding an
+step. This outputs the access time for Sat-B, $a_B$ and the intersection
+polygon for Sat-A, Sat-B, and the \gls{aoi}, $g_{A \wedge B}$. Before adding an
 opportunity, we must check if suitable ground station contacts exist in between
 Sat-A's access and Sat-B's access. If this is the case Sat-A's access, Sat-B's
 access, and the intersection polygon are then appended to the list of
@@ -1016,7 +1016,7 @@ Figure~\ref{fig:example_cesium}. There, a few key elements of a Cesium viewer
 are visible. On the bottom, there is a timeline with some controls. A user can
 change the time of the scenario as they like and the scenario will update
 dynamically. This is very similar to tools such as \gls{stk} so an operator
-will be used to working in this way. In the centre the Earth can be seen with
+will be used to working in this way. In the centre, the Earth can be seen with
 the camera hovering over North America.  The camera can be moved with the mouse
 or can be fixed to a particular position and orientation programmatically.
 Some entities have been added to the scenario. At the bottom, a polygon has
@@ -1055,15 +1055,15 @@ created as they allow for bi-directional communication.
 
 \subsection{Cesium Models}\label{sec:cesium-models}
 
-Even though Cesium is used as the 3D Earth visualization tool, a substantial
-amount of development must be done to properly configure and manage what is
-being shown on the viewer. Before discussing how a Cesium viewer is managed, it
-would be useful to first go over what can be displayed currently with
-\gls{pops}, the Cesium Models. These model classes are not like the ones made
-for \gls{orm}, rather these models have two responsibilities. They must keep
-some metadata about a Cesium object and they must contain a method that
-generates a valid \gls{czml} packet.  A \gls{uml} diagram that summarizes all
-of the currently implemented Cesium models can be seen in
+Even though Cesium is used as the 3D Earth visualization tool, a
+non-negligible amount of development must be done to properly configure and
+manage what is being shown on the viewer. Before discussing how a Cesium viewer
+is managed, it would be useful to first go over what can be displayed currently
+with \gls{pops}, the Cesium Models. These model classes are not like the ones
+made for \gls{orm}, rather these models have two responsibilities. They must
+keep some metadata about a Cesium object and they must contain a ``build''
+method that generates a valid \gls{czml} packet.  A \gls{uml} diagram that
+summarizes all of the currently implemented Cesium models can be seen in
 Figure~\ref{fig:cesium_models}. It should be noted that the diagram does not
 contain an exhaustive list of all of the member variables for each class;
 rather, it contains the most important variables.  Each model contains some

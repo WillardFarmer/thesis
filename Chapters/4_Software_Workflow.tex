@@ -5,29 +5,29 @@
 
 \lettrine[lines=2, findent=0pt, nindent=5pt]{T}{}o demonstrate how \gls{pops}
 may be used, this thesis will walk through setting up \gls{pops} for the EG-SAT
-mission. Suppose the customer defines an Area Target \gls{aoi} in the Norwegian
-Sea where they wish Coarse Imaging and Tip-and-Cue Imaging to be performed. The
-\gls{aoi} is defined by the points  in Table~\ref{tab:norway-aoi}. It is the
-operator’s responsibility to construct an operations plan for the next week. To
-do this, they may use \gls{pops} to aid them in laying out the deterministic
-aspects of an operations plan.  That being, determining remote-sensing
-opportunities, creating a schedule of observations, validating that schedule,
-and creating \glspl{ttc} to be uploaded to the spacecraft. It should be noted
-that the real-time ground processing of the data and the generation of new
-\glspl{ttc} for the next pass of the Tip-and-Cue Mode are beyond the
-capabilities of \gls{pops} and this is handled by separate, mission-specific
-automatic ground processing.
+mission. Suppose the customer for EG-SAT defines an Area Target \gls{aoi} in
+the Norwegian Sea where they wish Coarse Imaging and Tip-and-Cue Imaging to be
+performed. The \gls{aoi} is defined by the points  in
+Table~\ref{tab:norway-aoi}. It is the operator’s responsibility to construct an
+operations plan for the next week. To do this, they may use \gls{pops} to aid
+them in laying out the deterministic aspects of an operations plan.  That
+being, determining remote-sensing opportunities, creating a schedule of
+observations, validating that schedule, and creating \glspl{ttc} to be uploaded
+to the spacecraft. It should be noted that the real-time ground processing of
+the data and the generation of new \glspl{ttc} for the next pass of the
+Tip-and-Cue Mode are beyond the capabilities of \gls{pops} and this is handled
+by separate, mission-specific automatic ground processing.
 
 \begin{table}[h] 
     \centering
     \caption{Area of Interest Definition}
     \begin{tabular}{cccc}
-	Point                  & Latitude [$^\circ$] & Longitude [$^\circ$] & Altitude [m] \\ \hline
-	\multicolumn{1}{l|}{0} & 73       & -20      & 0        \\
-	\multicolumn{1}{l|}{1} & 66       & 19       & 0        \\
-	\multicolumn{1}{l|}{2} & 78       & 41       & 0        \\
-	\multicolumn{1}{l|}{3} & 82       & 9        & 0        \\
-	\multicolumn{1}{l|}{4} & 79       & -17      & 0       
+	Point                  & Latitude [$^\circ$] & Longitude [$^\circ$]  \\ \hline
+	\multicolumn{1}{l|}{0} & 73       & -20       \\
+	\multicolumn{1}{l|}{1} & 66       & 19        \\
+	\multicolumn{1}{l|}{2} & 78       & 41        \\
+	\multicolumn{1}{l|}{3} & 82       & 9         \\
+	\multicolumn{1}{l|}{4} & 79       & -17      
     \end{tabular}
     \label{tab:norway-aoi}
 \end{table}
@@ -64,10 +64,10 @@ information for Sat-A and Sat-B can be seen in Table~\ref{tab:sensors}.
 Relevant ground stations should also be added into \gls{pops}. For each station
 the name, location, and elevation mask must be specified. The location is just
 in Latitude-Longitude-Altitude. The elevation mask specifies at what angle,
-from the horizon, does an object in space become visible; This is approximated
+from the horizon, does an object in space become visible; this is approximated
 as a single angle. The minimum value for the mask is $0^\circ$, which is when
 there are no obstructions at all. For larger mask values, the less a ground
-station is able to observe. For EG-SAT, only \gls{sfl} will be added. Its
+station is able to observe. For EG-SAT, only \gls{sfl} will be added and its
 parameters can be seen in Table~\ref{tab:ground-stations}. It should be noted
 that the elevation mask is just an example value.
 
@@ -85,11 +85,11 @@ After this is done, the operator will then start creating a plan. Plans lay out
 the scenario from which an operator can search for observations and add
 them to the schedule. Plan creation begins by specifying the
 \glspl{tle} for each satellite.  These can be previous \glspl{tle} stored in
-the \gls{pops} database, new \glspl{tle} taken from CelesTrak or Spacer-Track,
+the \gls{pops} database, new \glspl{tle} taken from CelesTrak or Space-Track,
 or custom-made \glspl{tle} that may be used for simulation or may be more
 accurate \glspl{tle} derived from a spacecraft’s onboard \gls{gps} ephemeris.
-Once the \glspl{tle} are selected, Ephemerides are generated for each satellite and
-stored in the database. For the EG-SAT scenario, \glspl{tle} were generated
+Once the \glspl{tle} are selected, Ephemerides are generated for each satellite
+and stored in the database. For the EG-SAT scenario, \glspl{tle} were generated
 with the \gls{stk}. A current limitation of \gls{pops} is that once \glspl{tle}
 are selected for a plan, they cannot be changed. Allowing \glspl{tle} to be
 changeable would make \gls{pops} far too complicated at this stage of
@@ -113,10 +113,10 @@ use the \glspl{tle} in Figure~\ref{fig:tles}.
 These \glspl{tle} are artificial and have been created for this scenario. As
 such, their NORAD-ID is 9999. Their specifics are not important but, of note,
 is that both of their orbits are nearly identical. The only difference being
-that the Mean Anomaly of Sat-B is $5^\circ$ less than Sat-A. This means Sat-B
-follows the same approximate orbit of Sat-B but it lags behind by some period
-of time. Also of note is the reference epoch of both \glspl{tle}, ``2024-01-15
-16:00:00.000''.
+that the Mean Anomaly of Sat-B (\texttt{250.4360}) is $5^\circ$ less than Sat-A
+(\texttt{255.6332}).  This means Sat-B follows the same approximate orbit of
+Sat-B but it lags behind by some period of time. Also of note is the reference
+epoch of both \glspl{tle}, ``2024-01-15 16:00:00.000''.
 
 Once the \glspl{tle} have been selected and confirmed, ephemerides must be
 generated for each satellite in the plan. To do this, the start and end epochs
@@ -141,10 +141,10 @@ reference epoch with a 10 second timestep will be created.
 
 Before continuing, what ground stations are relevant to a plan must be
 specified.  Earlier, a ground station was added to \gls{pops} but here it must
-associate it with the plan. The reason for doing it in this way is that there
-may be scenarios where a mission has a constrained set of potential ground
-stations, or other ground stations may become available. Associating ground
-stations with a plan allow for them to be configurable. 
+linked to the plan. The reason for doing it in this way is that there may be
+scenarios where a mission has a constrained set of potential ground stations,
+or other ground stations may become available. Associating ground stations with
+a plan allow for them to be configurable. 
 
 Once these settings are confirmed, ephemeris data is generated for each
 satellite in the mission and this data is stored in the database. The access
@@ -161,13 +161,13 @@ data is stored as well.
     \label{fig:obs_fil} 
 \end{figure}
 
-Once our scenario is set up, Observation Configuration can begin. \gls{pops}
+Once the scenario is set up, Observation Configuration can begin. \gls{pops}
 must display potential observation opportunities to the user and must enable
 the user to create observations based on these potential opportunities.
 Opportunity filtering is the process of taking a large set of potential
 observations and constraining them to an \gls{aoi}. Observations can be
 performed anywhere on Earth, but an operator will only care about those that
-provide useful data for our operations strategy.  The basic process for
+provide useful data for their operations strategy.  The basic process for
 displaying opportunities to the user can be seen in Figure~\ref{fig:obs_fil}.
 An operator first creates a search scenario through the \gls{gui}.  For a given
 mission, there may be multiple observation types, multiple possible
@@ -215,10 +215,9 @@ Here, events are displayed to the user in an intractable viewer. Before going
 through how the page is used, the different aspects of the page will be touched
 on briefly. 
 
-
-\begin{figure}[h]
+\begin{figure}
     \centering
-    \includegraphics[width=0.95\textwidth]{obs-conf-search.png} 
+    \includegraphics[width=0.92\textwidth]{obs-conf-search.png} 
     \caption{Observation Search Tab}
     \label{fig:obs-conf-search} 
 \end{figure}
@@ -245,15 +244,15 @@ opportunities. This makes it far easier to select only the opportunities that
 are of interest to an operator.
 
 
-\begin{figure}[h]
+\begin{figure}
     \centering
-    \begin{subfigure}[b]{0.70\textwidth}
+    \begin{subfigure}[b]{0.95\textwidth}
 	\includegraphics[width=\textwidth]{obs-conf-ces-coarse-1.PNG} 
 	\caption{All Opportunities}
 	\label{fig:obs-conf-ci-1} 
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.70\textwidth}
+    \begin{subfigure}[b]{0.95\textwidth}
 	\includegraphics[width=\textwidth]{obs-conf-ces-coarse-2.PNG} 
 	\caption{Two Opportunities}
 	\label{fig:obs-conf-ci-2} 
@@ -265,27 +264,27 @@ are of interest to an operator.
 Every \gls{aoi} that is stored in \gls{pops} can be seen in the \texttt{AOI}
 tab. \glspl{aoi} may be added either through a text file that is read and
 loaded into \gls{pops}. Alternatively, \glspl{aoi} can be drawn directly in the
-Cesium viewer with the \texttt{AOI} button in the Cesium viewer. When it is
-clicked, the controls for the viewer change. Every time a user clicks on the
-Earth, a polygon vertex is placed at that location. As vertices are added a
-white polygon becomes visible. If a mistake is made, the user can undo vertices
-by pressing \texttt{CTRL-Z}. To give the user more information, some
-instructions are included in a text box as well as the Latitude and Longitude
-of the cursor.  Once the user is satisfied, they can right click and the
-area-target \gls{aoi} is saved to the database and can be referenced by search
-scenarios. A partially completed \gls{aoi} can be seen in
+Cesium viewer with the \texttt{AOI} button in the top right of the viewer.
+When it is clicked, the controls for the viewer change. Every time a user
+clicks on the Earth, a polygon vertex is placed at that location. As vertices
+are added a white polygon becomes visible. If a mistake is made, the user can
+undo vertices by pressing \texttt{CTRL-Z}. To give the user more information,
+some instructions are included in a text box as well as the Latitude and
+Longitude of the cursor.  Once the user is satisfied, they can right click and
+the area-target \gls{aoi} is saved to the database and can be referenced by
+search scenarios. A partially completed \gls{aoi} can be seen in
 Figure~\ref{fig:obs-conf-draw}. 
 
-\begin{figure}[h]
+\begin{figure}
     \centering
-    \includegraphics[width=0.8\textwidth]{obs-conf-draw.png} 
+    \includegraphics[width=0.95\textwidth]{obs-conf-draw.png} 
     \caption{Drawing an AOI}
     \label{fig:obs-conf-draw} 
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}
     \centering
-    \includegraphics[width=0.8\textwidth]{obs-conf-aoi-disp.png} 
+    \includegraphics[width=0.95\textwidth]{obs-conf-aoi-disp.png} 
     \caption{Displaying an AOI}
     \label{fig:obs-conf-aoi-display} 
 \end{figure}
@@ -297,7 +296,7 @@ outlines and purple areas. This is to distinguish them from \glspl{aoi} that
 are displayed as part of a search scenario. A useful feature of Cesium is also
 viewable in the Figure. When an entity in Cesium is selected, an information
 box appears giving the name of the entity as well as its description. Here, the
-\gls{aoi} has no description, but from the name, a user can tell it is: an \gls{aoi},
+\gls{aoi} has no description, but from the name, a user can tell: it is an \gls{aoi},
 its ID is \texttt{16}, and it is a display \gls{aoi}.
 
 
@@ -347,9 +346,9 @@ Figure~\ref{fig:obs-conf-aoi-display}.
 \end{figure}
 
 
-For Coarse Imagine the search mode is \texttt{COARSE\_IMAGING}.  The satellites
-of relevance for this mode is just Sat-A, because Sat-B is not equipped with a
-Coarse Imager. In the future, only relevant satellites will be selectable but,
+For Coarse Imaging the search mode is \texttt{COARSE\_IMAGING}.  The satellite
+of relevance for this mode is just Sat-A because Sat-B is not equipped with a
+coarse imager. In the future, only relevant satellites will be selectable but,
 for now, it is left configurable.  The search form for this mode can be seen in
 Figure~\ref{fig:obs-conf-search-1}. Similarly, for Tip-and-Cue imaging, the
 mode is \texttt{TNC\_IMAGING} the relevant satellites are Sat-A and Sat-B.  The
@@ -357,7 +356,7 @@ mode's settings can be seen in Figure~\ref{fig:obs-conf-search-2}. Once the
 \texttt{Create Search} button is clicked, \gls{pops} will send the data to the
 Opportunity Filter and a search will be performed. The two searches can be seen
 in the \texttt{Observation Search} tab in Figure~\ref{fig:obs-conf-search}.
-Note that: the swaths are displayed with green outlines and faint green areas.
+Note that the swaths are displayed with green outlines and faint green areas.
 The \gls{aoi} has a red outline and a black area, and the intersection polygons
 have magenta areas. The Coarse Imaging search mode can be seen in
 Figure~\ref{fig:obs-conf-ci}. In total, there are 43 opportunities for this
@@ -365,12 +364,54 @@ mode in a 72 hour period. The reason there are many opportunities is that there
 are not many constraints for this kind of observation. The mode is simply a
 single access time to an area target. 
 
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=0.7\textwidth]{obs-conf-tnc-all.png} 
+    \includegraphics[width=0.8\textwidth]{obs-conf-tnc-all.png} 
     \caption{Tip-and-Cue Imaging All opportunities}
     \label{fig:obs-conf-tnc-all} 
 \end{figure}
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-tnc-1.PNG} 
+	\caption{Opportunity 1}
+	\label{fig:obs-conf-tnc-1} 
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-tnc-2.PNG} 
+	\caption{Opportunity 2}
+	\label{fig:obs-conf-tnc-2} 
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-tnc-3.PNG} 
+	\caption{Opportunity 3}
+	\label{fig:obs-conf-tnc-3} 
+    \end{subfigure}
+    
+    \begin{subfigure}[b]{0.45\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-tnc-4.PNG} 
+	\caption{Opportunity 4}
+	\label{fig:obs-conf-tnc-4} 
+    \end{subfigure}
+    \quad \quad
+    \begin{subfigure}[b]{0.45\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-tnc-5.PNG} 
+	\caption{Opportunity 5}
+	\label{fig:obs-conf-tnc-5} 
+    \end{subfigure}
+
+    \caption{Individual Tip-and-Cue Opportunities}
+\label{fig:obs-conf-tnc-opps}
+\end{figure}
+
 
 In contrast, all the opportunities for Tip-and-Cue Imaging mode can be seen in
 Figure~\ref{fig:obs-conf-tnc-all}. There are not many opportunities, so
@@ -392,47 +433,6 @@ are all `pointed' at the \gls{sfl} which is the only ground station.
 Furthermore, \gls{sfl} is far away from the \gls{aoi} so opportunities are
 limited.
 
-
-\begin{figure}[h]
-    \centering
-    \begin{subfigure}[b]{0.32\textwidth}
-	\centering
-	\includegraphics[width=\textwidth]{obs-conf-tnc-1.PNG} 
-	\caption{Opportunity 1}
-	\label{fig:obs-conf-tnc-1} 
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.32\textwidth}
-	\centering
-	\includegraphics[width=\textwidth]{obs-conf-tnc-2.PNG} 
-	\caption{Opportunity 2}
-	\label{fig:obs-conf-tnc-2} 
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.32\textwidth}
-	\centering
-	\includegraphics[width=\textwidth]{obs-conf-tnc-3.PNG} 
-	\caption{Opportunity 3}
-	\label{fig:obs-conf-tnc-3} 
-    \end{subfigure}
-    
-    \begin{subfigure}[b]{0.32\textwidth}
-	\centering
-	\includegraphics[width=\textwidth]{obs-conf-tnc-4.PNG} 
-	\caption{Opportunity 4}
-	\label{fig:obs-conf-tnc-4} 
-    \end{subfigure}
-    \quad \quad
-    \begin{subfigure}[b]{0.32\textwidth}
-	\centering
-	\includegraphics[width=\textwidth]{obs-conf-tnc-5.PNG} 
-	\caption{Opportunity 5}
-	\label{fig:obs-conf-tnc-5} 
-    \end{subfigure}
-
-    \caption{Individual Tip-and-Cue Opportunities}
-\label{fig:obs-conf-tnc-opps}
-\end{figure}
 
 \begin{table}[h] 
     \centering
@@ -472,16 +472,16 @@ EG-SAT is irrelevant.
     \label{tab:additional-gs}
 \end{table}
 
-\begin{figure}[h]
+\begin{figure}
     \centering
-    \begin{subfigure}[b]{0.49\textwidth}
+    \begin{subfigure}[b]{0.95\textwidth}
 	\centering
 	\includegraphics[width=\textwidth]{obs-conf-plan-2.PNG} 
 	\caption{Weilheim Station and SFL}
 	\label{fig:obs-conf-gs-placements-1} 
     \end{subfigure}
     \hfill
-    \begin{subfigure}[b]{0.49\textwidth}
+    \begin{subfigure}[b]{0.95\textwidth}
 	\centering
 	\includegraphics[width=\textwidth]{obs-conf-plan-3.PNG} 
 	\caption{Esrange Station and SFL}
@@ -489,6 +489,33 @@ EG-SAT is irrelevant.
     \end{subfigure}
     \caption{Additional Ground Stations}
     \label{fig:obs-conf-gs-placements} 
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.75\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-opps-2.PNG} 
+	\caption{Plan 1, 5 Opportunities}
+	\label{fig:obs-conf-opps-1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.75\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-opps-1.PNG} 
+	\caption{Plan 2, 11 Opportunities}
+	\label{fig:obs-conf-opps-2} 
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.75\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{obs-conf-opps-3.PNG} 
+	\caption{Plan 3, 13 Opportunities}
+	\label{fig:obs-conf-opps-3} 
+    \end{subfigure}
+
+    \caption{Different Plan Opportunities}
+    \label{fig:obs-conf-opps}
 \end{figure}
 
 The resulting opportunities can be seen in Figure~\ref{fig:obs-conf-opps}.  For
@@ -502,32 +529,6 @@ very close the \gls{aoi} in this scenario. Therefore, every time the satellites
 have access to the \gls{aoi}, it is likely they will also have a ground access
 available. 
 
-\begin{figure}[h]
-    \centering
-    \begin{subfigure}[b]{0.32\textwidth}
-	\centering
-	\includegraphics[width=\textwidth]{obs-conf-opps-2.PNG} 
-	\caption{Plan 1, 5 Opportunities}
-	\label{fig:obs-conf-opps-1}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.32\textwidth}
-	\centering
-	\includegraphics[width=\textwidth]{obs-conf-opps-1.PNG} 
-	\caption{Plan 2, 11 Opportunities}
-	\label{fig:obs-conf-opps-2} 
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.32\textwidth}
-	\centering
-	\includegraphics[width=\textwidth]{obs-conf-opps-3.PNG} 
-	\caption{Plan 3, 13 Opportunities}
-	\label{fig:obs-conf-opps-3} 
-    \end{subfigure}
-
-    \caption{Different Plan Opportunities}
-    \label{fig:obs-conf-opps}
-\end{figure}
 
 For the opportunity filters, there will need to be some fine-tuning going
 forward. Edge cases, that were not immediately addressed in their high-level
@@ -535,7 +536,7 @@ descriptions or in the actual implementation may have been missed. Questions
 like, can one satellite communicate with a ground station while the other is
 taking sensor measurements? Are there limitations on ground contacts beyond
 just the spacecraft having access? These will be addressed iteratively and the
-opportunity filters will be refined through testing and through operations
+opportunity filters will be refined through testing and operations
 trials.
 
 \subsection{Creating Observations}
@@ -580,7 +581,7 @@ be an easily generalizable tool, so rules may be added as necessary.
 \end{figure}
 
 An example schedule can be seen in Figure~\ref{fig:obs-conf-schedule} for
-Plan-2. Plan-2 was selected because there are more opportunities and there is
+Plan-2. This plan was selected because there are more opportunities and there is
 some time between an \gls{aoi} access and a ground access. There are five
 observations scheduled, 3 Tip-and-Cue Imaging observations and 2 Course Imaging
 observations. The first Tip-and-Cue observation, \texttt{TNC-1-TIP}, begins at
@@ -614,16 +615,17 @@ their customer’s needs, the plan has been validated, and all that remains is
 generating \glspl{ttc} to be uploaded to their specific spacecraft.  Depending
 on the observation mode, not all events have commands to be generated. In
 Plan-2's schedule, commands may be only generated for the Sat-A events because
-we may command it to do coarse imaging in all cases. The Sat-B events cannot
+the operator may command it to do coarse imaging in all cases. The Sat-B events cannot
 generate \glspl{ttc}. This is because for the Tip-and-Cue observation mode, on
-the first pass, we may command the satellite to begin capturing wide-view
-images.  But, on the next pass, we cannot command the satellite to image
-potential targets as we cannot know where they will be a priori. It is known
-that new commands will be generated between the first and second pass and, from
-a planning perspective, this is handled with the scheduler. The time when these
-inter-pass commands will be executed will lie within the second-pass event. In
-this way, no other \glspl{ttc} should conflict with the automatically generated
-commands because if they were scheduled for that time, they would conflict. 
+the first pass, the operator may command the satellite to begin capturing
+wide-view images.  But, on the next pass, they cannot command the satellite to
+image potential targets as they cannot know where they will be a priori. It is
+known that new commands will be generated between the first and second pass
+and, from a planning perspective, this is handled with the scheduler. The time
+when these inter-pass commands will be executed will lie within the second-pass
+event. In this way, no other \glspl{ttc} should conflict with the automatically
+generated commands because if they were scheduled for that time, they would
+conflict. 
 
 To generate \glspl{ttc}, templates are combined and populated based on the
 observation and the configuration parameters specified when creating the
