@@ -6,11 +6,11 @@
 several distinct components separated into services to allow for separation of
 concern. That being, each functional unit of the tool is separated with limited
 overlap. Developing in this way allows for a great deal of freedom when
-developing the different services of the tool. Each service will be completely
+developing the different services. Each service will be completely
 unaffected by the implementation of another service. In addition, some of the
-functionality of \gls{pops} has functionality that is useful outside of the
-tool itself. Through this architecture, the services may be used elsewhere,
-without any need for further development for these services.  
+functionality of \gls{pops} is useful outside of the tool itself. Through this
+architecture, the services may be used elsewhere, without any need for further
+development.  
 
 Each service has its own Docker container. Containers are similar to virtual
 machines, in that they simulate an operating system but, unlike virtual
@@ -55,11 +55,11 @@ of Ubuntu, or a lightweight tailored Linux distribution that only contains the
 tools required. One service can be running Ubuntu 20.04 and another service can
 be running Windows 10. In this way, \gls{pops} is not limited by the operating
 system it is developed in.  Files may be added to a container simply by
-pointing to their location in the host's file system upon image creation.
-Finally, when a container is first created from an image, a container will need
-to install all of the necessary dependencies. In general, this will either be
-Ubuntu packages, a version of Python, and Python libraries.  In addition,
-dependencies can easily be tracked and managed. 
+pointing to their location in the host's file system upon image creation. When
+a container is first created from an image, a container will need to install
+all of the necessary dependencies. In general, this will either be Ubuntu
+packages, a version of Python, and Python libraries.  In addition, dependencies
+can easily be tracked and managed. 
 
 Theoretically, all of the code for a service could live in the main Python file
 but, if this were the case, it would quickly balloon and become unwieldy to

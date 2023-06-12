@@ -15,7 +15,7 @@ more of the operator’s time is spent on repeated calculations using
 purpose-built scripts that offer little in terms of reusability. For suitably
 complicated operations, the economy of human computation is lost. In this
 scenario, the benefits of software automation become appealing.
-Commercial-off-the-shelf tools do exist to address this issue. A ready example
+\gls{cots} tools do exist to address this issue. A ready example
 would be Orbit Logic’s \gls{cpaw} \cite{orbit_logic_cpaw_2021} or their
 Scheduler extension for the Ansys \gls{stk} \cite{ansys_stk_nodate}. These
 solutions are well-developed and have a proven mission heritage. They are also
@@ -45,7 +45,7 @@ switched out as needed. With services, functionality may also be integrated
 into other applications. For persistent storage of planning information, an SQL
 database has been implemented as its own service.  To facilitate searching for
 observation opportunities, a suite of software tools has been developed, known
-as the \gls{atu}.  \gls{pops} also handles its orbital propagation by making
+as \gls{atu}.  \gls{pops} also handles its orbital propagation by making
 use of open-source Python implementations of the \gls{sgp4} algorithm. 
 
 
@@ -110,12 +110,14 @@ licenses would need to be procured.
 \subsection{Mission Planning and Scheduling Software}
 
 The \gls{mpss} was developed for the NEMO-AM mission by \gls{sfl} in
-2013~\cite{mehradnia_design_2013}.  Its purpose was to facilitate operations
-planning for Earth observation missions at \gls{sfl}. It was designed with the
-NEMO-AM mission in mind and incorporated: orbit visualization, attitude control
-algorithms, star tracker data, \gls{gps} data, orbit propagation, and
-spacecraft command generation.  Having an already built in-house solution would
-be an ideal foundation to build a new software from. 
+2013~\cite{mehradnia_design_2013}. NEMO-AM did not launch but the \gls{mpss}
+was later used for DMSat-1 which launched in 2021. The \gls{mpss}'s
+purpose was to facilitate operations planning for Earth observation missions at
+\gls{sfl}.  It was designed with the NEMO-AM mission in mind and incorporated:
+orbit visualization, attitude control algorithms, star tracker data, \gls{gps}
+data, orbit propagation, and spacecraft command generation.  Having an already
+built in-house solution would be an ideal foundation to build a new software
+from. 
 
 There are a number of drawbacks to using the \gls{mpss}, though. The first
 issue is that the software was developed in 2013 and built to run on the
@@ -132,16 +134,14 @@ software's extensibility. Lastly, the \gls{mpss} was designed with a single
 operation mode in mind, ground target tracking. In this mode, the satellite
 would point its imager at a single ground target while it is visible to the
 satellite. This is not sufficient for \gls{sfl}'s purposes as the new software
-solution should be able to be extensible to different operations modes.    
+solution should be extensible to different operations modes.    
 
 
 \section{Objectives}
 
-Now that some existing solutions have been discussed, it is worth laying out
-the objectives for creating an operations planning tool. Specifically, what
-features are required for \gls{pops}? 
-
-%First, let us go over the intended workflow for the tool.
+Now that some existing solutions as well as their drawbacks have been
+discussed, it is worth laying out the objectives for creating an operations
+planning tool.  Specifically, what features are required for \gls{pops}? 
 
 Suppose a customer comes to \gls{sfl} and describes an area on Earth they
 wish to be observed through remote sensing. An operator must then construct a
@@ -160,19 +160,18 @@ opportunities and create commands to be sent to the satellites. The purpose of
 
     \item Validating the observations in a schedule to prevent conflicts, and
 
-    \item Converting the observations in the plan to a list of satellite
-	commands.
+    \item Converting the planned observations to a list of satellite commands.
 
 \end{enumerate}
 
 Ideally, \gls{pops} should remove the manual calculation from the operator's
 workflow. It should be noted that \gls{pops} will not fully automate operations
 and is not meant to be a real time software. Rather, it must plan the
-\textit{deterministic} aspects of a mission one to two weeks in the future. The reason
-for this is that full automation is much more difficult and the validation
-requirements are much more stringent. This scenario has greater risks
-associated with it since it would be a shift to relying on software to operate
-a satellite rather than a human operator. 
+\textit{deterministic} aspects of a mission as far into the future as
+necessary.  The reason for this is that full automation is much more difficult
+and the validation requirements are much more stringent. This scenario has
+greater risks associated with it since it would be a shift to relying on
+software to operate a satellite rather than a human operator. 
 
 \newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
 
@@ -185,11 +184,10 @@ a satellite rather than a human operator.
     \textbf{Objective} & \textbf{Description} \\ \hline
     \textbf{O1} &  Plan and schedule payload observations          \\ \hline
     \textbf{O2} &  Allow for semi-automated planning, such as enabling an operator to direct that a specific type of observation be repeated on a schedule           \\ \hline
-    \textbf{O3} & Allow for planning up to 1-2 weeks in advance  \\ \hline
-    \textbf{O4} & Generate lists of commands to be uploaded to the spacecraft          \\ \hline
-    \textbf{O5} &  Display the schedules of the spacecraft in a timeline format   \\ \hline
-    \textbf{O6} & Have a graphical Earth display that shows: satellite orbits, areas of interest, observation constraints, observable areas, and observation opportunities. \\ \hline
-    \textbf{O7} & Generalized enough to be expandable to different missions with minimal effort  \\ \hline
+    \textbf{O3} & Generate lists of commands to be uploaded to the spacecraft          \\ \hline
+    \textbf{O4} &  Display the schedules of the spacecraft in a timeline format   \\ \hline
+    \textbf{O5} & Have a graphical Earth display that shows: satellite orbits, areas of interest, observation constraints, observable areas, and observation opportunities. \\ \hline
+    \textbf{O6} & Generalized enough to be expandable to different missions with minimal effort  \\ \hline
 \end{tabular}
 \end{table}
 
@@ -204,16 +202,16 @@ graphical Earth display as well as timeline capabilities.
 
 \section{Thesis Outline} 
 
-The purpose of this Thesis is to summarize the development of the
+The purpose of this thesis is to summarize the development of the
 \acrlong{pops}. As well, its purpose is to highlight some of the challenges
 that go along with creating a mission planning software. In
 Chapter~\ref{chap:ops}, some operations concepts are discussed such as
-terminology, orbit propagation, the use of \glspl{ttc}. An example scenario is
+terminology, orbit propagation, and the use of \glspl{ttc}. An example scenario is
 also introduced to demonstrate how \gls{pops} may be used without disclosing
 \gls{sfl}'s customers' operations strategies. In
 Chapter~\ref{chap:architecture}, the software architecture of \gls{pops} is
 discussed. This is the largest chapter as it goes into the different services
-provided by \gls{pops}. In Chapter \ref{chap:workflow}, this thesis walks through how
+provided by \gls{pops}. In Chapter~\ref{chap:workflow}, this thesis walks through how
 \gls{pops} may be used for the example scenario introduced in
 Chapter~\ref{chap:ops}. Then in Chapter~\ref{chap:discussion} there is a
 discussion and the future work for \gls{pops} is laid out. Finally, the thesis
