@@ -2,15 +2,16 @@
 
 \chapter{Software Architecture}\label{chap:architecture}
 
-\lettrine[lines=2, findent=0pt, nindent=5pt]{T}{}he \gls{pops} is made up of
-several distinct components separated into services to allow for separation of
-concern. That being, each functional unit of the tool is separated with limited
-overlap. Developing in this way allows for a great deal of freedom when
-developing the different services. Each service will be completely
-unaffected by the implementation of another service. In addition, some of the
-functionality of \gls{pops} is useful outside of the tool itself. Through this
-architecture, the services may be used elsewhere, without any need for further
-development.  
+%\lettrine[lines=2, findent=0pt, nindent=5pt]{T}{}
+
+The \gls{pops} is made up of several distinct components separated into
+services to allow for separation of concern. That being, each functional unit
+of the tool is separated with limited overlap. Developing in this way allows
+for a great deal of freedom when developing the different services. Each
+service will be completely unaffected by the implementation of another service.
+In addition, some of the functionality of \gls{pops} is useful outside of the
+tool itself.  Through this architecture, the services may be used elsewhere,
+without any need for further development.  
 
 Each service has its own Docker container. Containers are similar to virtual
 machines, in that they simulate an operating system but, unlike virtual
@@ -846,9 +847,9 @@ use of. It is here that the Mission Model actually searches for potential
 observation opportunities and implements the filters discussed in
 Section~\ref{sec:opp-filtering}. Its purpose is to combine the functionality of
 the Data Handler classes and the \gls{atu} Handler class to make Opportunity
-Filtering as close as possible to their high-level summaries.  In general, with
+Filtering as close as possible to their high-level summaries. In general, with
 opportunity filtering, the implementation process is straightforward and
-matches well with its high-level description. This is not always the case
+matches well with its high-level description.  This is not always the case
 though. Let us now revisit the Filters discussed earlier, and outline how they
 are actually implemented in \gls{pops}. 
 
@@ -884,13 +885,13 @@ combination of $A_{A}$ and $G_A$. Finally, the list of opportunities is
 returned along with the coarse imaging ground swath. 
 
 Some details of the polygon filtering process have been omitted for clarity.
-That being, the insertion of all the data into the database. How opportunities
-are actually stored, as mentioned in the Section~\ref{sec:database}, is that
-first, the search data is generated, then it loaded into the database, and
-finally each opportunity is a list of database IDs corresponding to each search
-element. The purpose of this is to not duplicate data and to also allow an
-opportunity to be defined with as many search elements as is desired by a
-developer.
+That being, the insertion of all the data into the database through \gls{crud}.
+How opportunities are actually stored, as mentioned in the
+Section~\ref{sec:database}, is that first, the search data is generated, then
+it loaded into the database, and finally each opportunity is a list of database
+IDs corresponding to each search element. The purpose of this is to not
+duplicate data and to also allow an opportunity to be defined with as many
+search elements as is desired by a developer.
 
 
 \begin{algorithm} 
@@ -906,7 +907,7 @@ developer.
 	    \Let{$A_{G,A}$}{\Call{GroundAccess}{$E_A$, $L_G$}} \Comment{Calculate Ground Accesses}
 	    \Let{$A_{G,B}$}{\Call{GroundAccess}{$E_B$, $L_G$}}
 
-	    \Let{$A_{A}$, \_}{\Call{PolygonIntersection}{$S_A$, $g_{AOI}$}} 
+	    \Let{$A_{A}$, \_}{\Call{PolygonIntersection}{$S_A$, $g_{AOI}$}} \Comment{Calculate only access to Polygon}
 
 	    \ForEach{$a_A$ in $A_{A}$}
 
@@ -943,7 +944,7 @@ every ground station provided.
 After this, instead of calculating all of intersection polygons for the tip
 swath and the \gls{aoi}, only the list of access times are recorded, $A_A$.
 This has two purposes.  First, it is faster to just calculate the access times
-for the intersection polygon Utility. Second, this gives us a list of access
+for the Polygon Intersection Utility. Second, this gives us a list of access
 times that can be iterated over to find opportunities. The significance of this
 is that there may exist \glspl{aoi} where Sat-A has multiple accesses within a
 single pass. By iterating over each access we create an opportunity for every
@@ -963,10 +964,12 @@ Polygon Intersection with it and the intersection polygon from the previous
 step. This outputs the access time for Sat-B, $a_B$ and the intersection
 polygon for Sat-A, Sat-B, and the \gls{aoi}, $g_{A \wedge B}$. Before adding an
 opportunity, we must check if suitable ground station contacts exist in between
-Sat-A's access and Sat-B's access. If this is the case Sat-A's access, Sat-B's
-access, and the intersection polygon are then appended to the list of
-opportunities. Otherwise the opportunity is discarded. This process is then
-repeated for each of Sat-A's access times.
+Sat-A's access and Sat-B's access; that is, does there exist a ground access
+for both Sat-A and Sat-B such that they lie between the tip access and the cue
+access.  If this is the case Sat-A's access, Sat-B's access, and the
+intersection polygon are then appended to the list of opportunities.  Otherwise
+the opportunity is discarded.  This process is then repeated for each of
+Sat-A's access times.
 
 From this process, some edge cases have been omitted. That being, at the
 beginning and end of a scenario, we cannot generate any opportunities because
@@ -988,13 +991,12 @@ To support this functionality, \gls{pops} makes use of the open-source CesiumJS
 library. CesiumJS can display time-dynamic, geospatial information on a
 webpage. CesiumJS itself is free to use and provides all of the core
 functionality that is necessary for \gls{pops}. There also exists a proprietary
-library, CesiumION, which provides out-of-the-box 3D terrain data and
-proprietary Earth imagery. Thankfully this kind of information is superfluous
-for orbit operations planning. At most, all that is needed is a rough
-understanding of the Earth's geography and that is sufficient. For this reason,
-\gls{pops} does not provide terrain information and uses a free tile map
-provider. Since \gls{pops} is only using the free version, CesiumJS will be
-referred to as just Cesium for brevity. 
+library, CesiumION, which provides 3D terrain data and proprietary Earth
+imagery. This kind of information is currently not required by by \gls{pops}.
+At most, all that is needed is a rough understanding of the Earth's geography
+and that is sufficient. For this reason, \gls{pops} does not provide terrain
+information and uses a free tile map provider. Since \gls{pops} is only using
+the free version, CesiumJS will be referred to as just Cesium for brevity. 
 
 It should be noted that Cesium is only meant to display information to the user
 and not intended to be a tool that performs any calculations. All data is generated

@@ -3,12 +3,13 @@
 
 \chapter{Algorithms} \label{chap:Algorithms}
 
-\lettrine[lines=2, findent=0pt, nindent=5pt]{T}{} hrough the development of the
-\gls{pops}, a number of algorithms have been developed to perform various
-functions. These algorithms are not necessarily ground breaking but their
-implementations are novel and worth discussing in some form. To avoid
-detracting from the main body of the thesis they are discussed here, in the
-appendix.
+%\lettrine[lines=2, findent=0pt, nindent=5pt]{T}{} 
+
+Through the development of the \gls{pops}, a number of algorithms have been
+developed to perform various functions. These algorithms are not necessarily
+ground breaking but their implementations are novel and worth discussing in
+some form. To avoid detracting from the main body of the thesis they are
+discussed here, in the appendix.
 
 
 \section{Multiple Access Intersection Algorithm} \label{alg:mul-access-inter}
@@ -330,14 +331,10 @@ unions by replacing \textsc{ColumnsAND} with \textsc{ColumnsOR} in line 18.
 \section{Single Access Intersection Algorithm} \label{alg:contains}
 
 The Single Access Intersection Algorithm is similar to the Multiple Access
-Intersection algorithm but it serves a different purposes. Given a time range,
+Intersection algorithm but it serves a different purpose. Given a time range,
 this algorithm is concerned with finding all of the access times in a list that
-intersect the time range. Here, the input time range will not be used as
-bounds, but only search criteria to select access times. So, for example,
-suppose we are given a list of access times for a satellite and we wish to find
-all of the access times that lie within a pass the purpose of this algorithm is
-to find these accesses. 
-
+intersect that time range. Here, the input time range will not be used as
+bounds, but only search criteria to select access times. 
 
 \begin{figure}[h]
     \centering
@@ -367,12 +364,11 @@ access boundaries to the those boundaries that lie within the time range.
 Then, we must assemble the access times from their boundaries and output them
 in a list.  
 
-The actual solution is quite simple. First we find two values, $i$ and $j$.
-These are the indices of the next smallest value for $\alpha$ and $\beta$ in
-the access list. For example, in time range 2, from
-Figure~\ref{fig:single-access-intersect}, $i$ and $j$ will be the indices of
-$a_0$ and $a_1$ respectively. These two values will be used to create an
-iteration range that will be used to return the list of accesses. 
+First we find two values, $i$ and $j$.  These are the indices of the next
+smallest value for $\alpha$ and $\beta$ in the access list.  For example, in
+time range 2, from Figure~\ref{fig:single-access-intersect}, $i$ and $j$ will
+be the indices of $a_0$ and $a_1$ respectively. These two values will be used
+to create an iteration range that will be used to return the list of accesses. 
 
 One problem is that, as they are, $i$ may not point to an access enter and $j$
 may not point to an access leave which is required by access lists. So, if $i$
@@ -387,7 +383,6 @@ modular arithmetic, we can select the correct indices,
     i' &= i + \mathrm{mod}(i,2) \\
     j' &= j + \mathrm{mod}(j+1,2)
 \end{align*}
-
 where $i'$ and $j'$ are the shifted indices and `mod()' is the modulus
 function.  The first argument is the dividend and the second is the divisor.
 Once we have these values, the output will be the access times that lie within
@@ -414,7 +409,7 @@ Algorithm~\ref{alg:single-access-intersection}.
 	    \EndIf
 	\EndFor
 
-	\Let{$i'$}{$i + \mathrm{mod}(i,2)$} 
+	\Let{$i'$}{$i + \mathrm{mod}(i,2)$} \Comment{Increment indices}
 	\Let{$j'$}{$i + \mathrm{mod}(j+1,2)$} 
 
 	\If{$i > j$}

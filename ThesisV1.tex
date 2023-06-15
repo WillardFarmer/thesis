@@ -10,6 +10,8 @@
 \usepackage{lettrine}
 %\usepackage[utf8]{inputenc}
 %\usepackage{amsmath,amssymb}
+\usepackage{setspace}
+
 
 \addbibresource{Bibliography/thesis_bib_2023.bib}   % This is my bibliography file
 %\addbibresource{Bibliography/sgp4.bib}		    % SGP4
@@ -42,7 +44,11 @@
 	\input{Front Matter/ack}
     \end{acknowledgements}
     
-    \tableofcontents
+    \begin{spacing}{1.2}
+	\tableofcontents
+    \end{spacing}
+    %\addtocontents{toc}{\protect\enlargethispage{\baselineskip}}
+
     \listoffigures
     \listoftables
    % \listofequations

@@ -3,20 +3,21 @@
 
 \chapter{Software Workflow}\label{chap:workflow}
 
-\lettrine[lines=2, findent=0pt, nindent=5pt]{T}{}o demonstrate how \gls{pops}
-may be used, this thesis will walk through setting up \gls{pops} for the EG-SAT
-mission. Suppose the customer for EG-SAT defines an Area Target \gls{aoi} in
-the Norwegian Sea where they wish Coarse Imaging and Tip-and-Cue Imaging to be
-performed. The \gls{aoi} is defined by the points  in
-Table~\ref{tab:norway-aoi}. It is the operator’s responsibility to construct an
-operations plan for the next week. To do this, they may use \gls{pops} to aid
-them in laying out the deterministic aspects of an operations plan.  That
-being, determining remote-sensing opportunities, creating a schedule of
-observations, validating that schedule, and creating \glspl{ttc} to be uploaded
-to the spacecraft. It should be noted that the real-time ground processing of
-the data and the generation of new \glspl{ttc} for the next pass of the
-Tip-and-Cue Mode are beyond the capabilities of \gls{pops} and this is handled
-by separate, mission-specific automatic ground processing.
+%\lettrine[lines=2, findent=0pt, nindent=5pt]{T}{}
+
+To demonstrate how \gls{pops} may be used, this thesis will walk through
+setting up \gls{pops} for the EG-SAT mission. Suppose the customer for EG-SAT
+defines an Area Target \gls{aoi} in the Norwegian Sea where they wish Coarse
+Imaging and Tip-and-Cue Imaging to be performed. The \gls{aoi} is defined by
+the points  in Table~\ref{tab:norway-aoi}. It is the operator’s responsibility
+to construct an operations plan for the next week. To do this, they may use
+\gls{pops} to aid them in laying out the deterministic aspects of an operations
+plan.  That being, determining remote-sensing opportunities, creating a
+schedule of observations, validating that schedule, and creating \glspl{ttc} to
+be uploaded to the spacecraft. It should be noted that the real-time ground
+processing of the data and the generation of new \glspl{ttc} for the next pass
+of the Tip-and-Cue Mode are beyond the capabilities of \gls{pops} and this is
+handled by separate, mission-specific automatic ground processing.
 
 \begin{table}[h] 
     \centering
@@ -37,7 +38,7 @@ user can fill out. To avoid having an excessive number of screenshots for each
 step, the input data itself will mostly be shown in tables or figures rather than
 through screenshots of the menus.
 
-\subsection{Plan Configuration}
+\section{Plan Configuration}
 
 First, \gls{pops} must be configured for a particular mission. The operator
 must specify the mission, its satellites, satellite sensor parameters, and its
@@ -152,7 +153,7 @@ times for each ground station are also calculated for each satellite and that
 data is stored as well.
 
 
-\subsection{Observation Configuration Webpage}
+\section{Observation Configuration Webpage}
 
 \begin{figure}[h]
     \centering
@@ -310,7 +311,7 @@ those changes. The \texttt{Ground Access} tab shows a filter-able list of
 ground station accesses, with time links that change Cesium's current time.
 
 
-\subsection{Searching For Opportunities}
+\section{Searching For Opportunities}
 
 Two search scenarios will now be created, one for the Coarse Imaging Operations
 mode and one for the Tip-and-Cue Imaging Mode. To do this, the \texttt{Create
@@ -539,7 +540,7 @@ just the spacecraft having access? These will be addressed iteratively and the
 opportunity filters will be refined through testing and operations
 trials.
 
-\subsection{Creating Observations}
+\section{Creating Observations}
 
 With these opportunities, operators can then create observations. Currently,
 this is a manual entry process. An operator must specify both the epoch of an
@@ -553,7 +554,7 @@ process cannot be completely automated. This system is being reworked and
 hasn't been fully integrated at the time of this thesis being written.
 
 
-\subsection{Scheduling}
+\section{Scheduling}
 
 
 Once observations are added to a plan, they must be added to the schedule and
@@ -607,7 +608,7 @@ scheduler recognizes this time conflict and highlights both events in red,
 signifying to the operator that these two events must be changed before
 continuing.
 
-\subsection{Time-Tag Command Generation}\label{sec:ttc-gen}
+\section{Time-Tag Command Generation}\label{sec:ttc-gen}
 
 The last stage of the \gls{pops} workflow is \gls{ttc} generation.  At this
 point, the operator has created a plan that suits their own needs as well as
