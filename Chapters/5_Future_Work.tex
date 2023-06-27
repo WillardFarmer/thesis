@@ -246,12 +246,13 @@ observation mode. This information can only be gained through discussion with
 operators and with software engineers developing the firmware.  Even after
 extensive consultation, there is potential for steps being missed. It is only
 through testing, are all of the necessary commands for an observation mode
-determined.  Thankfully, much of this testing can be done during \gls{tvac}
-testing campaigns. It is here, were spacecraft may be commanded to perform
+determined. During development, there were \gls{tvac} testing campaigns
+that posed as good opportunitites for generating lists of \glspl{ttc} and
+testing them.  It is here, were spacecraft were commanded to perform
 observations, or at least their ground analogues, through \glspl{ttc}.  This
-gives a great deal of information about what specifically needs to be performed
-for each observation. It also provides some means of validating \gls{ttc}
-generation.
+provided a great deal of information about what specifically needs to be
+performed for each observation. It also provided one way of validating
+\gls{ttc} generation. 
 
 
 \section{Validation}
@@ -262,16 +263,16 @@ accurate results. System level validation can be accomplished through
 service-level verification. This has been touched on throughout the thesis.
 Specifically, the Propagator service was validated through comparing ephemeris
 data with results from \gls{stk}. \gls{ttc} generation validation may be
-accomplished through \gls{tvac} testing. After this, the \glspl{atu} may be
-individually validated either through known test cases or through comparisons
-with \gls{stk}. This process has been handled separately.  For opportunity
-filtering, there does not readily exist an alternative that can act a
-benchmark. In the future, what may be done is when the filtering process has
-reached maturity, simple test scenarios will be constructed for each
-observation mode.  \gls{stk} and \gls{pops} will separately be used to search
-for opportunities and these results will be compared. Currently, there is not a
-requirement for some of the components. Developing validation strategies is an
-ongoing process.
+accomplished through functional testing of observation scenarios. After this,
+the \glspl{atu} may be individually validated either through known test cases
+or through comparisons with \gls{stk}. This process has been handled
+separately.  For opportunity filtering, there does not readily exist an
+alternative that can act a benchmark. In the future, what may be done is when
+the filtering process has reached maturity, simple test scenarios will be
+constructed for each observation mode.  \gls{stk} and \gls{pops} will
+separately be used to search for opportunities and these results will be
+compared. Currently, there is not a requirement for some of the components.
+Developing validation strategies is an ongoing process.
 
 %For example, a high accuracy with respect to access times is not necessary.
 %Even if the access time calculation were made very accurate, there are
@@ -283,7 +284,7 @@ ongoing process.
 %Some missions that \gls{pops} is intended to be used for require additional
 %operations modes beyond just what was discussed in the 
 
-\section{Performance}
+\section{Performance}\label{sec:performance}
 
 Currently \gls{pops} has issues with large amounts of data. For scenarios
 longer than a few days, storing and retrieving data, displaying information,
@@ -301,7 +302,7 @@ potential.  These scenarios were run on a laptop with 40GB of RAM and an
 $11^{th}$ generation Intel Core i7-1165G7 CPU running at 2.80 GHz. 
 
 
-\begin{figure}[h]
+\begin{figure}
     \centering
     \begin{tikzpicture}
     \begin{axis}[
@@ -338,7 +339,11 @@ days are reasonably quick, taking less than $\sim5$ minutes. But, as we
 approach a 13-14 day scenario filtering takes more than half an hour. It could
 be argued that this is tolerable for an \gls{mvp} but it is certainly not
 ideal.  Note, this test was only for a 2-satellite scenario. Every satellite
-added increases the running time exponentially. 
+added increases the running time exponentially. Also note that the 6 day
+scenario took less time than the 5 day scenario, this was most likely caused by
+background processes running on the test computer. Even though the test set up
+was the same for each scenario, a background process could have stopped running
+which would have sped up the calculation of that one scenario.  
 
 To address this, there are a number of areas for improvement to consider.
 These range from simple algorithmic changes to heavily involved architectural
@@ -415,7 +420,7 @@ number of processes, each handling sub-components of the filtering process.
 
 This would be a difficult solution to implement. Multi-threaded programming is
 not necessarily complicated in Python, but asynchronous processes are almost
-always much more complicated than asynchronous process. Synchronous processes
+always much more complicated than synchronous processes. Synchronous processes
 are predictable, straightforward, and easy to debug. Asynchronous processes are
 none of these and introduce a multitude of challenges. For example: race
 conditions, memory management, locking out resources, unpredictable behavior,

@@ -92,32 +92,36 @@ accurate \glspl{tle} derived from a spacecraft’s onboard \gls{gps} ephemeris.
 Once the \glspl{tle} are selected, Ephemerides are generated for each satellite
 and stored in the database. For the EG-SAT scenario, \glspl{tle} were generated
 with the \gls{stk}. A current limitation of \gls{pops} is that once \glspl{tle}
-are selected for a plan, they cannot be changed. Allowing \glspl{tle} to be
-changeable would make \gls{pops} far too complicated at this stage of
-development so this will be addressed in future revisions. For EG-SAT, we will
-use the \glspl{tle} in Figure~\ref{fig:tles}.
+are selected for a plan, they cannot be changed. To update \glspl{tle}, a new
+plan must be generated. Allowing \glspl{tle} to be changeable would make
+\gls{pops} far too complicated at this stage of development so this will be
+addressed in future revisions. For EG-SAT, we will use the \glspl{tle} in
+Figure~\ref{fig:tles}.
 
 \begin{figure}[h]
     \begin{verbatim}
     SAT-A
     1 99999U 18099H   24015.66666667  .00000264  00000-0  11261-4 0  0003
-    2 99999  96.4575 096.8235 0010629 287.9022 255.6332 15.22959214000011
+    2 99999  96.4575 096.8235 0010629 287.9022 255.6332 15.22959214 00011
 
     SAT-B
     1 99999U 18099H   24015.66666667  .00000265  00000-0  11291-4 0  0007
-    2 99999  96.4569 096.8239 0010629 287.8995 250.4360 15.22958218000013
+    2 99999  96.4569 096.8239 0010629 287.8995 250.4360 15.22958218 00013
     \end{verbatim}
     \caption{\glspl{tle} For Sat-A and Sat-B}
     \label{fig:tles}
 \end{figure}
 
-These \glspl{tle} are artificial and have been created for this scenario. As
-such, their NORAD-ID is 9999. Their specifics are not important but, of note,
-is that both of their orbits are nearly identical. The only difference being
-that the Mean Anomaly of Sat-B (\texttt{250.4360}) is $5^\circ$ less than Sat-A
-(\texttt{255.6332}).  This means Sat-B follows the same approximate orbit of
-Sat-B but it lags behind by some period of time. Also of note is the reference
-epoch of both \glspl{tle}, ``2024-01-15 16:00:00.000''.
+These \glspl{tle} describe two circular \gls{leo} orbits with periods of
+$\sim95$ minutes. To reach the \glspl{aoi} in the North Sea, they have high
+inclination orbits of $\sim96^\circ$. These \glspl{tle} are artificial and have
+been created for this scenario.  As such, their NORAD-ID is 9999.  Their
+specifics are not important but, of note, is that both of their orbits are
+nearly identical.  The only difference being that the Mean Anomaly of Sat-B
+(\texttt{250.4360}) is $5^\circ$ less than Sat-A (\texttt{255.6332}).  This
+means Sat-B follows the same approximate orbit of Sat-B but it lags behind by
+some period of time. Also of note is the reference epoch of both \glspl{tle},
+``2024-01-15 16:00:00.000''.
 
 Once the \glspl{tle} have been selected and confirmed, ephemerides must be
 generated for each satellite in the plan. To do this, the start and end epochs
@@ -127,18 +131,21 @@ the \gls{tle}. They may be accurate for more or less time on a case-by-case
 basis but, for now, \gls{pops} sets a limit of 2 weeks from the reference epoch
 for ephemerides. Any time later or earlier is likely to be inaccurate.
 Currently, the step size must be set for the entire scenario. This has become
-an issue and will need to be addressed in the future. For long scenarios, such
-as 1-2 weeks, having a small step size will yield a large amount of data that
-needs to be stored. For a 2 week scenario, at a 10s timestep, one satellite
-ephemeris has 120,960 points.  Where each point contains 3 floats for position,
-3 floats for velocity, and an epoch string. Some scenarios may have multiple
-satellites and this increases the amount of data exponentially. So, for long
-scenarios, having a small timestep is not ideal. If a larger timestep is used,
-then the opportunity filtering may become less accurate because there is less
-information. In the future, more sophisticated methods of ephemeris generation
-that better handle data usage will be developed but for now, the step size is
-constant for a whole scenario. For EG-SAT, a 3 day scenario starting at the
-reference epoch with a 10 second timestep will be created. 
+an issue because it necessitates an operator to decide whether they want a
+high-accuracy scenario with a large amount of unneeded data that takes a long
+time to process or a low-accuracy scenario with little data but that can
+process very quickly. For long scenarios, such as 1-2 weeks, having a small
+step size will yield a large amount of data that needs to be stored. For a 2
+week scenario, at a 10s timestep, one satellite ephemeris has 120,960 points.
+Where each point contains 3 floats for position, 3 floats for velocity, and an
+epoch string.  Some scenarios may have multiple satellites and this increases
+the amount of data exponentially. So, for long scenarios, having a small
+timestep is not ideal. If a larger timestep is used, then the opportunity
+filtering may become less accurate because there is less information. In the
+future, more sophisticated methods of ephemeris generation that better handle
+data usage will be developed but for now, the step size is constant for a whole
+scenario.  For EG-SAT, a three day scenario starting at the reference epoch with a
+10 second timestep will be created.  
 
 Before continuing, what ground stations are relevant to a plan must be
 specified.  Earlier, a ground station was added to \gls{pops} but here it must
@@ -264,17 +271,24 @@ are of interest to an operator.
 
 Every \gls{aoi} that is stored in \gls{pops} can be seen in the \texttt{AOI}
 tab. \glspl{aoi} may be added either through a text file that is read and
-loaded into \gls{pops}. Alternatively, \glspl{aoi} can be drawn directly in the
-Cesium viewer with the \texttt{AOI} button in the top right of the viewer.
-When it is clicked, the controls for the viewer change. Every time a user
-clicks on the Earth, a polygon vertex is placed at that location. As vertices
-are added a white polygon becomes visible. If a mistake is made, the user can
-undo vertices by pressing \texttt{CTRL-Z}. To give the user more information,
-some instructions are included in a text box as well as the Latitude and
-Longitude of the cursor.  Once the user is satisfied, they can right click and
-the area-target \gls{aoi} is saved to the database and can be referenced by
-search scenarios. A partially completed \gls{aoi} can be seen in
-Figure~\ref{fig:obs-conf-draw}. 
+loaded into \gls{pops}. Alternatively, for a rough \gls{aoi} definition,
+\glspl{aoi} can be drawn directly in the Cesium viewer with the \texttt{AOI}
+button in the top right of the viewer.  When it is clicked, the controls for
+the viewer change.  Every time a user clicks on the Earth, a polygon vertex is
+placed at that location. As vertices are added a white polygon becomes visible.
+If a mistake is made, the user can undo vertices by pressing \texttt{CTRL-Z}.
+To give the user more information, some instructions are included in a text box
+as well as the Latitude and Longitude of the cursor.  Once the user is
+satisfied, they can right click and the area-target \gls{aoi} is saved to the
+database and can be referenced by search scenarios. A partially completed
+\gls{aoi} can be seen in Figure~\ref{fig:obs-conf-draw}. 
+
+Even though Cesium may introduce some error when defining a polygon
+graphically, the Latitude and Longitude values displayed are what will be
+recorded in the \gls{aoi} definition. So, as long as those values conform to
+what a user requires, the \gls{aoi} will be accurate to two decimal places. For
+higher accuracy \gls{aoi} definitions, the \gls{aoi} should be defined
+explicitly in a file and uploaded to \gls{pops}.
 
 \begin{figure}
     \centering
@@ -295,10 +309,11 @@ Since there may be many \glspl{aoi} stored in \gls{pops}, a user can display
 Figure~\ref{fig:obs-conf-aoi-display}. These `displayed' \glspl{aoi} have red
 outlines and purple areas. This is to distinguish them from \glspl{aoi} that
 are displayed as part of a search scenario. A useful feature of Cesium is also
-viewable in the Figure. When an entity in Cesium is selected, an information
-box appears giving the name of the entity as well as its description. Here, the
-\gls{aoi} has no description, but from the name, a user can tell: it is an \gls{aoi},
-its ID is \texttt{16}, and it is a display \gls{aoi}.
+viewable in the Figure. When an entity in Cesium is selected, a green box
+centered on the object appears as well as an information box which gives the
+name of the entity as well as its description. Here, the \gls{aoi} has no
+description, but from the name, a user can tell: it is an \gls{aoi}, its ID is
+\texttt{16}, and it is a display \gls{aoi}.
 
 
 The last two tabs serve minor purposes. The \texttt{Cesium} tab lists all of
@@ -325,7 +340,7 @@ display them on Cesium for their reference. Earlier in the chapter, an
 Table~\ref{tab:norway-aoi}. A text file for this \gls{aoi} definition was
 written and then uploaded to \gls{pops}. The ID that was generated was
 \texttt{16}. This \gls{aoi} can actually be seen displayed earlier in
-Figure~\ref{fig:obs-conf-aoi-display}.
+Figure~\ref{fig:obs-conf-aoi-display}. 
 
 \begin{figure}[h]
     \centering
@@ -427,8 +442,8 @@ always the case. In total, there are 5 opportunities in a 72 hour period. This
 is far less than there are Course Imaging opportunities. This is even less than
 there are general Tip-and-Cue opportunities. That is, where the cue swath
 intersects the tip swath and \gls{aoi}. The reason there are so few
-opportunities, is because of the ground station constraint. There must be a
-ground station contact between the first pass and next pass. If the satellites
+opportunities, is because there are a limited number of accesses to the only
+ground station which are required for a valid opportunity. If the satellites
 are moving from right to left in all of the views, notice that the tip swaths
 are all `pointed' at the \gls{sfl} which is the only ground station.
 Furthermore, \gls{sfl} is far away from the \gls{aoi} so opportunities are
@@ -460,7 +475,7 @@ placements of each ground station with respect to \gls{sfl} and the \gls{aoi}
 can be seen in Figure~\ref{fig:obs-conf-gs-placements}. Of course, these are
 just example ground stations that have been picked just for this scenario.
 Whether they support commercial missions or if they are equipped to support
-EG-SAT is irrelevant.  
+EG-SAT is not considered in this example.  
 
 \begin{table}[h] 
     \centering
@@ -519,6 +534,7 @@ EG-SAT is irrelevant.
     \label{fig:obs-conf-opps}
 \end{figure}
 
+
 The resulting opportunities can be seen in Figure~\ref{fig:obs-conf-opps}.  For
 clarity, the tip swaths have been omitted. As mentioned earlier, Plan-1 only
 has 5 opportunities; Plan-2 has 11 opportunities; and Plan-3 has 13
@@ -530,7 +546,6 @@ very close the \gls{aoi} in this scenario. Therefore, every time the satellites
 have access to the \gls{aoi}, it is likely they will also have a ground access
 available. 
 
-
 For the opportunity filters, there will need to be some fine-tuning going
 forward. Edge cases, that were not immediately addressed in their high-level
 descriptions or in the actual implementation may have been missed. Questions
@@ -539,6 +554,8 @@ taking sensor measurements? Are there limitations on ground contacts beyond
 just the spacecraft having access? These will be addressed iteratively and the
 opportunity filters will be refined through testing and operations
 trials.
+
+
 
 \section{Creating Observations}
 
@@ -584,10 +601,10 @@ be an easily generalizable tool, so rules may be added as necessary.
 An example schedule can be seen in Figure~\ref{fig:obs-conf-schedule} for
 Plan-2. This plan was selected because there are more opportunities and there is
 some time between an \gls{aoi} access and a ground access. There are five
-observations scheduled, 3 Tip-and-Cue Imaging observations and 2 Course Imaging
-observations. The first Tip-and-Cue observation, \texttt{TNC-1-TIP}, begins at
-10:10AM on Jan 17, in pass 7. Here, Sat-A begins its first tip pass over the
-\gls{aoi}.  This is immediately followed by a ground contact for both
+observations scheduled, three Tip-and-Cue Imaging observations and two Course
+Imaging observations. The first Tip-and-Cue observation, \texttt{TNC-1-TIP},
+begins at 10:10AM on Jan 17, in Pass 7. Here, Sat-A begins its first tip pass
+over the \gls{aoi}.  This is immediately followed by a ground contact for both
 satellites with the Weilheim station. This is represented by the light grey
 vertical bar.  Currently, ground contact events have not been included in the
 schedule as part of an observation but this will be done in the future.  The
@@ -602,9 +619,9 @@ mission's data budget. So, while the schedule does not report that there is a
 conflict, in the future, another rule may be added that deals with this case.
 
 Next are the two Coarse Imaging Observations, \texttt{CI-1} and \texttt{CI-2},
-which can be seen at 2:51PM and 4:22PM\@. The first is a legal observation but
-the second conflicts with the last Tip-and-Cue observation at 4:25PM\@. The
-scheduler recognizes this time conflict and highlights both events in red,
+which can be seen at 2:51PM and 4:22PM\@. The first is a possible observation
+but the second conflicts with the last Tip-and-Cue observation at 4:25PM\@.
+The scheduler recognizes this time conflict and highlights both events in red,
 signifying to the operator that these two events must be changed before
 continuing.
 

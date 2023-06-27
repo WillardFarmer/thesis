@@ -46,20 +46,6 @@
 \usepackage[T2A]{fontenc} % this is to make sure the pdf is ctrl-fable
 \usepackage[acronym,nopostdot,nonumberlist,nogroupskip]{glossaries}
 
-\usepackage{makecell}
-\usepackage{threeparttable}
-\usepackage[titletoc]{appendix}
-%\usepackage{url}
-%\usepackage{siunitx}
-\usepackage{xparse}	    % For the notation-shortcuts 
-\usepackage{algorithm}	    % For algorithm pseudo-code
-\usepackage{algpseudocode}  % For algorithm pseudo-code
-\usepackage{varwidth}       % Center align enumerate
-\usepackage[bottom]{footmisc}       % Footnote at bottom of page
-
-% test tikz 3d globe package
-%\usepackage{tikz-3dplot}
-
 % Code
 \usepackage{listings}
 
@@ -82,6 +68,7 @@
 \usepackage{outlines}       % Items/SubItems in bulletpoint list
 \usepackage{arydshln}       % Dashed Matrix line
 \usepackage{commath}        % Norm Symbol
+\usepackage[bottom]{footmisc}       % Footnote at bottom of page
 
 \usepackage{etoolbox}	    % Block Quotes
 \AtBeginEnvironment{quote}{\par\singlespacingsmall\small}
@@ -99,9 +86,6 @@
 % \setmonofont{Consolas}
 
 
-
-%% *** Acronyms page (gls) setup. ***
-\setacronymstyle{long-short}
-\setglossarystyle{alttree} % Lines up the definitions
-\glssetwidest{LONGLONG} % Sets the spacing between the acronym and definition
-% \makeglossaries
+% Section sizes
+\usepackage{titlesec}
+\titleformat*{\subsubsection}{\large\bfseries}

@@ -274,7 +274,7 @@ The second primitive utility is the \textbf{Polygon Intersection Utility}.
 From a swath and a ground polygon, this utility calculates both the access
 times and the intersection polygon between the swath and the input polygon. The
 access times are timestamps which specify when a satellite `enters' or `leaves'
-an access. The input polygon can be any polygon weather it is an \gls{aoi} or
+an access. The input polygon can be any polygon whether it is an \gls{aoi} or
 it is derived through some other process.
 
 The third primitive utility is the \textbf{Ground Access Utility}. From a swath
@@ -367,7 +367,7 @@ satellite's orbit. That is, there must be a way of estimating a satellites
 position at a given time.  Very accurate methods of propagation do exist, but
 these are involved and may be time consuming to implement. The desire for
 \gls{pops} currently is to have \textit{some} method of propagation that is
-sufficiently accurate.
+sufficient.
 
 \subsection{NORAD Two-Line Element Sets}
 
@@ -496,11 +496,13 @@ human readable. Despite this, it is good to have a general understanding of the
 terms.  Elements 1-3 and 11 give information about the satellite the \gls{tle}
 has been generated for. Elements 4 and 5 give the \gls{tle} epoch.  Elements
 12-17 give the independent orbit elements that can be used to describe a
-satellite's orbit. Elements 6-8 describe the effects of perturbations on that
-orbit. Lastly, Elements a, b, 9, and 10 give meta-information about the
-\gls{tle} itself. Even though the orbital elements of a satellite can be
-extracted from a \gls{tle} and can then be used as inputs for another
-propagator, this would be a mis-step and would produce erroneous results. 
+satellite's orbit. Element 18 gives the number of orbits of the Earth a
+satellite has completed since its launch date. Elements 6-8 describe the
+effects of perturbations on that orbit.  Lastly, Elements a, b, 9, and 10 give
+meta-information about the \gls{tle} itself. Even though the orbital elements
+of a satellite can be extracted from a \gls{tle} and can then be used as inputs
+for another propagator, this would be a mis-step and would produce erroneous
+results. 
 
 \begin{quote}
 [\glspl{tle}] are `mean' values obtained by removing

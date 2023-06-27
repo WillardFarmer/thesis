@@ -11,7 +11,12 @@ for a great deal of freedom when developing the different services. Each
 service will be completely unaffected by the implementation of another service.
 In addition, some of the functionality of \gls{pops} is useful outside of the
 tool itself.  Through this architecture, the services may be used elsewhere,
-without any need for further development.  
+without any need for further development. A distinction should be made between
+`services' and `utilities'.  A service is a standalone programming unit that
+has various standard components associated with it as discussed in this
+chapter. A utility is a piece of functionality that is provided by a service.
+A service may have many utilities but a utility cannot exist without a service
+in \gls{pops}'s architecture.
 
 Each service has its own Docker container. Containers are similar to virtual
 machines, in that they simulate an operating system but, unlike virtual
@@ -173,21 +178,33 @@ reference frames are approximately identical \cite{kaplan_iau_2006}.  The
 procedure for validating the Propagator service was first to select a
 \gls{tle}, a time range, a time step, and a coordinate system.  Next was to
 generate Ephemerides from \gls{stk} and the Propagator service.  Finally, the
-results were compared. One such comparison can be seen in
-Figure~\ref{fig:stk_py}. Here, the peak position residual was 0.37mm for the
-position along the x-axis. The main purpose of this exercise is to ensure that
-the Python libraries are being used correctly and that their output data is
-acceptable.  From this result, it is clear that the methods are identical and
-the difference was most likely due to slight implementation differences. 
+results were compared by calculating the residual which is the difference in
+position for both methods. One such comparison can be seen in
+Figure~\ref{fig:stk_py}.  Here, the peak residual is displayed. The actual
+residual oscillates periodically which is not useful. Instead, the rolling
+maximum is recorded which is the maximum residual up until a given time.  The
+peak position residual was 0.37mm for the position along the x-axis.  This is
+acceptable because it is far below the accuracy of the \gls{sgp4} propagator of
+$\sim1$km \cite{vallado_revisiting_2006}. Even though the residual error along
+the y-axis grows over time, it does not grow at a rate that would affect the
+results of this validation. In addition, even after two weeks of propagation
+data, the maximum residual along the y-axis is still less than the peak
+residual. 
+
+The main purpose of this exercise is to ensure that the Python libraries are
+being used correctly and that their output data is acceptable.  From this
+result, it is clear that the methods are identical and the difference was most
+likely due to slight implementation differences. 
 
 Another responsibility of the Propagator service is to determine a list of
 passes for a given ephemeris. Having an entire ephemeris may be cumbersome for
 some calculations so it makes sense to split a whole ephemeris into multiple
-components. A `pass' is an arbitrary term, so in this context it is defined as
-the period between south-to-north hemisphere crossings. This definition was
-chosen because it is easy to calculate when a spacecraft crosses the equator,
-as this is where the z-position of a spacecraft, in \gls{ecef} coordinates,
-goes from negative to positive.  
+orbits around the Earth. Here, the term `pass' is used which refers to a pass
+around the Earth. For \gls{pops}, it is defined as the period between
+south-to-north hemisphere crossings of a satellite. This definition was chosen
+because it is easy to calculate when a satellite crosses the equator, as this
+is where the z-position of a satellite, in \gls{ecef} coordinates, goes from
+negative to positive.
 
 %See Algorithm~\ref{alg:crossover} for a discussion on how crossings are found.
 
@@ -373,23 +390,23 @@ Let us first define the orbital reference frame of the satellite, \Fo, with
 respect to an \gls{ecef} fixed coordinate system, \Fe,  Then, let us take the
 satellites position, $\sev{r}$, and velocity, $\sev{v}$, with respect to \Fe.
 These two vectors are given for a single epoch in an ephemeris file.  \Fo ~is
-then defined as $ \vec{\mathcal{F}}_o = \left[ \sev{x}, \, \sev{y}, \, \sev{z}
+then defined as $ \vec{\mathcal{F}}_o = \left[ \seh{x}, \, \seh{y}, \, \seh{z}
 \, \right]^T$, where:
 
 \begin{equation} 
-    \sev{x} = \frac{\sev{r}}{\norm{\sev{r}}}, 
+    \seh{x} = \frac{\sev{r}}{\norm{\sev{r}}}, 
     \quad 
-    \sev{z} = \frac{\sev{r}\times\sev{v}}{\norm{\sev{r}\times\sev{v}}}
+    \seh{z} = \frac{\sev{r}\times\sev{v}}{\norm{\sev{r}\times\sev{v}}}
 \end{equation}
 
-And lastly $\sev{y} = \sev{z} \times \sev{x}$ to form an orthonormal set. We
+And lastly $\seh{y} = \seh{z} \times \seh{x}$ to form an orthonormal set. We
 shall then take two vectors, $\sesv{s}{1}$ and $\sesv{s}{2}$, that form the
 boundary of our conical FOR and lie within the x-z plane of \Fo,  These are
 defined as,
 
 \begin{align}
-    \sesv{s}{1} &= \vec{\mathcal{F}}_o^T \left[ \, -\cos\theta, \quad 0, \quad -\sin\theta \right]^T \\
-    \sesv{s}{2} &= \vec{\mathcal{F}}_o^T \left[ \, -\cos\theta, \quad 0, \quad \sin\theta \right]^T
+    \sesv{s}{1} &= \vec{\mathcal{F}}_o^T\ses{s}{1} = \vec{\mathcal{F}}_o^T \left[ \, -\cos\theta, \quad 0, \quad -\sin\theta \right]^T \\
+    \sesv{s}{2} &= \vec{\mathcal{F}}_o^T\ses{s}{2} = \vec{\mathcal{F}}_o^T \left[ \, -\cos\theta, \quad 0, \quad \sin\theta \right]^T
 \end{align}
 
 Where $\theta$ is the half-angle of the satellite’s \gls{for}. These vectors
@@ -431,7 +448,7 @@ We may then generate the set of vectors, $S$, that describe the \gls{for} for
 that time instant:
 
 \begin{equation}
-    S = \left\{ \Cx{2\pi/n} \sesv{s}{1} \, \vert \, n = 1, 2, \ldots N \right\}
+    S = \left\{ \Cx{2\pi/n} \ses{s}{1} \, \vert \, n = 1, 2, \ldots N \right\}
 \end{equation}
 Typically, access regions are described with 8 points but more can be added if
 necessary. 
@@ -453,11 +470,12 @@ Figure~\ref{fig:atu-2}
 
 Swath intersection is an important operation for determining what part of a
 specified region is observable by a satellite sensor during some time interval.
-Regions are polygons on the Earth’s surface whose vertices are oriented
-counter-clockwise. The edge between two consecutive vertices is the great
-ellipse arc connecting both points. Swaths are also approximated as polygons
-provided that the timestep is small enough. The edge between two swath boundary
-points being a great ellipse arc is assumed to be a sufficient approximation.
+Regions are convex or concave polygons on the Earth’s surface whose vertices
+are ordered counter-clockwise. The edge between two consecutive vertices is the
+great ellipse arc connecting both points. Swaths are also approximated as
+polygons provided that the timestep is small enough. The edge between two swath
+boundary points being a great ellipse arc is assumed to be a sufficient
+approximation.
 
 Polygon clipping techniques are used to find the area of intersection between a
 swath and a polygon. First, the swath and polygon vertices are transformed into
@@ -472,7 +490,10 @@ lines.  This means classical 2D polygon clipping techniques can be applied to
 polygons drawn on the Earth’s surface. So long as the swath and polygon occupy
 one hemisphere of the Earth’s surface, the projection will accurately represent
 the points of intersection of the swath and polygon, and any polygon clipping
-technique can be applied.
+technique can be applied. It is assumed that the projection to the 2D plane and
+the corresponding reverse operation to transform points back to the Earth's
+surface does not introduce a significant error. This process is discussed in
+greater detail in \cite{jagodzinski_geometric_2023}.
 
 
 \begin{figure}[h]
@@ -512,7 +533,7 @@ go through them one by one.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.7\textwidth]{Mission Model.png} 
+    \includegraphics[width=1\textwidth]{Mission Model.png} 
     \caption{High Level Structure of Mission Model Service}
     \label{fig:mission_model} 
 \end{figure}
@@ -692,7 +713,7 @@ following information:
 
     \item[Velocity] Velocity vectors of the satellite. 
 
-    \item[Pass Index] For each ephemeris point, the pass index is specified. 
+    %\item[Pass Index] For each ephemeris point, the pass index is specified. 
 
 \end{description}
 
@@ -781,7 +802,7 @@ this only limited the types of area-targets that could be specified. Through
 developing the opportunity filter class, there arose some scenarios where
 concave polygons were generated that needed to be inputted into the
 \glspl{atu}. For this reason, a simple algorithm was implemented that removes
-vertices to force a polygon to be convex.  
+vertices to force a polygon to be convex. 
 
 %The implementation for this is
 %discussed in Algorithm~\ref{alg:force-convex}.  Thankfully, this restriction
@@ -793,8 +814,11 @@ Section~\ref{sec:cesium-models}). If a polygon is ordered in a different way,
 this may lead to garbled results from the \glspl{atu} or Cesium viewer. If
 necessary, when generating a Polygon object and a developer suspects that the
 source data may be un-ordered, they may set an option to \textit{force} a
-polygon to be counter-clockwise. Re-ordering is not always perfect, though, and
-that is why this is an option and not always done. 
+polygon to be re-ordered counter-clockwise. This is accomplished by selecting a
+centre point and ordering every vertex with respect to the angle between it and
+the centre point. Re-ordering may produce erroneous results for complex
+polygons so this process is left as an option for the developer and not always
+done. 
 
 %The implementation for this can be found in Algorithm~\ref{alg:ccw}.
 
@@ -944,14 +968,16 @@ every ground station provided.
 After this, instead of calculating all of intersection polygons for the tip
 swath and the \gls{aoi}, only the list of access times are recorded, $A_A$.
 This has two purposes.  First, it is faster to just calculate the access times
-for the Polygon Intersection Utility. Second, this gives us a list of access
-times that can be iterated over to find opportunities. The significance of this
-is that there may exist \glspl{aoi} where Sat-A has multiple accesses within a
-single pass. By iterating over each access we create an opportunity for every
-access in a pass.  The alternative would be to iterate over every pass. This
-method would either require taking only the first access in the tip pass as an
-opportunity or specialized logic would be needed that would over complicate the
-filter.
+for the Polygon Intersection Utility. Even though speed is not necessarily a
+requirement for opportunity filtering, efficient code is still valuable and
+worth prioritizing. This is discussed in Section~\ref{sec:performance}\@.
+Second, this gives us a list of access times that can be iterated over to find
+opportunities. The significance of this is that there may exist \glspl{aoi}
+where Sat-A has multiple accesses within a single orbit of the Earth. By
+iterating over each access we create an opportunity for every access in that
+orbit. If instead we iterated over every orbit of the Earth, there would be no
+way to distinguish between multiple accesses in the orbit without specialized
+logic which would increase the complexity of the filter.
 
 With an access list for Sat-A, we can iterate over every individual access,
 $a_A$. The first operation in each iteration is to calculate the intersection
@@ -966,18 +992,27 @@ polygon for Sat-A, Sat-B, and the \gls{aoi}, $g_{A \wedge B}$. Before adding an
 opportunity, we must check if suitable ground station contacts exist in between
 Sat-A's access and Sat-B's access; that is, does there exist a ground access
 for both Sat-A and Sat-B such that they lie between the tip access and the cue
-access.  If this is the case Sat-A's access, Sat-B's access, and the
+access. This comes from the assumption that, for EG-SAT, tips must be sent to a
+ground station from which cues are calculated and sent to Sat-B before its next
+access to the \gls{aoi}. For other missions, cues may be sent directly from the
+tip satellite to the cue satellite or cues may be sent later than the next
+pass.  If a ground access does exist for both Sat-A and Sat-B in between
+Sat-A's access and Sat-B's access, the Sat-A access, Sat-B access, and the
 intersection polygon are then appended to the list of opportunities.  Otherwise
 the opportunity is discarded.  This process is then repeated for each of
 Sat-A's access times.
 
-From this process, some edge cases have been omitted. That being, at the
-beginning and end of a scenario, we cannot generate any opportunities because
-there would be no corresponding tip or cue pass respectively. Also, another
-edge case would be where there are no accesses for Sat-A and Sat-B in a single
-pass. Similarly, the process of adding the search data to the database is also
-omitted.
+From this process, the handling of some edge cases have been omitted for
+clarity. Here, an edge case is a configuration of data that may break the
+filter if it is not handled correctly. For example, at the beginning and end of
+a scenario, no opportunities can be generated because there would be no
+corresponding tip or cue pass respectively. Another edge case would be where
+there are no accesses for Sat-A and Sat-B in a single pass. Similarly, the
+process of adding the search data to the database is also omitted. These types
+of problems are not difficult to address but require specific logic which is
+not relevant to the rest of the filter.
 
+\newpage
 
 \subsection{3D Earth Visualization}
 
@@ -988,15 +1023,16 @@ imparted through text.
 
 
 To support this functionality, \gls{pops} makes use of the open-source CesiumJS
-library. CesiumJS can display time-dynamic, geospatial information on a
-webpage. CesiumJS itself is free to use and provides all of the core
-functionality that is necessary for \gls{pops}. There also exists a proprietary
-library, CesiumION, which provides 3D terrain data and proprietary Earth
-imagery. This kind of information is currently not required by by \gls{pops}.
-At most, all that is needed is a rough understanding of the Earth's geography
-and that is sufficient. For this reason, \gls{pops} does not provide terrain
-information and uses a free tile map provider. Since \gls{pops} is only using
-the free version, CesiumJS will be referred to as just Cesium for brevity. 
+library released under the Apache 2.0 license. CesiumJS can display
+time-dynamic, geospatial information on a webpage. CesiumJS itself is free to
+use and provides all of the core functionality that is necessary for
+\gls{pops}. There also exists a proprietary library, CesiumION, which provides
+3D terrain data and proprietary Earth imagery. This kind of information is
+currently not required by by \gls{pops}.  At most, all that is needed is a
+rough understanding of the Earth's geography and that is sufficient. For this
+reason, \gls{pops} does not provide terrain information and uses a free tile
+map provider. Since \gls{pops} is only using the free version, CesiumJS will be
+referred to as just Cesium for brevity. 
 
 It should be noted that Cesium is only meant to display information to the user
 and not intended to be a tool that performs any calculations. All data is generated
@@ -1004,13 +1040,18 @@ through other means and then converted into a format that Cesium can display.
 The reason for this is that, since Cesium is such a large tool, it is difficult
 to validate in great depth because it is not clear what assumptions are being
 made at what level. So, as long as the entities being displayed by Cesium are
-qualitatively correct then that is sufficient.
+qualitatively correct then that is sufficient for display purposes. An example
+of a qualitatively correct error would be displaying satellite orbits. By
+default, Cesium uses linear interpolation to display the path and position of
+satellites in orbit. For certain calculations, this is not sufficiently
+accurate, but for display purposes, it is accurate enough to give the user an
+idea about the satellite's position and trajectory at a given time. 
 
-\begin{figure}[h]
+\begin{figure}
     \centering
     \includegraphics[width=0.9\textwidth]{Cesium_Example_Image.png} 
-    \caption{Cesium Example Scenario with Example Entities}
-    \label{fig:example_cesium}
+    \caption{Cesium Example Scenario with Example Entities} 
+    \label{fig:example_cesium} 
 \end{figure}
 
 An example scenario generated by \gls{pops} can be seen in
@@ -1126,50 +1167,50 @@ are as follows:
     \item[Access Object] It is useful to display when a satellite has access to
 	a ground target. This is accomplished through drawing a line between
 	the satellite and the ground target for times where they have access to
-	each other. One useful feature of \gls{czml} is that we can reference
-	the position of other object by reference to their ID. This saves us
-	from having to load a satellite ephemeris into the object to describe
-	the position of the satellite. \gls{czml} also allows us to specify
-	when an object should or should not be visible by specifying intervals
-	of visibility. When an \texttt{Access Object} is created a list of
-	access times must be included such that these intervals may be defined
-	in the object.
+	each other. One useful feature of \gls{czml} is that we can set the
+	endpoints of the line to be references to other Cesium objects. This
+	saves us from having to load a satellite ephemeris into the object to
+	describe the position of the satellite. \gls{czml} also allows us to
+	specify when an object should or should not be visible by specifying
+	intervals of visibility.  When an \texttt{Access Object} is created a
+	list of access times must be included such that these intervals may be
+	defined in the object.
 
     \item[Polygon] As mentioned earlier, Cesium has the ability to display
 	polygons in any number of ways but, for \gls{pops}'s purposes, it is
 	mainly focused on polygons clamped to the Earth's surface. The two
 	instances where polygons are currently used for \gls{pops} are for Area
-	Target \glspl{aoi} and for intersection polygons. The difference
-	practically for these two cases is just in their colour.  To draw a
-	polygon in Cesium, a list of points in Cartesian coordinates or in
-	Latitude-Longitude-Altitude coordinates must be provided to it.  For
-	the Cartesian coordinates, if a point does not directly lie on the
-	WGS84 Ellipsoid, Cesium will only draw the closest point on the
-	Ellipsoid.  From this list of points, Cesium will guess the `inside' of
-	the polygon. Note that since shapes are drawn on an Ellipsoid, the
-	geometry is non-Euclidean. The inside of a polygon on a 2D plane is
-	clear for polygons that do not self-intersect; it is simply the region
-	that is enclosed by all of the sides of the polygon.  For an Ellipse
-	any point can be enclosed.  See an example of this in Figures
-	\ref{fig:inside_polygon_1} and \ref{fig:inside_polygon_2}. Both have
-	identical polygons where there are 4 vertices on the Ellipsoid and
-	their edges are the same.  There is now a question of what forms the
-	inside of the polygon, as this can be the larger area or the smaller
-	area. There are a number of ways this can be addressed. One way is to
-	specify the points on the polygon in a clockwise or counter clockwise
-	order. Then the internal area will be whatever conforms to this
-	ordering. Another way would be to specify one or more points that are
-	not vertices but rather example points that lie within the polygon. In
-	this way the area of the polygon will be the set of points that contain
-	the example point. For simplicity, Cesium makes a best guess at what
-	the inside of a polygon is by selecting the inside with the smaller
-	area. This is sufficient for smaller polygons but for larger or more
-	complicated polygons where the intended area is greater than one half
-	hemisphere, determining the inside of a polygon no longer becomes clear
-	and the viewer displays a garbled result.  Alternatively, if there is a
-	polygon which intersects itself, Cesium also becomes confused. In these
-	scenarios, a large polygon must be sub-divided into sections that
-	Cesium can process.
+	Target \glspl{aoi} (see Figure~\ref{fig:AOIs}) and for intersection
+	polygons.  The difference practically for these two cases is just in
+	their colour.  To draw a polygon in Cesium, a list of points in
+	Cartesian coordinates or in Latitude-Longitude-Altitude coordinates
+	must be provided to it.  For the Cartesian coordinates, if a point does
+	not directly lie on the WGS84 Ellipsoid, Cesium will only draw the
+	closest point on the Ellipsoid.  From this list of points, Cesium will
+	guess the `inside' of the polygon. Note that since shapes are drawn on
+	an Ellipsoid, the geometry is non-Euclidean. The inside of a polygon on
+	a 2D plane is clear for polygons that do not self-intersect; it is
+	simply the region that is enclosed by all of the sides of the polygon.
+	Any point on an Ellipsoid can be enclosed for a given polygon.  See an
+	example of this in Figures~\ref{fig:inside_polygon_1}~and~
+	\ref{fig:inside_polygon_2}.  Both have identical polygons where there
+	are 4 vertices on the Ellipsoid and their edges are the same.  There is
+	now a question of what forms the inside of the polygon, as this can be
+	the larger area or the smaller area. There are a number of ways this
+	can be addressed.  One way is to specify the points on the polygon in a
+	clockwise or counter clockwise order. Then the internal area will be
+	whatever conforms to this ordering. Another way would be to specify one
+	or more points that are not vertices but rather example points that lie
+	within the polygon. In this way the area of the polygon will be the set
+	of points that contain the example point. For simplicity, Cesium makes
+	a best guess at what the inside of a polygon is by selecting the inside
+	with the smaller area. This is sufficient for smaller polygons but for
+	larger or more complicated polygons where the intended area is greater
+	than one half hemisphere, determining the inside of a polygon no longer
+	becomes clear and the viewer displays a garbled result.  Alternatively,
+	if there is a polygon which intersects itself, Cesium also becomes
+	confused. In these scenarios, a large polygon must be sub-divided into
+	sections that Cesium can process.
 
 \begin{figure}
     \begin{minipage}[c]{0.45\textwidth}
@@ -1219,11 +1260,11 @@ are as follows:
 	    P_{swath} = L_1' + E_{start} + L_2 + E_{end} 
 	\end{equation*} 
 
-	where $P_{swath}$ is the swath polygon, $L_1'$
-	is $L_1$ reversed, and $E_{start}/E_{end}$ are the ellipse points at
-	the beginning and end of the constrained swath. Note that the $+$
-	symbols here infer list concatenation rather than addition. Calculating
-	$E_{start}/E_{end}$ is somewhat involved and is discussed in
+	where $P_{swath}$ is the swath polygon, $L_1'$ is $L_1$ reversed,
+	$E_{start}$ are the ellipse points at the beginning of the constrained
+	swath, and $E_{end}$ are the points at the end.  Note that the $+$ symbols
+	here infer list concatenation rather than addition.  Calculating
+	$E_{start}$ and $E_{end}$ are somewhat involved and is discussed in
 	Algorithm~\ref{alg:ellipse}.
 	
 \begin{figure}
@@ -1256,7 +1297,7 @@ are as follows:
 \end{figure}
 
 
-\begin{figure}[h]
+\begin{figure}
     \centering
     \includegraphics[width=0.9\textwidth]{Cesium_Example_Swath.png} 
     \caption{Example of a 30$^\circ$ Ground Swath}
@@ -1376,7 +1417,7 @@ itself, such as:
 
 Along with each Event is a payload. The payloads allow for specific information
 to be stored in an Event without the Scheduler class being aware of what's
-there. This functionality will primary be used to contain observation-specific
+there. This functionality will primarily be used to contain observation-specific
 information such that \glspl{ttc} can be generated from lists of Events without
 having the Scheduler class be aware of what observations are possible.
 Observations are just one example of an Event. In the future, there may be some
@@ -1446,7 +1487,7 @@ into rows. Events are displayed as blue boxes with descriptive names.
 Conflicting Events are shaded in red. To give more information to the user, the
 pass boundaries are displayed as blue vertical lines. The shaded regions
 specify when a satellite has access to a ground station.  Currently, this is
-all that is displayed is subject to change based on feedback from operators
+all that is displayed but this is subject to change based on feedback from operators
 using the tool.
 
 
